@@ -1,5 +1,10 @@
 package net.alasc.ptrcoll
 
+/** Stupid implementation of a set of integers, delegating everything to `Set[Int]`
+  * in the most inefficient way possible.
+  * 
+  * Will be reimplemented as a fast bitset.
+  */
 case class SetInt(set: Set[Int]) extends Pointable[Int] {
   def pointer: Ptr = if (set.isEmpty) (-1L).asInstanceOf[Ptr] else (set.min.toLong).asInstanceOf[Ptr]
 
