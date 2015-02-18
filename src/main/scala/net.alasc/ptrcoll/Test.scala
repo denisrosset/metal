@@ -1,15 +1,17 @@
 package net.alasc.ptrcoll
 
 import syntax.all._
+import sets._
 
 /** Proof of concept test. */
 object Test extends App {
+  import spire.std.int.IntAlgebra
   def test1: Unit = {
     // collection instance
-    val set1 = SetInt(Set(0,2,3,5,6,10))
+    val set1 = SortedSSet(0,2,3,5,6,10)
     // necessary import to make the pointer syntax available
     import set1.{PtrTC => PtrTC1}
-    val set2 = SetInt(Set(1,2,3,4))
+    val set2 = SortedSSet(1,2,3,4)
     // renaming the implicit instance is necessary if one wants to point
     // to different collections in the same lexical scope
     import set2.{PtrTC => PtrTC2}
@@ -25,5 +27,25 @@ object Test extends App {
       ptr2 = ptr2.next
     }
   }
+  def test2: Unit = {
+    val set = BitSSet.empty
+    var i = 0
+    while (i < 100000) {
+      set += i
+      i += 1
+    }
+    var loop = 0
+    while (loop < 1000) {
+      var sum = 0
+      import set.PtrTC
+      var ptr = set.pointer
+      while (ptr.hasAt) {
+        sum += ptr.at
+        ptr = ptr.next
+      }
+      loop += 1
+    }
+  }
   test1
+  test2
 }

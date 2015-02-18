@@ -50,7 +50,7 @@ trait BitSSetImpl extends BitSSet with PointableAtImpl[Int] { self =>
     val w = item.toInt >>> 3
     val bit = item & 0x7
     if (w >= words.length) {
-      val newWords = new Array[Long](Util.nextPowerOfTwo(w))
+      val newWords = new Array[Long](Util.nextPowerOfTwo(w + 1))
       java.lang.System.arraycopy(words, 0, newWords, 0, wordSize)
       words = newWords
     }
