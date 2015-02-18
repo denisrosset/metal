@@ -5,8 +5,8 @@ package net.alasc.ptrcoll
   * 
   * Will be reimplemented as a fast bitset.
   */
-case class SetInt(set: Set[Int]) extends Pointable[Int] {
-  def pointer: Ptr = if (set.isEmpty) (-1L).asInstanceOf[Ptr] else (set.min.toLong).asInstanceOf[Ptr]
+case class SetInt(set: Set[Int]) extends PointableAtImpl[Int] {
+  def pointer: Ptr = if (set.isEmpty) Ptr(-1L) else Ptr(set.min.toLong)
 
   def next(ptr: Long) = {
     val rest = set.filter(_ > ptr.toInt)
