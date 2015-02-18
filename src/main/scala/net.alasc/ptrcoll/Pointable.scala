@@ -7,6 +7,7 @@ trait Pointable { self =>
   trait Tag
   /** Tagged pointer type for this collection instance. */
   type Ptr = TaggedPtr[Tag]
+  def nullPtr: Ptr
   final def Ptr(r: RawPtr): Ptr = r.asInstanceOf[Ptr]
   /** Returns a pointer for this collection instance. */
   def pointer: Ptr

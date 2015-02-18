@@ -13,13 +13,12 @@ trait HasPtrAt[@specialized(Int) A, P <: RawPtr] extends HasPtr[P] {
   def at(ptr: P): A
 }
 
-/*
 trait HasPtrKey[@specialized(Int, Long) K, P <: RawPtr] extends HasPtr[P] {
   /** Returns the key of the object pointed by the pointer. */
   def atKey(ptr: P): K
 }
 
 trait HasPtrVal[@specialized(Int, Long) V, P <: RawPtr] extends HasPtr[P] {
+  /** Returns the value of the object pointed by the pointer. */
   def atVal(ptr: P): V
 }
- */

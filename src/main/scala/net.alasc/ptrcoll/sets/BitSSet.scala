@@ -13,33 +13,31 @@ trait BitSSet extends SortedSSet[Int] {
 trait BitSSetImpl extends BitSSet with PointableAtImpl[Int] { self =>
   var words: Array[Long]
   var wordSize: Int
-
+  @inline final def nullPtr: Ptr = Ptr(-1)
   def pointer: Ptr = {
     var w = 0
     while(words(w) == 0L) {
-      if (w == wordSize) return Ptr(-1)
+      if (w == wordSize) return nullPtr
       w += 1
     }
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
     Ptr(index)
   }
-
   def apply(item: Int): Boolean = {
     val w = item >>> 3
     val bit = item & 0x7
     w < wordSize && (words(w) & (1 << bit)) != 0
   }
-
-  def hasAt(ptr: RawPtr): Boolean = ptr != -1
+  def hasAt(ptr: RawPtr): Boolean = ptr >= 0L
   def next(ptr: RawPtr): RawPtr = {
     var w = ptr.toInt >>> 3
     var bit = (ptr & 0x7).toInt
     val nextBit = Util.nextBitAfter(words(w), bit)
     if (nextBit >= 0) return (ptr - bit + nextBit)
     w += 1
-    if (w == wordSize) return Ptr(-1)
+    if (w == wordSize) return nullPtr
     while(words(w) == 0L) {
-      if (w == wordSize) return Ptr(-1)
+      if (w == wordSize) return nullPtr
       w += 1
     }
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))

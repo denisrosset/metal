@@ -63,10 +63,11 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
     } else true
   }
 
-  def pointer: Ptr = if (size == 0) Ptr(-1) else Ptr(0)
+  @inline final def nullPtr: Ptr = Ptr(-1L)
+  def pointer: Ptr = if (size == 0) nullPtr else Ptr(0)
 
     // hidden by SortedSSet cast
-  def next(ptr: RawPtr) = if (ptr == size - 1) Ptr(-1) else Ptr(ptr + 1)
+  def next(ptr: RawPtr) = if (ptr == size - 1) nullPtr else Ptr(ptr + 1)
   def at(ptr: RawPtr): A = items(ptr.toInt)
   def hasAt(ptr: RawPtr) = ptr >= 0 && ptr < size
 }
