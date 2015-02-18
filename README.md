@@ -54,3 +54,16 @@ while (ptr.hasAt) {
 ```
 
 No allocation is ever performed after the initialization of `set`.
+
+### Collection types
+
+Only sets (named `SSet`, doubling the initial letter) are implemented
+for now in three variants:
+
+- `BitSSet` is a variant of `scala.collection.mutable.BitSet`, where
+the set of integers is encoded as a bitstring in a `Array[Long]`,
+- `SortedSSet` stores the elements in a sorted array, and checks
+  membership using a binary search,
+- `HashSSet` uses a hash table implementation coming from Debox.
+
+Additional types such as `MMap` and `BBuffer` are on the roadmap.
