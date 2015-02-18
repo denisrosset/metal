@@ -53,4 +53,4 @@ while (ptr.hasAt) {
 }
 ```
 
-No allocation is ever performed here.
+No allocation is ever performed after the initialization of `set`.
