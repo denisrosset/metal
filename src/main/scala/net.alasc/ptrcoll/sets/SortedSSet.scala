@@ -1,6 +1,7 @@
 package net.alasc.ptrcoll
 package sets
 
+import scala.{specialized => sp}
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
@@ -35,6 +36,15 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
     sys.error("Should not happen")
   }
 
+  def removeAt(ptr: Ptr): Ptr = {
+    if (hasAt(ptr)) {
+      val pos = ptr.toInt
+      java.lang.System.arraycopy(items, pos + 1, items, pos, size - pos - 1)
+      size -= 1
+    }
+    if (ptr >= size) nullPtr else ptr
+  }
+
   def remove(item: A): Boolean = {
     val pos = findWhere(item)
     if (pos >= 0) {
@@ -45,6 +55,11 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
   }
 
   def apply(item: A): Boolean = findWhere(item) >= 0
+
+  def findPointerAt(item: A): Ptr = {
+    val ind = findWhere(item)
+    if (ind >= 0) Ptr(ind) else nullPtr
+  }
 
   def add(item: A): Boolean = {
     val pos = findWhere(item)
@@ -72,16 +87,22 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
   def hasAt(ptr: RawPtr) = ptr >= 0 && ptr < size
 }
 
-object SortedSSet {
-  def empty[A:Order:ClassTag]: SortedSSet[A] = new SortedSSetImpl[A] {
-    def ct = implicitly[ClassTag[A]]
-    def order = Order[A]
+object SortedSSet extends SSetFactory[Any, Order] {
+  def empty[@sp(Int) A](implicit c: ClassTag[A], ord: Order[A], e: LBEv[A]): SortedSSet[A] = new SortedSSetImpl[A] {
+    def ct = c
+    def order = ord
     var items = new Array[A](8)
     var size = 0
   }
-  def apply[A:Order:ClassTag](items: A*): SortedSSet[A] = {
-    val s = empty[A]
+  def apply[@sp(Int) A](items: A*)(implicit ct: ClassTag[A], ord: Order[A], e: LBEv[A]): SortedSSet[A] = {
+    val s = empty[A](ct, ord, e)
     items.foreach { a => s += a }
     s
+  }
+  def ofSize[@sp(Int) A](n: Int)(implicit c: ClassTag[A], ord: Order[A], e: LBEv[A]): SortedSSet[A] = new SortedSSetImpl[A] {
+    def ct = c
+    def order = ord
+    var items = new Array[A](n)
+    var size = 0
   }
 }

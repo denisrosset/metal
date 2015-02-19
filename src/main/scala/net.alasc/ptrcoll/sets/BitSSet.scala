@@ -1,16 +1,19 @@
 package net.alasc.ptrcoll
 package sets
 
+import scala.{specialized => sp}
 import scala.math.max
 import scala.reflect.{ClassTag, classTag}
+import spire.algebra.Order
 
-trait BitSSet extends SortedSSet[Int] {
-  def ct = classTag[Int]
-  def order = spire.std.int.IntAlgebra
+trait BitSSet[@sp(Int) A] extends SortedSSet[A] {
+  def order: Order[A]
   def words: Array[Long]
 }
 
-trait BitSSetImpl extends BitSSet with PointableAtImpl[Int] { self =>
+trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
+  def order = spire.std.int.IntAlgebra
+  def ct = classTag[Int]
   var words: Array[Long]
   var wordSize: Int
   @inline final def nullPtr: Ptr = Ptr(-1)
@@ -28,6 +31,8 @@ trait BitSSetImpl extends BitSSet with PointableAtImpl[Int] { self =>
     val bit = item & 0x7
     w < wordSize && (words(w) & (1 << bit)) != 0
   }
+  def findPointerAt(item: Int): Ptr =
+    if (apply(item)) Ptr(item) else nullPtr
   def hasAt(ptr: RawPtr): Boolean = ptr >= 0L
   def next(ptr: RawPtr): RawPtr = {
     var w = ptr.toInt >>> 3
@@ -65,6 +70,11 @@ trait BitSSetImpl extends BitSSet with PointableAtImpl[Int] { self =>
     words(w) -= masked
     masked != 0
   }
+  def removeAt(ptr: Ptr): Ptr = {
+    val nextPtr = PtrTC.next(ptr)
+    if (hasAt(ptr)) remove(at(ptr))
+    nextPtr
+  }
   def size: Int = {
     var count = 0
     var w = 0
@@ -76,15 +86,21 @@ trait BitSSetImpl extends BitSSet with PointableAtImpl[Int] { self =>
   }
 }
 
-object BitSSet {
+object BitSSet extends SSetFactory[Int, Dummy] {
   @inline final def startSize = 2
-  def empty: BitSSet = new BitSSetImpl {
+  def empty[@sp(Int) A: ClassTag: Dummy: LBEv]: BitSSet[A] = (new BitSSetImpl {
     var words = new Array[Long](startSize)
     var wordSize = 0
-  }
-  def apply(items: Int*): BitSSet = {
-    val s = empty
-    items.foreach { a => s += a }
+  }).asInstanceOf[BitSSet[A]]
+  def apply[@sp(Int) A: ClassTag: Dummy: LBEv](items: A*): BitSSet[A] = ({
+    val s = empty[Int]
+    items.foreach { a => s += a.asInstanceOf[Int] }
     s
-  }
+  }).asInstanceOf[BitSSet[A]]
+  private[ptrcoll] def ofAllocatedWordSize[@sp(Int) A: ClassTag: Dummy: LBEv](nWords: Int)(implicit ev: A <:< Int): BitSSet[A] = (new BitSSetImpl {
+    var words = new Array[Long](nWords)
+    var wordSize = 0
+  }).asInstanceOf[BitSSet[A]]
+  def ofSize[@sp(Int) A: ClassTag: Dummy: LBEv](n: Int): BitSSet[A] =
+    ofAllocatedWordSize(scala.math.max(startSize, n / 8))
 }

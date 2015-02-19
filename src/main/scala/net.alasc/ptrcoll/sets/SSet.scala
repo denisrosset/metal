@@ -1,37 +1,29 @@
 package net.alasc.ptrcoll
 package sets
 
+import scala.{specialized => sp}
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
 
 import syntax.all._
 
-trait SSet[@specialized(Int) A] extends PointableAt[A] { self =>
+trait Dummy[@sp(Int) A]
+
+object Dummy {
+  implicit def fakeInstance[@sp(Int) A]: Dummy[A] = null
+}
+
+trait SSetFactory[LB, Extra[_]] {
+  type LBEv[A] = A <:< LB
+  def empty[@sp(Int) A: ClassTag: Extra: LBEv]: SSet[A]
+  def apply[@sp(Int) A: ClassTag: Extra: LBEv](items: A*): SSet[A]
+  def ofSize[@sp(Int) A: ClassTag: Extra: LBEv](n: Int): SSet[A]
+}
+
+trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Sized { self =>
   implicit def ct: ClassTag[A]
-  /**
-    * Return the size of this SSet as an Int.
-    * 
-    * Since most SSets use arrays, their size is limited to what a 32-bit
-    * signed integer can represent.
-    * 
-    * This is an O(1) operation.
-    */
-  def size: Int
 
-  /**
-    * Return true if the SSet is empty, false otherwise.
-    * 
-    * This is an O(1) operation.
-    */
-  def isEmpty: Boolean = size == 0
-
-  /**
-    * Return true if the Set is non-empty, false otherwise.
-    * 
-    * This is an O(1) operation.
-    */
-  def nonEmpty: Boolean = !isEmpty
   /**
     * Return whether the item is found in the SSet or not.
     * 
@@ -53,6 +45,10 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] { self =>
     * Returns whether the item was originally in the set or not.
     */
   def remove(item: A): Boolean
+
+  /** Removes the element pointed by `ptr`, and returns
+    * the next pointer in the iteration. */
+  def removeAt(ptr: Ptr): Ptr
 
   /** Adds item to the set. Calls `add`. */
   def +=(item: A): self.type = { add(item); self }
@@ -96,7 +92,7 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] { self =>
   override def equals(that: Any): Boolean = that match {
     case that: SSet[_] =>
       if (size != that.size || ct != that.ct) return false
-      val rhs = that.asInstanceOf[Set[A]]
+      val rhs = that.asInstanceOf[SSet[A]]
       var p = self.pointer
       while (p.hasAt) {
         if (!rhs(p.at)) return false

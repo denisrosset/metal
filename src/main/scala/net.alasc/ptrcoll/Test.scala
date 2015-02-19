@@ -28,7 +28,7 @@ object Test extends App {
     }
   }
   def test2: Unit = {
-    val set = BitSSet.empty
+    val set = BitSSet.empty[Int]
     var i = 0
     while (i < 100000) {
       set += i

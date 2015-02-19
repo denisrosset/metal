@@ -67,6 +67,38 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
   }
 
   /**
+    * Return whether the item is found in the HashSSet or not.
+    * 
+    * On average, this is an O(1) operation; the (unlikely) worst-case
+    * is O(n).
+    */
+  final def findPointerAt(item: A): Ptr = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
+      val j = i & mask
+      val status = buckets(j)
+      if (status == 0) {
+        nullPtr
+      } else if (status == 3 && items(j) == item) {
+        Ptr(j)
+      } else {
+        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
+      }
+    }
+    val i = item.## & 0x7fffffff
+    loop(i, i)
+  }
+
+  final def removeAt(ptr: Ptr): Ptr = {
+    val nextPtr = PtrTC.next(ptr)
+    if (hasAt(ptr)) {
+      val j = ptr.toInt
+      buckets(j) = 2
+      len -= 1
+    }
+    nextPtr
+  }
+
+  /**
     * Adds item to the set.
     * 
     * Returns whether or not the item was added. If item was already in
@@ -190,11 +222,12 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
   def at(ptr: RawPtr): A = items(ptr.toInt)
 }
 
-object HashSSet {
+object HashSSet extends SSetFactory[Any, Dummy] {
   @inline final def startSize = 8
-  def empty[@sp(Int) A: ClassTag]: HashSSet[A] = ofSize(0)
-  def apply[@sp(Int) A: ClassTag](items: A*): HashSSet[A] = {
-    val s = ofSize[A](items.size)
+
+  def empty[@sp(Int) A](implicit ct: ClassTag[A], d: Dummy[A], e: LBEv[A]): HashSSet[A] = ofSize(0)(ct, d, e)
+  def apply[@sp(Int) A](items: A*)(implicit ct: ClassTag[A], d: Dummy[A], e: LBEv[A]): HashSSet[A] = {
+    val s = ofSize[A](items.size)(ct, d, e)
     items.foreach { a => s += a }
     s
   }
@@ -205,7 +238,7 @@ object HashSSet {
     * This method is useful if you know you'll be adding a large number
     * of elements in advance and you want to save a few resizes.
     */
-  def ofSize[@sp(Int) A: ClassTag](n: Int) =
+  def ofSize[@sp(Int) A: ClassTag: Dummy: LBEv](n: Int) =
     ofAllocatedSize(n / 2 * 3)
 
   /**
