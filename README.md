@@ -29,6 +29,10 @@ PtrColl has an implicit syntax mechanism borrowed from
 [Spire](http://github.com/non/spire) and automatically calls the corresponding
 methods on the collection.
 
+In the future, macros could be used to generate automatically the (light)
+boilerplate needed for operations such as `foreach`, `forall`, `exists`
+and so on.
+
 A simple code example is given by:
 
 ```scala
