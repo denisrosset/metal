@@ -10,18 +10,6 @@ trait Sized {
     * signed integer can represent.
     */
   def size: Int
-
-  /**
-    * Return true if the collection is empty, false otherwise.
-    */
-  def isEmpty: Boolean = size == 0
-
-  /**
-    * Return true if the collection is non-empty, false otherwise.
-    * 
-    * This is an O(1) operation.
-    */
-  def nonEmpty: Boolean = size > 0
 }
 
 trait Findable[@sp(Int) A] extends PointableAt[A] {

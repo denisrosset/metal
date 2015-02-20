@@ -11,12 +11,12 @@ import spire.syntax.cfor._
 import syntax.all._
 
 trait HashSSet[@specialized(Int) A] extends SSet[A] {
-  protected[sets] def items: Array[A]
-  protected[sets] def buckets: Array[Byte]
-  protected[sets] def len: Int
-  protected[sets] def used: Int
-  protected[sets] def mask: Int
-  protected[sets] def limit: Int
+  protected[ptrcoll] def items: Array[A]
+  protected[ptrcoll] def buckets: Array[Byte]
+  protected[ptrcoll] def len: Int
+  protected[ptrcoll] def used: Int
+  protected[ptrcoll] def mask: Int
+  protected[ptrcoll] def limit: Int
 }
 
 trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl[A] { self =>

@@ -6,7 +6,6 @@ import scala.reflect.ClassTag
 
 trait MMapFactory[KLB, VLB, KExtra[_]] {
   type KLBEv[K] = K <:< KLB
-  type VLBEv[V] = V <:< VLB
   def empty[@sp(Int, Long) K: ClassTag: KExtra: KLBEv, V: ClassTag]: MMap[K, V]
+  def ofSize[@sp(Int, Long) K: ClassTag: KExtra: KLBEv, V: ClassTag](n: Int): MMap[K, V]
 }
-

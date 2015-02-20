@@ -8,20 +8,7 @@ import spire.algebra.Order
 
 import syntax.all._
 
-trait Dummy[@sp(Int) A]
-
-object Dummy {
-  implicit def fakeInstance[@sp(Int) A]: Dummy[A] = null
-}
-
-trait SSetFactory[LB, Extra[_]] {
-  type LBEv[A] = A <:< LB
-  def empty[@sp(Int) A: ClassTag: Extra: LBEv]: SSet[A]
-  def apply[@sp(Int) A: ClassTag: Extra: LBEv](items: A*): SSet[A]
-  def ofSize[@sp(Int) A: ClassTag: Extra: LBEv](n: Int): SSet[A]
-}
-
-trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Sized { self =>
+trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Sized { lhs =>
   implicit def ct: ClassTag[A]
 
   /**
@@ -51,24 +38,25 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Siz
   def removeAt(ptr: Ptr): Ptr
 
   /** Adds item to the set. Calls `add`. */
-  def +=(item: A): self.type = { add(item); self }
+  def +=(item: A): lhs.type = { add(item); lhs }
 
   /** Removes item from set. Calls `remove`. */
-  def -=(item: A): self.type = { remove(item); self }
+  def -=(item: A): lhs.type = { remove(item); lhs }
 
-  def --=(pt: PointableAt[A]): self.type = {
+  def --=(pt: PointableAt[A]): lhs.type = {
     import pt.{PtrTC => ptPtrTC}
     var ptr = pt.pointer
     while (ptr.hasAt) {
-      self.remove(ptr.at)
+      lhs.remove(ptr.at)
       ptr = ptr.next
     }
-    self
+    lhs
   }
 
   override def toString: String = {
     val sb = new StringBuilder
-    var prefix = "SSet("
+    sb.append("SSet(")
+    var prefix = ""
     var p = pointer
     while(p.hasAt) {
       sb.append(prefix)
@@ -89,13 +77,13 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Siz
     * Comparing SSets with any of Scala's collection types will
     * return false.
     */
-  override def equals(that: Any): Boolean = that match {
-    case that: SSet[_] =>
-      if (size != that.size || ct != that.ct) return false
-      val rhs = that.asInstanceOf[SSet[A]]
-      var p = self.pointer
+  override def equals(rhs: Any): Boolean = rhs match {
+    case rhs: SSet[_] =>
+      if (size != rhs.size || ct != rhs.ct) return false
+      val s = rhs.asInstanceOf[SSet[A]]
+      var p = lhs.pointer
       while (p.hasAt) {
-        if (!rhs(p.at)) return false
+        if (!s(p.at)) return false
         p = p.next
       }
       true
@@ -113,7 +101,7 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Siz
     */
   override def hashCode: Int = {
     var hash: Int = 0xDEADD065
-    var p = self.pointer
+    var p = lhs.pointer
     while (p.hasAt) {
       hash ^= p.at.##
       p = p.next
