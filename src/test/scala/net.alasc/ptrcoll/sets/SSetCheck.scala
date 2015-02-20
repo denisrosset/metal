@@ -16,13 +16,14 @@ import scala.reflect._
 
 import syntax.all._
 
-abstract class SSetCheck[A: Arbitrary: ClassTag: Order]
+import sets._
+
+abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
-  import sets.{HashSSet => PSet}
 
-  def hybridEq[A](d: PSet[A], s: mutable.Set[A]): Boolean =
+  def hybridEq[A](d: SSet[A], s: mutable.Set[A]): Boolean =
     d.size == s.size && {
       import d.PtrTC
       var ptr = d.pointer
@@ -46,7 +47,7 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order]
   property("fromIterable, apply") {
     forAll { xs: List[A] =>
 //      val set1 = PSet.fromIterable(xs)
-      val set2 = PSet(xs: _*)
+      val set2 = factory(xs: _*)
       val control = mutable.Set(xs: _*)
 //      hybridEq(set1, control) shouldBe true
       hybridEq(set2, control) shouldBe true
@@ -57,8 +58,8 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order]
     forAll { xs: List[A] =>
 /*      val a = PSet.fromIterable(xs)
  val b = PSet.fromIterable(xs.reverse)*/
-      val a = PSet(xs: _*)
-      val b = PSet(xs.reverse: _*)
+      val a = factory(xs: _*)
+      val b = factory(xs.reverse: _*)
       a shouldBe b
       a.## shouldBe b.##
     }
@@ -89,7 +90,7 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order]
    */
   property("adding elements (+=)") {
     forAll { xs: Set[A] =>
-      val set = PSet.empty[A]
+      val set = factory.empty[A]
       val control = mutable.Set.empty[A]
       xs.foreach { x =>
         set += x
@@ -263,7 +264,9 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order]
   }*/
 }
 
-class BooleanSSetCheck extends SSetCheck[Boolean]
-class IntSSetCheck extends SSetCheck[Int]
-class DoubleSSetCheck extends SSetCheck[Double]
-class StringSSetCheck extends SSetCheck[String]
+class BooleanSSetCheck extends SSetCheck[Boolean, Any, Dummy](HashSSet)
+class IntHashSSetCheck extends SSetCheck[Int, Any, Dummy](HashSSet)
+//class IntBitSSetCheck extends SSetCheck[Int, Int, Dummy](BitSSet)
+class IntSortedSSetCheck extends SSetCheck[Int, Any, Order](SortedSSet)
+class StringHashSSetCheck extends SSetCheck[String, Any, Dummy](HashSSet)
+class StringSortedSSetCheck extends SSetCheck[String, Any, Order](SortedSSet)

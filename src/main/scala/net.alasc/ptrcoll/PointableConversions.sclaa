@@ -1,0 +1,48 @@
+package net.alasc.ptrcoll
+
+import scala.annotation.tailrec
+import scala.{specialized => sp}
+
+object PointableConversions {
+  implicit def pointableToIterable[A](p: PointableAt[A]): Iterable[A] = new Iterable[A] {
+
+    import p.{Ptr, PtrTC}
+    import syntax.hasPtr._
+
+    def iterator: Iterator[A] = if (p.isEmpty) Iterator.empty else new Iterator[A] {
+      private[this] var ptr = p.pointer
+      def hasNext = ptr.next.hasAt
+      def next: A = {
+        val res = ptr.at
+        ptr = ptr.next
+        res
+      }
+    }
+    override def size: Int = {
+      @tailrec def loop(ptr: Ptr, acc: Int): Int =
+        if (ptr.hasAt) loop(ptr.next, acc + 1) else acc
+      loop(p.pointer, 0)
+    }
+    override def foreach[U](f: A => U): Unit = {
+      var ptr = p.pointer
+      while(ptr.hasAt) {
+        f(ptr.at)
+        ptr = ptr.next
+      }
+    }
+    override def forall(pred: A => Boolean): Boolean = {
+      @tailrec def loop(ptr: Ptr): Boolean =
+        if (ptr.hasAt) {
+          if (pred(ptr.at)) loop(ptr.next) else false
+        } else true
+      loop(p.pointer)
+    }
+    override def exists(pred: A => Boolean): Boolean = {
+      @tailrec def loop(ptr: Ptr): Boolean =
+        if (ptr.hasAt) {
+          if (pred(ptr.at)) true else loop(ptr.next)
+        } else false
+      loop(p.pointer)
+    }
+  }
+}

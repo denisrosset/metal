@@ -10,9 +10,7 @@ trait Sized {
     * signed integer can represent.
     */
   def size: Int
-}
+  def isEmpty: Boolean
+  def nonEmpty: Boolean
 
-trait Findable[@sp(Int) A] extends PointableAt[A] {
-  /** Returns a pointer to the given item, if it exists. */
-  def findPointerAt(item: A): Ptr
 }
