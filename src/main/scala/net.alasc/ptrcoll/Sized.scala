@@ -12,5 +12,4 @@ trait Sized {
   def size: Int
   def isEmpty: Boolean
   def nonEmpty: Boolean
-
 }

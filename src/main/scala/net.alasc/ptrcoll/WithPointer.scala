@@ -9,6 +9,7 @@ trait WithPointer {
   trait Tag
   /** Tagged pointer type for this collection instance. */
   type Ptr = TaggedPtr[Tag]
+  type ValidPtr = ValidTaggedPtr[Tag]
   def nullPtr: Ptr
   final def Ptr(r: RawPtr): Ptr = r.asInstanceOf[Ptr]
   /** Pointer typeclass. */

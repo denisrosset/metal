@@ -50,28 +50,6 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * On average, this is an O(1) operation; the (unlikely) worst-case
     * is O(n).
     */
-  final def apply(item: A): Boolean = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): Boolean = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 0) {
-        false
-      } else if (status == 3 && items(j) == item) {
-        true
-      } else {
-        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      }
-    }
-    val i = item.## & 0x7fffffff
-    loop(i, i)
-  }
-
-  /**
-    * Return whether the item is found in the HashSSet or not.
-    * 
-    * On average, this is an O(1) operation; the (unlikely) worst-case
-    * is O(n).
-    */
   final def findPointerAt(item: A): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
@@ -88,14 +66,10 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     loop(i, i)
   }
 
-  final def removeAt(ptr: Ptr): Ptr = {
-    val nextPtr = PtrTC.next(ptr)
-    if (hasAt(ptr)) {
-      val j = ptr.toInt
-      buckets(j) = 2
-      len -= 1
-    }
-    nextPtr
+  final def removeAt(ptr: ValidPtr): Unit = {
+    val j = ptr.toInt
+    buckets(j) = 2
+    len -= 1
   }
 
   /**
@@ -116,7 +90,7 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
           false
         else
           loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      } else if (status == 2 && apply(item)) {
+      } else if (status == 2 && contains(item)) {
         false
       } else {
         items(j) = item
@@ -127,31 +101,6 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
           if (used > limit) grow()
         }
         true
-      }
-    }
-    val i = item.## & 0x7fffffff
-    loop(i, i)
-  }
-
-  /**
-   * Remove an item from the set.
-   * 
-   * Returns whether the item was originally in the set or not.
-   * 
-   * This is an amortized O(1) operation.
-   */
-  final def remove(item: A): Boolean = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): Boolean = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 3 && items(j) == item) {
-        buckets(j) = 2
-        len -= 1
-        true
-      } else if (status == 0) {
-        false
-      } else {
-        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
       }
     }
     val i = item.## & 0x7fffffff
@@ -175,7 +124,7 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * 
     * Growing is an O(n) operation, where n is the set's size.
     */
-  final def grow(): Unit1[A] = {
+  final def grow(): Dummy[A] = {
     val next = buckets.length * (if (buckets.length < 10000) 4 else 2)
     val set = HashSSet.ofAllocatedSize[A](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
@@ -196,7 +145,7 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the set was previously large).
     */
-  private[this] def absorb(that: HashSSet[A]): Unit1[A] = {
+  private[this] def absorb(that: HashSSet[A]): Dummy[A] = {
     items = that.items
     buckets = that.buckets
     len = that.len

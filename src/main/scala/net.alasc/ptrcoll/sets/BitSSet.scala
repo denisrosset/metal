@@ -19,22 +19,22 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
   @inline final def nullPtr: Ptr = Ptr(-1)
   def pointer: Ptr = {
     var w = 0
-    while(words(w) == 0L) {
-      if (w == wordSize) return nullPtr
+    while(w < wordSize && words(w) == 0L) {
       w += 1
     }
+    if (w == wordSize) return nullPtr
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
     Ptr(index)
   }
-  def apply(item: Int): Boolean = {
+  final override def contains(item: Int): Boolean = {
     val w = item >>> 3
     val bit = item & 0x7
     w < wordSize && (words(w) & (1 << bit)) != 0
   }
-  def findPointerAt(item: Int): Ptr =
-    if (apply(item)) Ptr(item) else nullPtr
-  def hasAt(ptr: RawPtr): Boolean = ptr >= 0L
-  def next(ptr: RawPtr): RawPtr = {
+  final def findPointerAt(item: Int): Ptr =
+    if (contains(item)) Ptr(item) else nullPtr
+  final def hasAt(ptr: RawPtr): Boolean = ptr >= 0L
+  final def next(ptr: RawPtr): RawPtr = {
     var w = ptr.toInt >>> 3
     var bit = (ptr & 0x7).toInt
     val nextBit = Util.nextBitAfter(words(w), bit)
@@ -48,8 +48,8 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
     Ptr(index)
   }
-  def at(ptr: RawPtr) = ptr.toInt
-  def add(item: Int): Boolean = {
+  final def at(ptr: RawPtr) = ptr.toInt
+  final def add(item: Int): Boolean = {
     val w = item.toInt >>> 3
     val bit = item & 0x7
     if (w >= words.length) {
@@ -62,7 +62,7 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
     wordSize = max(wordSize, w + 1)
     wasThere
   }
-  def remove(item: Int): Boolean = {
+  final override def remove(item: Int): Boolean = {
     val w = item.toInt >>> 3
     val bit = item & 0x7
     if (w >= wordSize) return false
@@ -70,11 +70,12 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
     words(w) -= masked
     masked != 0
   }
-  def removeAt(ptr: Ptr): Ptr = {
+  final override def removeAndAdvance(ptr: ValidPtr): Ptr = {
     val nextPtr = PtrTC.next(ptr)
-    if (hasAt(ptr)) remove(at(ptr))
+    removeAt(ptr)
     nextPtr
   }
+  final def removeAt(ptr: ValidPtr): Unit = remove(ptr.toInt)
   def size: Int = {
     var count = 0
     var w = 0

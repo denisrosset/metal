@@ -36,25 +36,14 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
     sys.error("Should not happen")
   }
 
-  def removeAt(ptr: Ptr): Ptr = {
-    if (hasAt(ptr)) {
-      val pos = ptr.toInt
-      java.lang.System.arraycopy(items, pos + 1, items, pos, size - pos - 1)
-      size -= 1
-    }
+  final override def removeAndAdvance(ptr: ValidPtr): Ptr = {
+    val pos = ptr.toInt
+    java.lang.System.arraycopy(items, pos + 1, items, pos, size - pos - 1)
+    size -= 1
     if (ptr >= size) nullPtr else ptr
   }
 
-  def remove(item: A): Boolean = {
-    val pos = findWhere(item)
-    if (pos >= 0) {
-      java.lang.System.arraycopy(items, pos + 1, items, pos, size - pos - 1)
-      size -= 1
-      true
-    } else false
-  }
-
-  def apply(item: A): Boolean = findWhere(item) >= 0
+  final def removeAt(ptr: ValidPtr): Unit = removeAndAdvance(ptr)
 
   def findPointerAt(item: A): Ptr = {
     val ind = findWhere(item)

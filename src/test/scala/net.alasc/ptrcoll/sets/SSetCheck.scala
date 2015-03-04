@@ -18,12 +18,14 @@ import syntax.all._
 
 import sets._
 
-abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
+abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+
+  implicit def A: Arbitrary[A]
 
   import scala.collection.immutable.Set
 
-  def hybridEq[A](d: SSet[A], s: mutable.Set[A]): Boolean =
+  def hybridEq(d: SSet[A], s: mutable.Set[A]): Boolean =
     d.size == s.size && {
       import d.PtrTC
       var ptr = d.pointer
@@ -35,16 +37,15 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: S
       res
     }
 
-  /*
   property("fromArray") {
     forAll { xs: Array[A] =>
-      val set = PSet.fromArray(xs)
+      val set = factory.fromArray(xs)
       val control = mutable.Set(xs.toSeq: _*)
       hybridEq(set, control) shouldBe true
     }
-  }*/
+  }
 
-  property("fromIterable, apply") {
+  property("Companion.apply") {
     forAll { xs: List[A] =>
 //      val set1 = PSet.fromIterable(xs)
       val set2 = factory(xs: _*)
@@ -64,6 +65,18 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: S
       a.## shouldBe b.##
     }
   }
+
+  property("!equals (==)") {
+    forAll { xs: List[A] =>
+      whenever(xs.nonEmpty) {
+        val a = factory(xs: _*)
+        val b = factory(xs.reverse: _*)
+        b -= xs.head
+        a should not be b
+      }
+    }
+  }
+
 
   /*
   property("copy") {
@@ -95,21 +108,21 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: S
       xs.foreach { x =>
         set += x
         control += x
-        set(x) shouldBe true
+        set.contains(x) shouldBe true
         hybridEq(set, control) shouldBe true
       }
     }
   }
-  /*
 
   property("removing elements (-=)") {
     forAll { xs: Set[A] =>
-      val set = PSet.fromIterable(xs)
+      val set = factory(xs.toSeq: _*)
       val control = mutable.Set(xs.toSeq: _*)
       xs.foreach { x =>
+        set.contains(x) shouldBe true
         set -= x
         control -= x
-        set(x) shouldBe false
+        set.contains(x) shouldBe false
         hybridEq(set, control) shouldBe true
       }
     }
@@ -117,7 +130,7 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: S
 
   property("random += and -=") {
     forAll { (tpls: List[(A, Boolean)]) =>
-      val set = PSet.empty[A]
+      val set = factory.empty[A]
       val control = mutable.Set.empty[A]
       tpls.foreach {
         case (x, true) => set += x; control += x
@@ -126,7 +139,7 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: S
       hybridEq(set, control) shouldBe true
     }
   }
-
+/*
   property("bulk add (++=)") {
     forAll { (xs: List[A], ys: List[A]) =>
       val set = PSet.empty[A]
@@ -264,9 +277,15 @@ abstract class SSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: S
   }*/
 }
 
-class BooleanSSetCheck extends SSetCheck[Boolean, Any, Dummy](HashSSet)
-class IntHashSSetCheck extends SSetCheck[Int, Any, Dummy](HashSSet)
-//class IntBitSSetCheck extends SSetCheck[Int, Int, Dummy](BitSSet)
-class IntSortedSSetCheck extends SSetCheck[Int, Any, Order](SortedSSet)
-class StringHashSSetCheck extends SSetCheck[String, Any, Dummy](HashSSet)
-class StringSortedSSetCheck extends SSetCheck[String, Any, Order](SortedSSet)
+abstract class AutoSSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB) extends SSetCheck[A, LB, Extra](factory) {
+  def A: Arbitrary[A] = implicitly[Arbitrary[A]]
+}
+
+class BooleanSSetCheck extends AutoSSetCheck[Boolean, Any, Dummy](HashSSet)
+class IntHashSSetCheck extends AutoSSetCheck[Int, Any, Dummy](HashSSet)
+class IntBitSSetCheck extends SSetCheck[Int, Int, Dummy](BitSSet) {
+  def A: Arbitrary[Int] = Arbitrary(Gen.choose(0, 1000))
+}
+class IntSortedSSetCheck extends AutoSSetCheck[Int, Any, Order](SortedSSet)
+class StringHashSSetCheck extends AutoSSetCheck[String, Any, Dummy](HashSSet)
+class StringSortedSSetCheck extends AutoSSetCheck[String, Any, Order](SortedSSet)

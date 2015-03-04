@@ -2,13 +2,6 @@ package net.alasc.ptrcoll
 
 import scala.{specialized => sp}
 
-case class PtrCollOverflowError(n: Int) extends Exception("size %s exceeds max" format n)
-class KeyNotFoundException(k: String) extends Exception("key %s was not found" format k)
-
-class Unit1[@sp A]
-
-class Unit2[@sp A, @sp B]
-
 object Util {
   /**
    * Given a number n, this method returns n if n is a power-of-two.

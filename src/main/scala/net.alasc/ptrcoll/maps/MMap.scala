@@ -9,18 +9,9 @@ import spire.util.Opt
 
 import syntax.all._
 
-trait MMapBase[@sp(Int, Long) K] extends Pointable with Findable[K] with Sized { self =>
+trait MMapBase[@sp(Int, Long) K] extends Pointable with KeysRemovable[K] with Sized { self =>
   implicit def ctK: ClassTag[K]
   implicit def PtrTC: HasPtrAt[K, Ptr]
-
-  /** Removes any value associated with key.
-    * 
-    * If there was no previous value, this method does nothing.
-    */
-  def remove(key: K): Unit
-
-  /** Returns whether the key is present in the Map or not. */
-  def contains(key: K): Boolean
 }
 
 trait MMap[@sp(Int, Long) K, V] extends MMapBase[K] { lhs =>
@@ -100,7 +91,6 @@ trait MMap[@sp(Int, Long) K, V] extends MMapBase[K] { lhs =>
     */
   def update(key: K, value: V): Unit
 
-
   /** Returns whether the key is present in the Map with the given value
     * or not.
     */
@@ -108,8 +98,6 @@ trait MMap[@sp(Int, Long) K, V] extends MMapBase[K] { lhs =>
     val ptr = findPointerAt(key)
     if (ptr.hasAt) (ptr.atVal == value) else false
   }
-
-  def contains(key: K): Boolean = findPointerAt(key).hasAt
 
   /** Returns the key's current value in the map, throwing an exception
     * if the key is not found.

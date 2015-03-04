@@ -8,15 +8,8 @@ import spire.algebra.Order
 
 import syntax.all._
 
-trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Sized { lhs =>
+trait SSet[@specialized(Int) A] extends PointableAt[A] with KeysRemovable[A] with Sized { lhs =>
   implicit def ct: ClassTag[A]
-
-  /**
-    * Return whether the item is found in the SSet or not.
-    * 
-    * Performance depends on the underlying implementation.
-    */
-  def apply(item: A): Boolean
 
   /**
     * Adds item to the set.
@@ -26,32 +19,8 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Siz
     */
   def add(item: A): Boolean
 
-  /**
-    * Remove an item from the set.
-    * 
-    * Returns whether the item was originally in the set or not.
-    */
-  def remove(item: A): Boolean
-
-  /** Removes the element pointed by `ptr`, and returns
-    * the next pointer in the iteration. */
-  def removeAt(ptr: Ptr): Ptr
-
   /** Adds item to the set. Calls `add`. */
   def +=(item: A): lhs.type = { add(item); lhs }
-
-  /** Removes item from set. Calls `remove`. */
-  def -=(item: A): lhs.type = { remove(item); lhs }
-
-  def --=(pt: PointableAt[A]): lhs.type = {
-    import pt.{PtrTC => ptPtrTC}
-    var ptr = pt.pointer
-    while (ptr.hasAt) {
-      lhs.remove(ptr.at)
-      ptr = ptr.next
-    }
-    lhs
-  }
 
   override def toString: String = {
     val sb = new StringBuilder
@@ -83,7 +52,7 @@ trait SSet[@specialized(Int) A] extends PointableAt[A] with Findable[A] with Siz
       val s = rhs.asInstanceOf[SSet[A]]
       var p = lhs.pointer
       while (p.hasAt) {
-        if (!s(p.at)) return false
+        if (!s.contains(p.at)) return false
         p = p.next
       }
       true

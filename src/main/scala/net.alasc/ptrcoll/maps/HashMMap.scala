@@ -74,20 +74,11 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
     loop(i, i)
   }
 
-  final def remove(key: K): Unit = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): Unit = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 3 && keys(j) == key) {
-        buckets(j) = 2
-        len -= 1
-      } else if (status == 0) {
-      } else {
-        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      }
-    }
-    val i = key.## & 0x7fffffff
-    loop(i, i)
+  final def removeAt(ptr: ValidPtr): Unit = {
+    val j = ptr.toInt
+    buckets(j) = 2
+    vals(j) = null.asInstanceOf[V]
+    len -= 1
   }
 
   def findPointerAt(key: K): Ptr = {
@@ -139,7 +130,7 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
     * 
     * Growing is an O(n) operation, where n is the map's size.
    */
-  final def grow(): Unit2[K, V] = {
+  final def grow(): Dummy2[K, V] = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
     val map = HashMMap.ofSize[K, V](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
