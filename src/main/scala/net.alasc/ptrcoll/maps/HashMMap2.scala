@@ -11,9 +11,10 @@ import spire.util.Opt
 
 import syntax.all._
 
-trait HashMMap[@sp(Int, Long) K, V] extends MMap[K, V] {
+/** Mutable hash map where values are pairs (V1, V2). */
+trait HashMMap2[@sp(Int, Long) K, V1, V2] extends MMap2[K, V1, V2] {
   protected[ptrcoll] def keys: Array[K]
-  protected[ptrcoll] def vals: Array[V]
+  protected[ptrcoll] def vals: Array[Any]
   protected[ptrcoll] def buckets: Array[Byte]
   protected[ptrcoll] def len: Int
   protected[ptrcoll] def used: Int
@@ -21,11 +22,13 @@ trait HashMMap[@sp(Int, Long) K, V] extends MMap[K, V] {
   protected[ptrcoll] def limit: Int
 }
 
-trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, RawPtr] with HasPtrVal[V, RawPtr] { self =>
+trait HashMMap2Impl[@sp(Int, Long) K, V1, V2] extends HashMMap2[K, V1, V2] with HasPtrAt[K, RawPtr] with HasPtrVal1[V1, RawPtr] with HasPtrVal2[V2, RawPtr] { self =>
   /** Slots for keys. */
   var keys: Array[K]
-  /** Slots for values. */
-  var vals: Array[V]
+  /** Slots for values, used to store alternatively values of type V1 and V2.
+    * Thus vals.length == 2 * keys.length.
+    */
+  var vals: Array[Any]
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
@@ -48,24 +51,27 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
   final override def isEmpty: Boolean = len == 0
   final override def nonEmpty: Boolean = len > 0
 
-  final def update(key: K, value: V): Unit = {
+  final def update(key: K, value1: V1, value2: V2): Unit = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Unit = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) {
         keys(j) = key
-        vals(j) = value
+        vals(2*j) = value1
+        vals(2*j + 1) = value2
         buckets(j) = 3
         len += 1
         used += 1
         if (used > limit) grow()
       } else if (status == 2 && !contains(key)) {
         keys(j) = key
-        vals(j) = value
+        vals(2*j) = value1
+        vals(2*j + 1) = value2
         buckets(j) = 3
         len += 1
       } else if (keys(j) == key) {
-        vals(j) = value
+        vals(2*j) = value1
+        vals(2*j + 1) = value2
       } else {
         loop((i << 2) + i + perturbation + 1, perturbation >> 5)
       }
@@ -77,7 +83,8 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
   final def removeAt(ptr: ValidPtr): Unit = {
     val j = ptr.toInt
     buckets(j) = 2
-    vals(j) = null.asInstanceOf[V]
+    vals(2*j) = null
+    vals(2*j + 1) = null
     len -= 1
   }
 
@@ -103,7 +110,7 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the map was previously large).
     */
-  private[this] def absorb(rhs: HashMMap[K, V]): Unit = {
+  private[this] def absorb(rhs: HashMMap2[K, V1, V2]): Unit = {
     keys = rhs.keys
     vals = rhs.vals
     buckets = rhs.buckets
@@ -130,11 +137,15 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
     * 
     * Growing is an O(n) operation, where n is the map's size.
    */
-  final def grow(): Dummy2[K, V] = {
+  final def grow(): Dummy[K] = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = HashMMap.ofSize[K, V](next)
+    val map = HashMMap2.ofSize[K, V1, V2](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
-      if (buckets(i) == 3) map(keys(i)) = vals(i)
+      if (buckets(i) == 3) {
+        val v1 = vals(2*i).asInstanceOf[V1]
+        val v2 = vals(2*i+1).asInstanceOf[V2]
+        map.update(keys(i), v1, v2)
+      }
     }
     absorb(map)
     null
@@ -155,15 +166,16 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
   }
   def hasAt(ptr: RawPtr): Boolean = ptr != -1
   def at(ptr: RawPtr): K = keys(ptr.toInt)
-  def atVal(ptr: RawPtr): V = vals(ptr.toInt)
+  def atVal1(ptr: RawPtr): V1 = vals(ptr.toInt*2).asInstanceOf[V1]
+  def atVal2(ptr: RawPtr): V2 = vals(ptr.toInt*2+1).asInstanceOf[V2]
 
-  implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr]]
+  implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr]] 
 }
 
-object HashMMap extends MMapFactory[Any, Dummy, Any] {
-  def empty[@sp(Int, Long) K, V](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV: ClassTag[V]): HashMMap[K, V] = ofSize(0)(ctK, d, e, ctV)
+object HashMMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
+  def empty[@sp(Int, Long) K, V1, V2](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV1: ClassTag[V1], ctV2: ClassTag[V2]): HashMMap2[K, V1, V2] = ofSize(0)(ctK, d, e, ctV1, ctV2)
 
-  /*`* Creates a HashMMap that can hold n unique keys without resizing itself.
+  /** Creates a HashMMap that can hold n unique keys without resizing itself.
     *
     * Note that the internal representation will allocate more space
     * than requested to satisfy the requirements of internal
@@ -174,7 +186,7 @@ object HashMMap extends MMapFactory[Any, Dummy, Any] {
     * Example: HashMMap.ofSize[Int, String](100).
     */
 
-  def ofSize[@sp(Int, Long) K: ClassTag: Dummy: KLBEv, V: ClassTag](n: Int): HashMMap[K, V] = ofAllocatedSize(n / 2 * 3)
+  def ofSize[@sp(Int, Long) K: ClassTag: Dummy: KLBEv, V1: ClassTag, V2: ClassTag](n: Int): HashMMap2[K, V1, V2] = ofAllocatedSize(n / 2 * 3)
 
   /** Allocates an empty HashMMap, with underlying storage of size n.
     * 
@@ -182,17 +194,18 @@ object HashMMap extends MMapFactory[Any, Dummy, Any] {
     * underlying array to be. In most cases ofSize() is probably what
     * you want instead.
     */
-  private[ptrcoll] def ofAllocatedSize[@sp(Int, Long) K: ClassTag, V: ClassTag](n: Int) = {
+  private[ptrcoll] def ofAllocatedSize[@sp(Int, Long) K: ClassTag, V1: ClassTag, V2: ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
       case n if n < 0 => throw PtrCollOverflowError(n)
       case 0 => 8
       case n => n
     }
-    new HashMMapImpl[K, V] {
+    new HashMMap2Impl[K, V1, V2] {
       def ctK = implicitly[ClassTag[K]]
-      def ctV = implicitly[ClassTag[V]]
+      def ctV1 = implicitly[ClassTag[V1]]
+      def ctV2 = implicitly[ClassTag[V2]]
       var keys = new Array[K](sz)
-      var vals = new Array[V](sz)
+      var vals = new Array[Any](sz*2)
       var buckets = new Array[Byte](sz)
       var len = 0
       var used = 0
