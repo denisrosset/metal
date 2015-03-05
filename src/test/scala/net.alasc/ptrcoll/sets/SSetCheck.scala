@@ -1,4 +1,5 @@
 package net.alasc.ptrcoll
+package sets
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
@@ -15,8 +16,6 @@ import scala.collection.mutable
 import scala.reflect._
 
 import syntax.all._
-
-import sets._
 
 abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
@@ -78,21 +77,20 @@ abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: SSetFactory[LB, Ext
   }
 
 
-  /*
   property("copy") {
     forAll { xs: List[A] =>
-      val a = PSet.fromIterable(xs)
+      val a = factory(xs: _*)
       val b = a.copy
       a shouldBe b
       xs.foreach { x =>
         a -= x
-        a(x) shouldBe false
-        b(x) shouldBe true
+        a.contains(x) shouldBe false
+        b.contains(x) shouldBe true
         a should not be b
       }
     }
   }
-
+/*
   property("clear") {
     forAll { xs: List[A] =>
       val a = PSet.fromIterable(xs)
@@ -284,7 +282,7 @@ abstract class AutoSSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factor
 class BooleanSSetCheck extends AutoSSetCheck[Boolean, Any, Dummy](HashSSet)
 class IntHashSSetCheck extends AutoSSetCheck[Int, Any, Dummy](HashSSet)
 class IntBitSSetCheck extends SSetCheck[Int, Int, Dummy](BitSSet) {
-  def A: Arbitrary[Int] = Arbitrary(Gen.choose(0, 1000))
+  def A: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
 }
 class IntSortedSSetCheck extends AutoSSetCheck[Int, Any, Order](SortedSSet)
 class StringHashSSetCheck extends AutoSSetCheck[String, Any, Dummy](HashSSet)

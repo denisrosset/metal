@@ -18,6 +18,8 @@ trait MMap[@sp(Int, Long) K, V] extends MMapBase[K] { lhs =>
   implicit def ctV: ClassTag[V]
   implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr]
 
+  def copy: MMap[K, V]
+
   /** Checks if two MMaps are equal.
     * 
     * Equal means the maps have the same types (which is checked
@@ -135,6 +137,8 @@ trait MMap2[@sp(Int, Long) K, V1, V2] extends MMapBase[K] { lhs =>
   implicit def ctV1: ClassTag[V1]
   implicit def ctV2: ClassTag[V2]
   implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr]
+
+  def copy: MMap2[K, V1, V2]
 
   /** Checks if two MMap2 are equal.
     * 

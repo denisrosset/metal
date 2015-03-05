@@ -20,6 +20,8 @@ trait HashMMap2[@sp(Int, Long) K, V1, V2] extends MMap2[K, V1, V2] {
   protected[ptrcoll] def used: Int
   protected[ptrcoll] def mask: Int
   protected[ptrcoll] def limit: Int
+
+  def copy: HashMMap2[K, V1, V2]
 }
 
 trait HashMMap2Impl[@sp(Int, Long) K, V1, V2] extends HashMMap2[K, V1, V2] with HasPtrAt[K, RawPtr] with HasPtrVal1[V1, RawPtr] with HasPtrVal2[V2, RawPtr] { self =>
@@ -50,6 +52,19 @@ trait HashMMap2Impl[@sp(Int, Long) K, V1, V2] extends HashMMap2[K, V1, V2] with 
   final def size: Int = len
   final override def isEmpty: Boolean = len == 0
   final override def nonEmpty: Boolean = len > 0
+
+  def copy: HashMMap2[K, V1, V2] = new HashMMap2Impl[K, V1, V2] {
+    val ctK = self.ctK
+    val ctV1 = self.ctV1
+    val ctV2 = self.ctV2
+    var keys = self.keys.clone
+    var vals = self.vals.clone
+    var buckets = self.buckets.clone
+    var len = self.len
+    var used = self.used
+    var mask = self.mask
+    var limit = self.limit
+  }
 
   final def update(key: K, value1: V1, value2: V2): Unit = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Unit = {

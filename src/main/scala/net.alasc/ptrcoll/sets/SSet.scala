@@ -11,6 +11,8 @@ import syntax.all._
 trait SSet[@specialized(Int) A] extends PointableAt[A] with KeysRemovable[A] with Sized { lhs =>
   implicit def ct: ClassTag[A]
 
+  def copy: SSet[A]
+
   /**
     * Adds item to the set.
     * 

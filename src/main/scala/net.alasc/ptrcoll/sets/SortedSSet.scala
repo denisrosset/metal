@@ -10,11 +10,19 @@ import syntax.all._
 
 trait SortedSSet[@specialized(Int) A] extends SSet[A] { self =>
   implicit def order: Order[A]
+  def copy: SortedSSet[A]
 }
 
 trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAtImpl[A] { self =>
   var items: Array[A]
   var size: Int
+
+  def copy: SortedSSet[A] = new SortedSSetImpl[A] {
+    val order = self.order
+    val ct = self.ct
+    var items = self.items.clone
+    var size = self.size
+  }
 
   protected def findWhere(item: A): Int = {
     var lb = 0

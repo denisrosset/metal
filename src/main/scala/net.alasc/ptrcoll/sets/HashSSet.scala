@@ -17,6 +17,8 @@ trait HashSSet[@specialized(Int) A] extends SSet[A] {
   protected[ptrcoll] def used: Int
   protected[ptrcoll] def mask: Int
   protected[ptrcoll] def limit: Int
+
+  def copy: HashSSet[A]
 }
 
 trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl[A] { self =>
@@ -41,6 +43,16 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
   var limit: Int
 
   // SSet implementation
+
+  def copy: HashSSet[A] = new HashSSetImpl[A] {
+    val ct = self.ct
+    var items = self.items.clone
+    var buckets = self.buckets.clone
+    var len = self.len
+    var used = self.len
+    var mask = self.mask
+    var limit = self.limit
+  }
 
   def size = len
 

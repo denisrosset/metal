@@ -9,6 +9,7 @@ import spire.algebra.Order
 trait BitSSet[@sp(Int) A] extends SortedSSet[A] {
   def order: Order[A]
   def words: Array[Long]
+  def copy: BitSSet[A]
 }
 
 trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
@@ -16,6 +17,12 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
   def ct = classTag[Int]
   var words: Array[Long]
   var wordSize: Int
+
+  def copy: BitSSet[Int] = new BitSSetImpl {
+    var words = self.words.clone
+    var wordSize = self.wordSize
+  }
+
   @inline final def nullPtr: Ptr = Ptr(-1)
   def pointer: Ptr = {
     var w = 0
@@ -41,10 +48,10 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
     if (nextBit >= 0) return (ptr - bit + nextBit)
     w += 1
     if (w == wordSize) return nullPtr
-    while(words(w) == 0L) {
-      if (w == wordSize) return nullPtr
+    while(w < wordSize && words(w) == 0L) {
       w += 1
     }
+    if (w == wordSize) return nullPtr
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
     Ptr(index)
   }
@@ -79,7 +86,7 @@ trait BitSSetImpl extends BitSSet[Int] with PointableAtImpl[Int] { self =>
   def size: Int = {
     var count = 0
     var w = 0
-    while (w < wordSize) {
+    while(w < wordSize) {
       count += java.lang.Long.bitCount(words(w))
       w += 1
     }

@@ -19,6 +19,8 @@ trait HashMMap[@sp(Int, Long) K, V] extends MMap[K, V] {
   protected[ptrcoll] def used: Int
   protected[ptrcoll] def mask: Int
   protected[ptrcoll] def limit: Int
+
+  def copy: HashMMap[K, V]
 }
 
 trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, RawPtr] with HasPtrVal[V, RawPtr] { self =>
@@ -47,6 +49,18 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
   final def size: Int = len
   final override def isEmpty: Boolean = len == 0
   final override def nonEmpty: Boolean = len > 0
+
+  def copy: HashMMap[K, V] = new HashMMapImpl[K, V] {
+    val ctK = self.ctK
+    val ctV = self.ctV
+    var keys = self.keys.clone
+    var vals = self.vals.clone
+    var buckets = self.buckets.clone
+    var len = self.len
+    var used = self.used
+    var mask = self.mask
+    var limit = self.limit
+  }
 
   final def update(key: K, value: V): Unit = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Unit = {
