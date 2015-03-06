@@ -118,7 +118,28 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
       hybridEq(map, control) shouldBe true
     }
   }
-/*
+
+  property("pointer iteration") {
+    forAll { (kvs: Map[K, V]) =>
+      import syntax.all._
+      val map1 = factory.fromMap(kvs)
+      val map2 = factory.empty[K, V]
+      import map1.PtrTC
+      var ptr = map1.pointer
+      while (ptr.hasAt) {
+        val k = ptr.at
+        val v = ptr.atVal
+        map2.contains(k) shouldBe false
+        map2(k) = v
+        ptr = ptr.next
+      }
+      map1.size shouldBe kvs.size
+      map2.size shouldBe kvs.size
+      map1 shouldBe map2
+    }
+  }
+
+  /*
   property("foreach") {
     forAll { (kvs: Map[A, B]) =>
       val map1 = DMap.fromIterable(kvs)

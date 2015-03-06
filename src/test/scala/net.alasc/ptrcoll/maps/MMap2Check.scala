@@ -84,6 +84,27 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
     }
   }
 
+  property("pointer iteration") {
+    forAll { (kvs: Map[K, (V1, V2)]) =>
+      import syntax.all._
+      val map1 = factory.fromMap(kvs)
+      val map2 = factory.empty[K, V1, V2]
+      import map1.PtrTC
+      var ptr = map1.pointer
+      while (ptr.hasAt) {
+        val k = ptr.at
+        val v1 = ptr.atVal1
+        val v2 = ptr.atVal2
+        map2.contains(k) shouldBe false
+        map2.update(k, v1, v2)
+        ptr = ptr.next
+      }
+      map1.size shouldBe kvs.size
+      map2.size shouldBe kvs.size
+      map1 shouldBe map2
+    }
+  }
+
   /*
 
   property("copy") {
