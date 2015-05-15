@@ -12,59 +12,42 @@ import spire.util.Opt
 import syntax.all._
 
 /** Mutable hash map where values are pairs (V1, V2). */
-trait HashMMap2[@sp(Int, Long) K, V1, V2] extends MMap2[K, V1, V2] {
-  protected[ptrcoll] def keys: Array[K]
-  protected[ptrcoll] def vals: Array[Any]
-  protected[ptrcoll] def buckets: Array[Byte]
-  protected[ptrcoll] def len: Int
-  protected[ptrcoll] def used: Int
-  protected[ptrcoll] def mask: Int
-  protected[ptrcoll] def limit: Int
-
-  def copy: HashMMap2[K, V1, V2]
-}
-
-trait HashMMap2Impl[@sp(Int, Long) K, V1, V2] extends HashMMap2[K, V1, V2] with HasPtrAt[K, RawPtr] with HasPtrVal1[V1, RawPtr] with HasPtrVal2[V2, RawPtr] { self =>
+class HashMMap2[@sp(Int, Long) K, V1, V2](
   /** Slots for keys. */
-  var keys: Array[K]
+  var keys: Array[K],
   /** Slots for values, used to store alternatively values of type V1 and V2.
     * Thus vals.length == 2 * keys.length.
     */
-  var vals: Array[Any]
+  var vals: Array[Any],
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
     * 2 = once used, now empty but not yet overwritten
     * 3 = used
     */ 
-  var buckets: Array[Byte]
+  var buckets: Array[Byte],
   /** Number of defined slots. */
-  var len: Int
+  var len: Int,
   /** Number of used slots (used >= len). */
-  var used: Int
-
+  var used: Int,
   // hashing internals
   /** size - 1, used for hashing. */
-  var mask: Int
+  var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int
+  var limit: Int)(implicit val ctK: ClassTag[K], val ctV1: ClassTag[V1], val ctV2: ClassTag[V2]) extends MutMMap2[K, V1, V2] with HasPtrAt[K, RawPtr] with HasPtrVal1[V1, RawPtr] with HasPtrVal2[V2, RawPtr] { self =>
 
   final def size: Int = len
   final override def isEmpty: Boolean = len == 0
   final override def nonEmpty: Boolean = len > 0
 
-  def copy: HashMMap2[K, V1, V2] = new HashMMap2Impl[K, V1, V2] {
-    val ctK = self.ctK
-    val ctV1 = self.ctV1
-    val ctV2 = self.ctV2
-    var keys = self.keys.clone
-    var vals = self.vals.clone
-    var buckets = self.buckets.clone
-    var len = self.len
-    var used = self.used
-    var mask = self.mask
-    var limit = self.limit
-  }
+  def copy: HashMMap2[K, V1, V2] = new HashMMap2[K, V1, V2](
+    keys = keys.clone,
+    vals = vals.clone,
+    buckets = buckets.clone,
+    len = len,
+    used = used,
+    mask = mask,
+    limit = limit)
 
   final def update(key: K, value1: V1, value2: V2): Unit = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Unit = {
@@ -94,16 +77,28 @@ trait HashMMap2Impl[@sp(Int, Long) K, V1, V2] extends HashMMap2[K, V1, V2] with 
     val i = key.## & 0x7fffffff
     loop(i, i)
   }
-
-  final def removeAt(ptr: ValidPtr): Unit = {
+  @inline final def remove(key: K): Boolean = {
+    val ptr = findPointerAt(key)
+    if (hasAt(ptr)) {
+      removeAt(ptr.asInstanceOf[ValidPtr])
+      true
+    } else false
+  }
+  @inline final def removeAndAdvance(ptr: ValidPtr): Ptr = {
+    val next = PtrTC.nextPtr(ptr)
+    removeAt(ptr)
+    next
+  }
+  @inline final def -=(key: K): this.type = { remove(key); this }
+  @inline final def removeAt(ptr: ValidPtr): Unit = {
     val j = ptr.toInt
     buckets(j) = 2
     vals(2*j) = null
     vals(2*j + 1) = null
     len -= 1
   }
-
-  def findPointerAt(key: K): Ptr = {
+  @inline final def contains(key: K): Boolean = hasAt(findPointerAt(key))
+  @inline final def findPointerAt(key: K): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
       val status = buckets(j)
@@ -167,27 +162,27 @@ trait HashMMap2Impl[@sp(Int, Long) K, V1, V2] extends HashMMap2[K, V1, V2] with 
   }
 
   @inline final def nullPtr: Ptr = Ptr(-1L)
-  def pointer: Ptr = {
+  @inline final def pointer: Ptr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) Ptr(i) else nullPtr
   }
-
+  @inline final def Ptr(rawPtr: RawPtr): Ptr = rawPtr.asInstanceOf[Ptr]
   // PtrTC implementation
-  def next(ptr: RawPtr): RawPtr = {
+  @inline final def nextPtr(ptr: RawPtr): RawPtr = {
     var i = ptr.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) Ptr(i) else nullPtr
   }
-  def hasAt(ptr: RawPtr): Boolean = ptr != -1
-  def at(ptr: RawPtr): K = keys(ptr.toInt)
-  def atVal1(ptr: RawPtr): V1 = vals(ptr.toInt*2).asInstanceOf[V1]
-  def atVal2(ptr: RawPtr): V2 = vals(ptr.toInt*2+1).asInstanceOf[V2]
+  @inline final def hasAt(ptr: RawPtr): Boolean = ptr != -1
+  @inline final def at(ptr: RawPtr): K = keys(ptr.toInt)
+  @inline final def atVal1(ptr: RawPtr): V1 = vals(ptr.toInt*2).asInstanceOf[V1]
+  @inline final def atVal2(ptr: RawPtr): V2 = vals(ptr.toInt*2+1).asInstanceOf[V2]
 
-  implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr]] 
+  @inline implicit final def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr]]
 }
 
-object HashMMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
+object HashMMap2 extends MutMMap2Factory[Any, Dummy, Any, Any] {
   def empty[@sp(Int, Long) K, V1, V2](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV1: ClassTag[V1], ctV2: ClassTag[V2]): HashMMap2[K, V1, V2] = ofSize(0)(ctK, d, e, ctV1, ctV2)
 
   /** Creates a HashMMap that can hold n unique keys without resizing itself.
@@ -215,17 +210,13 @@ object HashMMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
       case 0 => 8
       case n => n
     }
-    new HashMMap2Impl[K, V1, V2] {
-      def ctK = implicitly[ClassTag[K]]
-      def ctV1 = implicitly[ClassTag[V1]]
-      def ctV2 = implicitly[ClassTag[V2]]
-      var keys = new Array[K](sz)
-      var vals = new Array[Any](sz*2)
-      var buckets = new Array[Byte](sz)
-      var len = 0
-      var used = 0
-      var mask = sz - 1
-      var limit = (sz * 0.65).toInt
-    }
+    new HashMMap2[K, V1, V2](
+      keys = new Array[K](sz),
+      vals = new Array[Any](sz*2),
+      buckets = new Array[Byte](sz),
+      len = 0,
+      used = 0,
+      mask = sz - 1,
+      limit = (sz * 0.65).toInt)
   }
 }

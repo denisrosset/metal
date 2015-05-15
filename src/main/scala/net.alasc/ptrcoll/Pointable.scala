@@ -4,18 +4,18 @@ import scala.annotation.tailrec
 import scala.{specialized => sp}
 
 /** Iterable-like trait for fast unboxed iteration over collections. */
-trait Pointable extends WithPointer {
+trait Pointable[@sp(Int, Long) K] extends WithPointer[K] {
   /** Returns a pointer for this collection instance. */
   def pointer: Ptr
   /** Returns true if the collection is empty, false otherwise. */
-  def isEmpty: Boolean = !PtrTC.hasAt(pointer)
+  def isEmpty: Boolean
   /** Returns true if the collection is non-empty, false otherwise. */
-  def nonEmpty: Boolean = PtrTC.hasAt(pointer)
-}
-
-trait PointableImpl extends Pointable with HasPtr[RawPtr] { self =>
-  def next(ptr: RawPtr): RawPtr
-  def hasAt(ptr: RawPtr): Boolean
-  /** Pointable is its own typeclass (magic!). */
-  def PtrTC: HasPtr[Ptr] = self.asInstanceOf[HasPtr[Ptr]]
+  def nonEmpty: Boolean
+  /**
+    * Return the size of this collection as an Int.
+    * 
+    * Since most collections use arrays, their size is limited to what a 32-bit
+    * signed integer can represent.
+    */
+  def size: Int
 }

@@ -17,7 +17,7 @@ import scala.reflect._
 
 import syntax.all._
 
-abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
+abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: MutSSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   implicit def A: Arbitrary[A]
@@ -31,7 +31,7 @@ abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: SSetFactory[LB, Ext
       var res = true
       while (ptr.hasAt && res) {
         if (!s.contains(ptr.at)) res = false
-        ptr = ptr.next
+        ptr = ptr.nextPtr
       }
       res
     }
@@ -275,7 +275,7 @@ abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: SSetFactory[LB, Ext
   }*/
 }
 
-abstract class AutoSSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: SSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB) extends SSetCheck[A, LB, Extra](factory) {
+abstract class AutoSSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: MutSSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB) extends SSetCheck[A, LB, Extra](factory) {
   def A: Arbitrary[A] = implicitly[Arbitrary[A]]
 }
 

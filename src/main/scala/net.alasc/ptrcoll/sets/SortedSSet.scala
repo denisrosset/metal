@@ -8,28 +8,23 @@ import spire.algebra.Order
 
 import syntax.all._
 
-trait SortedSSet[@specialized(Int) A] extends SSet[A] { self =>
-  implicit def order: Order[A]
-  def copy: SortedSSet[A]
+trait SortedSSet[@specialized(Int) K] extends MutSSet[K] { self =>
+  implicit def orderK: Order[K]
+  def copy: SortedSSet[K]
 }
 
-trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAtImpl[A] { self =>
-  var items: Array[A]
-  var size: Int
+class SortedSSetImpl[@specialized(Int) K](var items: Array[K], var size: Int)(implicit val ctK: ClassTag[K], val orderK: Order[K]) extends SortedSSet[K] with HasPtrAt[K, RawPtr] { self =>
 
-  def copy: SortedSSet[A] = new SortedSSetImpl[A] {
-    val order = self.order
-    val ct = self.ct
-    var items = self.items.clone
-    var size = self.size
-  }
+  @inline final def isEmpty = size == 0
+  @inline final def nonEmpty = size > 0
+  def copy: SortedSSet[K] = new SortedSSetImpl[K](items.clone, size)(ctK, orderK)
 
-  protected def findWhere(item: A): Int = {
+  protected def findWhere(item: K): Int = {
     var lb = 0
     var ub = size
     while (lb < ub) {
       val m = (lb + ub) >>> 1
-      val c = order.compare(items(m), item)
+      val c = orderK.compare(items(m), item)
       if (c == 0) return m
       if (c < 0)
         lb = m + 1
@@ -38,13 +33,26 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
     }
     // now lb == ub
     if (lb == size) return ~size
-    val c = order.compare(items(lb), item)
+    val c = orderK.compare(items(lb), item)
     if (c == 0) return lb
     if (c > 0) return ~lb
     sys.error("Should not happen")
   }
 
-  final override def removeAndAdvance(ptr: ValidPtr): Ptr = {
+  final def contains(item: K) = findWhere(item) >= 0
+
+  final def -=(item: K): this.type = { remove(item); this }
+  final def +=(item: K): this.type = { add(item); this }
+
+  final def remove(item: K): Boolean = {
+    val ptr = findPointerAt(item)
+    if (hasAt(ptr)) {
+      removeAt(ptr.asInstanceOf[ValidPtr])
+      true
+    } else false
+  }
+
+  final def removeAndAdvance(ptr: ValidPtr): Ptr = {
     val pos = ptr.toInt
     java.lang.System.arraycopy(items, pos + 1, items, pos, size - pos - 1)
     size -= 1
@@ -53,17 +61,17 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
 
   final def removeAt(ptr: ValidPtr): Unit = removeAndAdvance(ptr)
 
-  def findPointerAt(item: A): Ptr = {
+  def findPointerAt(item: K): Ptr = {
     val ind = findWhere(item)
     if (ind >= 0) Ptr(ind) else nullPtr
   }
 
-  def add(item: A): Boolean = {
+  def add(item: K): Boolean = {
     val pos = findWhere(item)
     if (pos < 0) {
       val ipos = ~pos
       val newItems = if (size < items.length) items else {
-        val arr = new Array[A](items.length * 2)
+        val arr = new Array[K](items.length * 2)
         java.lang.System.arraycopy(items, 0, arr, 0, ipos)
         arr
       }
@@ -76,30 +84,26 @@ trait SortedSSetImpl[@specialized(Int) A] extends SortedSSet[A] with PointableAt
   }
 
   @inline final def nullPtr: Ptr = Ptr(-1L)
-  def pointer: Ptr = if (size == 0) nullPtr else Ptr(0)
-
+  @inline final def pointer: Ptr = if (size == 0) nullPtr else Ptr(0)
+  @inline final def Ptr(rawPtr: RawPtr) = rawPtr.asInstanceOf[Ptr]
     // hidden by SortedSSet cast
-  def next(ptr: RawPtr) = if (ptr == size - 1) nullPtr else Ptr(ptr + 1)
-  def at(ptr: RawPtr): A = items(ptr.toInt)
-  def hasAt(ptr: RawPtr) = ptr >= 0 && ptr < size
+  @inline final def nextPtr(ptr: RawPtr) = if (ptr == size - 1) nullPtr else Ptr(ptr + 1)
+  @inline final def at(ptr: RawPtr): K = items(ptr.toInt)
+  @inline final def hasAt(ptr: RawPtr) = ptr >= 0 && ptr < size
+
+  @inline final implicit def PtrTC: HasPtrAt[K, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr]]
 }
 
-object SortedSSet extends SSetFactory[Any, Order] {
-  def empty[@sp(Int) A](implicit c: ClassTag[A], ord: Order[A], e: LBEv[A]): SortedSSet[A] = new SortedSSetImpl[A] {
-    def ct = c
-    def order = ord
-    var items = new Array[A](8)
-    var size = 0
-  }
-  def apply[@sp(Int) A](items: A*)(implicit ct: ClassTag[A], ord: Order[A], e: LBEv[A]): SortedSSet[A] = {
-    val s = empty[A](ct, ord, e)
+object SortedSSet extends MutSSetFactory[Any, Order] {
+  def empty[@sp(Int) K](implicit c: ClassTag[K], ord: Order[K], e: LBEv[K]): SortedSSet[K] = new SortedSSetImpl[K](
+    items = new Array[K](8),
+    size = 0)
+  def apply[@sp(Int) K](items: K*)(implicit ct: ClassTag[K], ord: Order[K], e: LBEv[K]): SortedSSet[K] = {
+    val s = empty[K](ct, ord, e)
     items.foreach { a => s += a }
     s
   }
-  def ofSize[@sp(Int) A](n: Int)(implicit c: ClassTag[A], ord: Order[A], e: LBEv[A]): SortedSSet[A] = new SortedSSetImpl[A] {
-    def ct = c
-    def order = ord
-    var items = new Array[A](n)
-    var size = 0
-  }
+  def ofSize[@sp(Int) K](n: Int)(implicit c: ClassTag[K], ord: Order[K], e: LBEv[K]): SortedSSet[K] = new SortedSSetImpl[K](
+    items = new Array[K](n),
+    size = 0)
 }

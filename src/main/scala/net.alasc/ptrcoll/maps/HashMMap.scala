@@ -11,55 +11,60 @@ import spire.util.Opt
 
 import syntax.all._
 
-trait HashMMap[@sp(Int, Long) K, V] extends MMap[K, V] {
-  protected[ptrcoll] def keys: Array[K]
-  protected[ptrcoll] def vals: Array[V]
-  protected[ptrcoll] def buckets: Array[Byte]
-  protected[ptrcoll] def len: Int
-  protected[ptrcoll] def used: Int
-  protected[ptrcoll] def mask: Int
-  protected[ptrcoll] def limit: Int
-
-  def copy: HashMMap[K, V]
-}
-
-trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, RawPtr] with HasPtrVal[V, RawPtr] { self =>
+class HashMMap[@sp(Int, Long) K, V](
   /** Slots for keys. */
-  var keys: Array[K]
+  var keys: Array[K],
   /** Slots for values. */
-  var vals: Array[V]
+  var vals: Array[V],
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
     * 2 = once used, now empty but not yet overwritten
     * 3 = used
     */ 
-  var buckets: Array[Byte]
+  var buckets: Array[Byte],
   /** Number of defined slots. */
-  var len: Int
+  var len: Int,
   /** Number of used slots (used >= len). */
-  var used: Int
-
+  var used: Int,
   // hashing internals
   /** size - 1, used for hashing. */
-  var mask: Int
+  var mask: Int,
   /** Point at which we should grow. */
   var limit: Int
+)(implicit val ctK: ClassTag[K], val ctV: ClassTag[V]) extends MutMMap[K, V] with HasPtrAt[K, RawPtr] with HasPtrVal[V, RawPtr] { self =>
 
-  final def size: Int = len
-  final override def isEmpty: Boolean = len == 0
-  final override def nonEmpty: Boolean = len > 0
+  @inline final def size: Int = len
+  @inline final override def isEmpty: Boolean = len == 0
+  @inline final override def nonEmpty: Boolean = len > 0
 
-  def copy: HashMMap[K, V] = new HashMMapImpl[K, V] {
-    val ctK = self.ctK
-    val ctV = self.ctV
-    var keys = self.keys.clone
-    var vals = self.vals.clone
-    var buckets = self.buckets.clone
-    var len = self.len
-    var used = self.used
-    var mask = self.mask
-    var limit = self.limit
+  def copy: HashMMap[K, V] = new HashMMap[K, V](
+    keys = keys.clone,
+    vals = vals.clone,
+    buckets = buckets.clone,
+    len = len,
+    used = used,
+    mask = mask,
+    limit = limit)
+
+  @inline final def getOrElse(key: K, fallback: V): V = {
+    val ptr = findPointerAt(key)
+    if (ptr.hasAt) ptr.atVal else fallback
+  }
+
+  @inline final def containsItem(key: K, value: V): Boolean = {
+    val ptr = findPointerAt(key)
+    if (ptr.hasAt) (ptr.atVal == value) else false
+  }
+
+  @inline final def apply(key: K): V = {
+    val ptr = findPointerAt(key)
+    if (ptr.hasAt) ptr.atVal else throw new KeyNotFoundException(key.toString)
+  }
+
+  @inline final def get(key: K): Opt[V] = {
+    val ptr = findPointerAt(key)
+    if (ptr.hasAt) Opt(ptr.atVal) else Opt.empty[V]
   }
 
   final def update(key: K, value: V): Unit = {
@@ -88,14 +93,28 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
     loop(i, i)
   }
 
+  @inline final def remove(key: K): Boolean = {
+    val ptr = findPointerAt(key)
+    if (hasAt(ptr)) {
+      removeAt(ptr.asInstanceOf[ValidPtr])
+      true
+    } else false
+  }
+  @inline final def removeAndAdvance(ptr: ValidPtr): Ptr = {
+    val next = PtrTC.nextPtr(ptr)
+    removeAt(ptr)
+    next
+  }
+  @inline final def -=(key: K): this.type = { remove(key); this }
   final def removeAt(ptr: ValidPtr): Unit = {
     val j = ptr.toInt
     buckets(j) = 2
     vals(j) = null.asInstanceOf[V]
     len -= 1
   }
+  @inline final def contains(key: K): Boolean = hasAt(findPointerAt(key))
 
-  def findPointerAt(key: K): Ptr = {
+  @inline final def findPointerAt(key: K): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
       val status = buckets(j)
@@ -153,28 +172,28 @@ trait HashMMapImpl[@sp(Int, Long) K, V] extends HashMMap[K, V] with HasPtrAt[K, 
     absorb(map)
     null
   }
-
+  @inline final def Ptr(rawPtr: RawPtr): Ptr = rawPtr.asInstanceOf[Ptr]
   @inline final def nullPtr: Ptr = Ptr(-1L)
-  def pointer: Ptr = {
+  @inline final def pointer: Ptr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) Ptr(i) else nullPtr
   }
 
   // PtrTC implementation
-  def next(ptr: RawPtr): RawPtr = {
+  @inline final def nextPtr(ptr: RawPtr): RawPtr = {
     var i = ptr.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) Ptr(i) else nullPtr
   }
-  def hasAt(ptr: RawPtr): Boolean = ptr != -1
-  def at(ptr: RawPtr): K = keys(ptr.toInt)
-  def atVal(ptr: RawPtr): V = vals(ptr.toInt)
+  @inline final def hasAt(ptr: RawPtr): Boolean = ptr != -1
+  @inline final def at(ptr: RawPtr): K = keys(ptr.toInt)
+  @inline final def atVal(ptr: RawPtr): V = vals(ptr.toInt)
 
-  implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr]]
+  @inline final implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr]]
 }
 
-object HashMMap extends MMapFactory[Any, Dummy, Any] {
+object HashMMap extends MutMMapFactory[Any, Dummy, Any] {
   def empty[@sp(Int, Long) K, V](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV: ClassTag[V]): HashMMap[K, V] = ofSize(0)(ctK, d, e, ctV)
 
   /*`* Creates a HashMMap that can hold n unique keys without resizing itself.
@@ -202,16 +221,13 @@ object HashMMap extends MMapFactory[Any, Dummy, Any] {
       case 0 => 8
       case n => n
     }
-    new HashMMapImpl[K, V] {
-      def ctK = implicitly[ClassTag[K]]
-      def ctV = implicitly[ClassTag[V]]
-      var keys = new Array[K](sz)
-      var vals = new Array[V](sz)
-      var buckets = new Array[Byte](sz)
-      var len = 0
-      var used = 0
-      var mask = sz - 1
-      var limit = (sz * 0.65).toInt
-    }
+    new HashMMap[K, V](
+      keys = new Array[K](sz),
+      vals = new Array[V](sz),
+      buckets = new Array[Byte](sz),
+      len = 0,
+      used = 0,
+      mask = sz - 1,
+      limit = (sz * 0.65).toInt)
   }
 }

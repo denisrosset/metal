@@ -11,7 +11,7 @@ object PointableConversions {
 
     def iterator: Iterator[A] = if (p.isEmpty) Iterator.empty else new Iterator[A] {
       private[this] var ptr = p.pointer
-      def hasNext = ptr.next.hasAt
+      def hasNext = ptr.hasAt
       def next: A = {
         val res = ptr.at
         ptr = ptr.next

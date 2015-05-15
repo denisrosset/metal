@@ -2,8 +2,10 @@ package net.alasc.ptrcoll
 
 import scala.annotation.tailrec
 import scala.{specialized => sp}
+import scala.reflect.ClassTag
 
-trait WithPointer {
+trait WithPointer[@sp(Int, Long) K] {
+  implicit def ctK: ClassTag[K]
   /** Tag of this instance, used to select the correct typeclass for
     * the pointer syntax. */
   trait Tag
@@ -11,11 +13,7 @@ trait WithPointer {
   type Ptr = TaggedPtr[Tag]
   type ValidPtr = ValidTaggedPtr[Tag]
   def nullPtr: Ptr
-  final def Ptr(r: RawPtr): Ptr = r.asInstanceOf[Ptr]
+  def Ptr(r: RawPtr): Ptr
   /** Pointer typeclass. */
-  implicit def PtrTC: HasPtr[Ptr]
-}
-
-trait WithPointerAt[@sp(Int) A] extends WithPointer {
-  implicit def PtrTC: HasPtrAt[A, Ptr]
+  implicit def PtrTC: HasPtrAt[K, Ptr]
 }

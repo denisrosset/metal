@@ -20,11 +20,11 @@ object Test extends App {
     var ptr2 = set2.pointer
     while (ptr1.hasAt) {
       println(ptr1.at)
-      ptr1 = ptr1.next
+      ptr1 = ptr1.nextPtr
     }
     while (ptr2.hasAt) {
       println(ptr2.at)
-      ptr2 = ptr2.next
+      ptr2 = ptr2.nextPtr
     }
   }
   def test2: Unit = {
@@ -41,7 +41,7 @@ object Test extends App {
       var ptr = set.pointer
       while (ptr.hasAt) {
         sum += ptr.at
-        ptr = ptr.next
+        ptr = ptr.nextPtr
       }
       loop += 1
     }

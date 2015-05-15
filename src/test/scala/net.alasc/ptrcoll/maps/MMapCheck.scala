@@ -15,7 +15,7 @@ import scala.{specialized => sp}
 
 import spire.util.Opt
 
-abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: ClassTag, VLB](factory: MMapFactory[KLB, KExtra, VLB])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
+abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: ClassTag, VLB](factory: MutMMapFactory[KLB, KExtra, VLB])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
@@ -131,7 +131,7 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
         val v = ptr.atVal
         map2.contains(k) shouldBe false
         map2(k) = v
-        ptr = ptr.next
+        ptr = ptr.nextPtr
       }
       map1.size shouldBe kvs.size
       map2.size shouldBe kvs.size

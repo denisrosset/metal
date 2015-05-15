@@ -10,51 +10,40 @@ import spire.syntax.cfor._
 
 import syntax.all._
 
-trait HashSSet[@specialized(Int) A] extends SSet[A] {
-  protected[ptrcoll] def items: Array[A]
-  protected[ptrcoll] def buckets: Array[Byte]
-  protected[ptrcoll] def len: Int
-  protected[ptrcoll] def used: Int
-  protected[ptrcoll] def mask: Int
-  protected[ptrcoll] def limit: Int
 
-  def copy: HashSSet[A]
-}
-
-trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl[A] { self =>
+class HashSSet[@specialized(Int) K](
   /** Slots for items. */
-  var items: Array[A]
+  var items: Array[K],
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
     * 2 = once used, now empty but not yet overwritten
     * 3 = used
     */ 
-  var buckets: Array[Byte]
+  var buckets: Array[Byte],
   /** Number of defined slots. */
-  var len: Int //
+  var len: Int,
   /** Number of used slots (used >= len). */
-  var used: Int
-
+  var used: Int,
   // hashing internals
   /** size - 1, used for hashing. */
-  var mask: Int
+  var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int
-
+  var limit: Int)(implicit val ctK: ClassTag[K]) extends MutSSet[K] with HasPtrAt[K, RawPtr] { self =>
   // SSet implementation
 
-  def copy: HashSSet[A] = new HashSSetImpl[A] {
-    val ct = self.ct
-    var items = self.items.clone
-    var buckets = self.buckets.clone
-    var len = self.len
-    var used = self.len
-    var mask = self.mask
-    var limit = self.limit
-  }
+  @inline final def isEmpty = len == 0
+  @inline final def nonEmpty = !isEmpty
 
-  def size = len
+  def copy: HashSSet[K] = new HashSSet[K](
+    items = items.clone,
+    buckets = buckets.clone,
+    len = len,
+    used = len,
+    mask = mask,
+    limit = limit)
+
+  @inline final def size = len
 
   /**
     * Return whether the item is found in the HashSSet or not.
@@ -62,7 +51,7 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * On average, this is an O(1) operation; the (unlikely) worst-case
     * is O(n).
     */
-  final def findPointerAt(item: A): Ptr = {
+  @inline final def findPointerAt(item: K): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
       val status = buckets(j)
@@ -78,11 +67,30 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     loop(i, i)
   }
 
+  @inline final def remove(key: K): Boolean = {
+    val ptr = findPointerAt(key)
+    if (hasAt(ptr)) {
+      removeAt(ptr.asInstanceOf[ValidPtr])
+      true
+    } else false
+  }
+  final def -=(item: K): this.type = { remove(item); this }
+  final def +=(item: K): this.type = { add(item); this }
+
+  final def removeAndAdvance(ptr: ValidPtr): Ptr = {
+    val next = PtrTC.nextPtr(ptr)
+    removeAt(ptr)
+    next
+  }
+
   final def removeAt(ptr: ValidPtr): Unit = {
     val j = ptr.toInt
     buckets(j) = 2
     len -= 1
   }
+
+  @inline final def contains(key: K): Boolean =
+    hasAt(findPointerAt(key))
 
   /**
     * Adds item to the set.
@@ -93,7 +101,7 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * On average, this is an amortized O(1) operation; the worst-case
     * is O(n), which will occur when the set must be resized.
     */
-  def add(item: A): Boolean = {
+  def add(item: K): Boolean = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Boolean = {
       val j = i & mask
       val status = buckets(j)
@@ -136,9 +144,9 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * 
     * Growing is an O(n) operation, where n is the set's size.
     */
-  final def grow(): Dummy[A] = {
+  final def grow(): Dummy[K] = {
     val next = buckets.length * (if (buckets.length < 10000) 4 else 2)
-    val set = HashSSet.ofAllocatedSize[A](next)
+    val set = HashSSet.ofAllocatedSize[K](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) set += items(i)
     }
@@ -157,7 +165,7 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the set was previously large).
     */
-  private[this] def absorb(that: HashSSet[A]): Dummy[A] = {
+  private[this] def absorb(that: HashSSet[K]): Dummy[K] = {
     items = that.items
     buckets = that.buckets
     len = that.len
@@ -166,29 +174,30 @@ trait HashSSetImpl[@specialized(Int) A] extends HashSSet[A] with PointableAtImpl
     limit = that.limit
     null
   }
-
+  @inline final def Ptr(rawPtr: RawPtr): Ptr = rawPtr.asInstanceOf[Ptr]
   @inline final def nullPtr: Ptr = Ptr(-1L)
   // PtrTC implementation
-  def pointer: Ptr = {
+  @inline final def pointer: Ptr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) Ptr(i) else nullPtr
   }
-  def next(ptr: RawPtr): RawPtr = {
+  @inline final def nextPtr(ptr: RawPtr): RawPtr = {
     var i = ptr.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) Ptr(i) else nullPtr
   }
-  def hasAt(ptr: RawPtr): Boolean = ptr != -1
-  def at(ptr: RawPtr): A = items(ptr.toInt)
+  @inline final def hasAt(ptr: RawPtr): Boolean = ptr != -1
+  @inline final def at(ptr: RawPtr): K = items(ptr.toInt)
+  @inline implicit final def PtrTC: HasPtrAt[K, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr]]
 }
 
-object HashSSet extends SSetFactory[Any, Dummy] {
+object HashSSet extends MutSSetFactory[Any, Dummy] {
   @inline final def startSize = 8
 
-  def empty[@sp(Int) A](implicit ct: ClassTag[A], d: Dummy[A], e: LBEv[A]): HashSSet[A] = ofSize(0)(ct, d, e)
-  def apply[@sp(Int) A](items: A*)(implicit ct: ClassTag[A], d: Dummy[A], e: LBEv[A]): HashSSet[A] = {
-    val s = ofSize[A](items.size)(ct, d, e)
+  def empty[@sp(Int) K](implicit ct: ClassTag[K], d: Dummy[K], e: LBEv[K]): HashSSet[K] = ofSize(0)(ct, d, e)
+  def apply[@sp(Int) K](items: K*)(implicit ct: ClassTag[K], d: Dummy[K], e: LBEv[K]): HashSSet[K] = {
+    val s = ofSize[K](items.size)(ct, d, e)
     items.foreach { a => s += a }
     s
   }
@@ -199,7 +208,7 @@ object HashSSet extends SSetFactory[Any, Dummy] {
     * This method is useful if you know you'll be adding a large number
     * of elements in advance and you want to save a few resizes.
     */
-  def ofSize[@sp(Int) A: ClassTag: Dummy: LBEv](n: Int) =
+  def ofSize[@sp(Int) K: ClassTag: Dummy: LBEv](n: Int) =
     ofAllocatedSize(n / 2 * 3)
 
   /**
@@ -209,20 +218,18 @@ object HashSSet extends SSetFactory[Any, Dummy] {
     * underlying array to be. In most cases ofSize() is probably what
     * you want instead.
     */
-  private[ptrcoll] def ofAllocatedSize[@sp(Int) A: ClassTag](n: Int) = {
+  private[ptrcoll] def ofAllocatedSize[@sp(Int) K: ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
       case n if n < 0 => throw PtrCollOverflowError(n)
       case 0 => 8
       case n => n
     }
-    new HashSSetImpl[A] {
-      def ct = implicitly[ClassTag[A]]
-      var items = new Array[A](sz)
-      var buckets = new Array[Byte](sz)
-      var len = 0
-      var used = 0
-      var mask = sz - 1
-      var limit = (sz * 0.65).toInt
-    }
+    new HashSSet[K](
+      items = new Array[K](sz),
+      buckets = new Array[Byte](sz),
+      len = 0,
+      used = 0,
+      mask = sz - 1,
+      limit = (sz * 0.65).toInt)
   }
 }
