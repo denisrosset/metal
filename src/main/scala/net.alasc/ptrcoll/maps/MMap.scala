@@ -3,15 +3,14 @@ package maps
 
 import scala.{specialized => sp}
 import scala.reflect.ClassTag
+import scala.annotation.tailrec
 
 import spire.algebra.Order
 import spire.util.Opt
 
-import syntax.all._
-
-trait MMap[@sp(Int, Long) K, V] extends Keyed[K] { lhs => 
+trait MMap[@sp(Int, Long) K, V] extends Searchable[K] with Countable with PointableValues[V] { lhs =>
+  implicit def ctK: ClassTag[K]
   implicit def ctV: ClassTag[V]
-  implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr]
 
   def copy: MMap[K, V]
 
@@ -24,56 +23,32 @@ trait MMap[@sp(Int, Long) K, V] extends Keyed[K] { lhs =>
     *  will return false.
     */
   override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: MMap[_, _] =>
-      if (lhs.size != rhs.size || lhs.ctK != rhs.ctK || lhs.ctV != rhs.ctV) return false
-      val m: MMap[K, V] = rhs.asInstanceOf[MMap[K, V]]
-      import m.{PtrTC => mTC}
-      var p = lhs.pointer
-      while (p.hasAt) {
-        val k = p.at
-        val v = p.atVal
-        val rhsPtr = m.findPointerAt(k)
-        if (!rhsPtr.hasAt) return false
-        if (rhsPtr.atVal != v) return false
-        p = p.nextPtr
-      }
-      true
+    case rhs: MMap[K, V] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV == rhs.ctV => MMap.isSubset(lhs, rhs)(lhs.ptrStart)
     case _ => false
   }
-
   /** Hashes the contents of the map to an Int value.
     * 
     * By xor'ing all the map's keys and values together, we can be sure
     * that maps with the same contents will have the same hashCode
     * regardless of the order those items appear.
     */
-  override def hashCode: Int = {
-    var hash: Int = 0xDEADD065
-    var p = lhs.pointer
-    while (p.hasAt) {
-      val k = p.at
-      val v = p.atVal
-      hash ^= (k.## ^ v.##)
-      p = p.nextPtr
-    }
-    hash
-  }
+  override def hashCode: Int = MMap.hash(lhs)(ptrStart, 0xDEADD065)
 
   /** Returns a string representation of the contents of the map.
     */
   override def toString: String = {
     val sb = new StringBuilder
     sb.append("MMap(")
-    var prefix = ""
-    var p = pointer
-    while (p.hasAt) {
-      sb.append(prefix)
-      prefix = ", "
-      sb.append(p.at.toString)
-      sb.append(" -> ")
-      sb.append(p.atVal.toString)
-      p = p.nextPtr
+    @tailrec def rec(p: Ptr, prefix: String): Unit = p match {
+      case Valid(vp) =>
+        sb.append(prefix)
+        sb.append(ptrKey(vp).toString)
+        sb.append(" -> ")
+        sb.append(ptrVal(vp).toString)
+        rec(ptrNext(vp), ", ")
+      case _ =>
     }
+    rec(ptrStart, "")
     sb.append(")")
     sb.toString
   }
@@ -106,7 +81,7 @@ trait MMap[@sp(Int, Long) K, V] extends Keyed[K] { lhs =>
   def get(key: K): Opt[V]
 }
 
-trait MutMMap[@sp(Int, Long) K, V] extends MMap[K, V] with MutKeyed[K] { lhs =>
+trait MutMMap[@sp(Int, Long) K, V] extends MMap[K, V] with Removable[K] { lhs =>
   def copy: MutMMap[K, V]
 
   /** Stores the value `value` for the key `key`.
@@ -118,4 +93,24 @@ trait MutMMap[@sp(Int, Long) K, V] extends MMap[K, V] with MutKeyed[K] { lhs =>
     * be invoked as map.update(key, value).
     */
   def update(key: K, value: V): Unit
+}
+
+object MMap {
+  @inline @tailrec final def isSubset[@sp(Int, Long) K, V](lm: MMap[K, V], rm: MMap[K, V])(lp: lm.Ptr): Boolean = lp.asInstanceOf[lm.Ptr] match {
+    case Valid(lvp) =>
+      val k = lm.ptrKey(lvp)
+      rm.ptrFind(k) match {
+        case Valid(rvp) if lm.ptrVal(lvp) == rm.ptrVal(rvp) => isSubset(lm, rm)(lm.ptrNext(lvp))
+        case _ => false
+      }
+    case _ => true
+  }
+
+  @inline @tailrec final def hash[@sp(Int, Long) K, V](m: MMap[K, V])(p: m.Ptr, h: Int): Int = p.asInstanceOf[m.Ptr] match {
+      case Valid(vp) =>
+        val k = m.ptrKey(vp)
+        val v = m.ptrVal(vp)
+        hash(m)(m.ptrNext(vp), h ^ k.## ^ v.##)
+      case _ => h
+    }
 }

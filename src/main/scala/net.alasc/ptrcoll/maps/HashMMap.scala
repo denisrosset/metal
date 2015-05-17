@@ -9,8 +9,6 @@ import spire.algebra.Order
 import spire.syntax.cfor._
 import spire.util.Opt
 
-import syntax.all._
-
 class HashMMap[@sp(Int, Long) K, V](
   /** Slots for keys. */
   var keys: Array[K],
@@ -32,7 +30,7 @@ class HashMMap[@sp(Int, Long) K, V](
   var mask: Int,
   /** Point at which we should grow. */
   var limit: Int
-)(implicit val ctK: ClassTag[K], val ctV: ClassTag[V]) extends MutMMap[K, V] with HasPtrAt[K, RawPtr] with HasPtrVal[V, RawPtr] { self =>
+)(implicit val ctK: ClassTag[K], val ctV: ClassTag[V]) extends MutMMap[K, V] { self =>
 
   @inline final def size: Int = len
   @inline final override def isEmpty: Boolean = len == 0
@@ -47,24 +45,24 @@ class HashMMap[@sp(Int, Long) K, V](
     mask = mask,
     limit = limit)
 
-  @inline final def getOrElse(key: K, fallback: V): V = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) ptr.atVal else fallback
+  @inline final def getOrElse(key: K, fallback: V): V = ptrFind(key) match {
+    case Valid(vp) => ptrVal(vp)
+    case _ => fallback
   }
 
-  @inline final def containsItem(key: K, value: V): Boolean = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) (ptr.atVal == value) else false
+  @inline final def containsItem(key: K, value: V): Boolean = ptrFind(key) match {
+    case Valid(vp) if ptrVal(vp) == value => true
+    case _ => false
   }
 
-  @inline final def apply(key: K): V = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) ptr.atVal else throw new KeyNotFoundException(key.toString)
+  @inline final def apply(key: K): V = ptrFind(key) match {
+    case Valid(vp) => ptrVal(vp)
+    case _ => throw new KeyNotFoundException(key.toString)
   }
 
-  @inline final def get(key: K): Opt[V] = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) Opt(ptr.atVal) else Opt.empty[V]
+  @inline final def get(key: K): Opt[V] = ptrFind(key) match {
+    case Valid(vp) => Opt(ptrVal(vp))
+    case _ => Opt.empty[V]
   }
 
   final def update(key: K, value: V): Unit = {
@@ -93,33 +91,36 @@ class HashMMap[@sp(Int, Long) K, V](
     loop(i, i)
   }
 
-  @inline final def remove(key: K): Boolean = {
-    val ptr = findPointerAt(key)
-    if (hasAt(ptr)) {
-      removeAt(ptr.asInstanceOf[ValidPtr])
+  @inline final def remove(key: K): Boolean = ptrFind(key) match {
+    case Valid(vp) =>
+      ptrRemove(vp)
       true
-    } else false
+    case _ => false
   }
-  @inline final def removeAndAdvance(ptr: ValidPtr): Ptr = {
-    val next = PtrTC.nextPtr(ptr)
-    removeAt(ptr)
+
+  @inline final def ptrRemoveAndAdvance(ptr: ValidPtr): Ptr = {
+    val next = ptrNext(ptr)
+    ptrRemove(ptr)
     next
   }
+
   @inline final def -=(key: K): this.type = { remove(key); this }
-  final def removeAt(ptr: ValidPtr): Unit = {
-    val j = ptr.toInt
+
+  final def ptrRemove(ptr: ValidPtr): Unit = {
+    val j = ptr.v.toInt
     buckets(j) = 2
     vals(j) = null.asInstanceOf[V]
     len -= 1
   }
-  @inline final def contains(key: K): Boolean = hasAt(findPointerAt(key))
 
-  @inline final def findPointerAt(key: K): Ptr = {
+  @inline final def contains(key: K): Boolean = ptrFind(key).nonNull
+
+  @inline final def ptrFind(key: K): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) nullPtr
-      else if (status == 3 && keys(j) == key) Ptr(j)
+      if (status == 0) ptrNull
+      else if (status == 3 && keys(j) == key) ValidPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = key.## & 0x7fffffff
@@ -172,25 +173,20 @@ class HashMMap[@sp(Int, Long) K, V](
     absorb(map)
     null
   }
-  @inline final def Ptr(rawPtr: RawPtr): Ptr = rawPtr.asInstanceOf[Ptr]
-  @inline final def nullPtr: Ptr = Ptr(-1L)
-  @inline final def pointer: Ptr = {
+  @inline final def ptrNull: Ptr = NullPtr[Tag]
+  @inline final def ptrStart: Ptr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) Ptr(i) else nullPtr
+    if (i < buckets.length) ValidPtr[Tag](i) else NullPtr[Tag]
   }
 
-  // PtrTC implementation
-  @inline final def nextPtr(ptr: RawPtr): RawPtr = {
-    var i = ptr.toInt + 1
+  @inline final def ptrNext(ptr: ValidPtr): Ptr = {
+    var i = ptr.v.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) Ptr(i) else nullPtr
+    if (i < buckets.length) ValidPtr[Tag](i) else NullPtr[Tag]
   }
-  @inline final def hasAt(ptr: RawPtr): Boolean = ptr != -1
-  @inline final def at(ptr: RawPtr): K = keys(ptr.toInt)
-  @inline final def atVal(ptr: RawPtr): V = vals(ptr.toInt)
-
-  @inline final implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal[V, Ptr]]
+  @inline final def ptrKey(ptr: ValidPtr): K = keys(ptr.v.toInt)
+  @inline final def ptrVal(ptr: ValidPtr): V = vals(ptr.v.toInt)
 }
 
 object HashMMap extends MutMMapFactory[Any, Dummy, Any] {

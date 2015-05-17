@@ -8,9 +8,6 @@ import scala.reflect.ClassTag
 import spire.algebra.Order
 import spire.syntax.cfor._
 
-import syntax.all._
-
-
 class HashSSet[@specialized(Int) K](
   /** Slots for items. */
   var items: Array[K],
@@ -29,7 +26,7 @@ class HashSSet[@specialized(Int) K](
   /** size - 1, used for hashing. */
   var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int)(implicit val ctK: ClassTag[K]) extends MutSSet[K] with HasPtrAt[K, RawPtr] { self =>
+  var limit: Int)(implicit val ctK: ClassTag[K]) extends MutSSet[K] { self =>
   // SSet implementation
 
   @inline final def isEmpty = len == 0
@@ -51,46 +48,40 @@ class HashSSet[@specialized(Int) K](
     * On average, this is an O(1) operation; the (unlikely) worst-case
     * is O(n).
     */
-  @inline final def findPointerAt(item: K): Ptr = {
+  @inline final def ptrFind(item: K): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) {
-        nullPtr
-      } else if (status == 3 && items(j) == item) {
-        Ptr(j)
-      } else {
-        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      }
+      if (status == 0) NullPtr[Tag]
+      else if (status == 3 && items(j) == item) ValidPtr[Tag](j)
+      else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = item.## & 0x7fffffff
     loop(i, i)
   }
 
-  @inline final def remove(key: K): Boolean = {
-    val ptr = findPointerAt(key)
-    if (hasAt(ptr)) {
-      removeAt(ptr.asInstanceOf[ValidPtr])
+  @inline final def remove(key: K): Boolean = ptrFind(key) match {
+    case Valid(ptr) =>
+      ptrRemove(ptr)
       true
-    } else false
+    case _ => false
   }
   final def -=(item: K): this.type = { remove(item); this }
   final def +=(item: K): this.type = { add(item); this }
 
-  final def removeAndAdvance(ptr: ValidPtr): Ptr = {
-    val next = PtrTC.nextPtr(ptr)
-    removeAt(ptr)
+  final def ptrRemoveAndAdvance(ptr: ValidPtr): Ptr = {
+    val next = ptrNext(ptr)
+    ptrRemove(ptr)
     next
   }
 
-  final def removeAt(ptr: ValidPtr): Unit = {
-    val j = ptr.toInt
+  final def ptrRemove(ptr: ValidPtr): Unit = {
+    val j = ptr.v.toInt
     buckets(j) = 2
     len -= 1
   }
 
-  @inline final def contains(key: K): Boolean =
-    hasAt(findPointerAt(key))
+  @inline final def contains(key: K): Boolean = ptrFind(key).nonNull
 
   /**
     * Adds item to the set.
@@ -174,22 +165,17 @@ class HashSSet[@specialized(Int) K](
     limit = that.limit
     null
   }
-  @inline final def Ptr(rawPtr: RawPtr): Ptr = rawPtr.asInstanceOf[Ptr]
-  @inline final def nullPtr: Ptr = Ptr(-1L)
-  // PtrTC implementation
-  @inline final def pointer: Ptr = {
+  @inline final def ptrStart: Ptr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) Ptr(i) else nullPtr
+    if (i < buckets.length) ValidPtr[Tag](i) else NullPtr[Tag]
   }
-  @inline final def nextPtr(ptr: RawPtr): RawPtr = {
-    var i = ptr.toInt + 1
+  @inline final def ptrNext(ptr: ValidPtr): Ptr = {
+    var i = ptr.v.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) Ptr(i) else nullPtr
+    if (i < buckets.length) ValidPtr[Tag](i) else NullPtr[Tag]
   }
-  @inline final def hasAt(ptr: RawPtr): Boolean = ptr != -1
-  @inline final def at(ptr: RawPtr): K = items(ptr.toInt)
-  @inline implicit final def PtrTC: HasPtrAt[K, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr]]
+  @inline final def ptrKey(ptr: ValidPtr): K = items(ptr.v.toInt)
 }
 
 object HashSSet extends MutSSetFactory[Any, Dummy] {

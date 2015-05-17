@@ -3,28 +3,36 @@ package maps
 
 import scala.{specialized => sp}
 import scala.reflect.ClassTag
+import scala.annotation.tailrec
 
 import spire.algebra.Order
 import spire.util.Opt
 
-import syntax.all._
+object MMap2 {
+  @inline @tailrec final def isSubset[@sp(Int, Long) K, V1, V2](lm: MMap2[K, V1, V2], rm: MMap2[K, V1, V2])(lp: lm.Ptr): Boolean = lp.asInstanceOf[lm.Ptr] match {
+    case Valid(lvp) =>
+      val k = lm.ptrKey(lvp)
+      rm.ptrFind(k) match {
+        case Valid(rvp) if lm.ptrVal1(lvp) == rm.ptrVal1(rvp) && lm.ptrVal2(lvp) == rm.ptrVal2(rvp) => isSubset(lm, rm)(lm.ptrNext(lvp))
+        case _ => false
+      }
+    case _ => true
+  }
 
-trait MutMMap2[@sp(Int, Long) K, V1, V2] extends MMap2[K, V1, V2] with MutKeyed[K] { lhs =>
-  def copy: MutMMap2[K, V1, V2]
-
-  /** Stores the value `(value1, value2)` for the key `key`.
-    * 
-    * If a previous value was associated with the key,
-    * it is overwritten.
-    * 
-    */
-  def update(key: K, value1: V1, value2: V2): Unit
+  @inline @tailrec final def hash[@sp(Int, Long) K, V1, V2](m: MMap2[K, V1, V2])(p: m.Ptr, h: Int): Int = p.asInstanceOf[m.Ptr] match {
+    case Valid(vp) =>
+      val k = m.ptrKey(vp)
+      val v1 = m.ptrVal1(vp)
+      val v2 = m.ptrVal2(vp)
+      hash(m)(m.ptrNext(vp), h ^ k.## ^ (v1.## * 41 + v2.##))
+    case _ => h
+  }
 }
 
-trait MMap2[@sp(Int, Long) K, V1, V2] extends Keyed[K] { lhs =>
+trait MMap2[@sp(Int, Long) K, V1, V2] extends Searchable[K] with Countable with PointableValues1[V1] with PointableValues2[V2] { lhs =>
+  implicit def ctK: ClassTag[K]
   implicit def ctV1: ClassTag[V1]
   implicit def ctV2: ClassTag[V2]
-  implicit def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr]
 
   def copy: MMap2[K, V1, V2]
 
@@ -37,23 +45,7 @@ trait MMap2[@sp(Int, Long) K, V1, V2] extends Keyed[K] { lhs =>
     *  will return false.
     */
   override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: MMap2[_, _, _] =>
-      if (lhs.size != rhs.size || lhs.ctK != rhs.ctK ||
-        lhs.ctV1 != rhs.ctV1 || lhs.ctV2 != rhs.ctV2) return false
-      val m: MMap2[K, V1, V2] = rhs.asInstanceOf[MMap2[K, V1, V2]]
-      import m.{PtrTC => mTC}
-      var p = lhs.pointer
-      while (p.hasAt) {
-        val k = p.at
-        val v1 = p.atVal1
-        val v2 = p.atVal2
-        val rhsPtr = m.findPointerAt(k)
-        if (!rhsPtr.hasAt) return false
-        if (rhsPtr.atVal1 != v1) return false
-        if (rhsPtr.atVal2 != v2) return false
-        p = p.nextPtr
-      }
-      true
+    case rhs: MMap2[K, V1, V2] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV1 == rhs.ctV1 && lhs.ctV2 == rhs.ctV2 => MMap2.isSubset(lhs, rhs)(lhs.ptrStart)
     case _ => false
   }
 
@@ -63,37 +55,25 @@ trait MMap2[@sp(Int, Long) K, V1, V2] extends Keyed[K] { lhs =>
     * that maps with the same contents will have the same hashCode
     * regardless of the order those items appear.
     */
-  override def hashCode: Int = {
-    var hash: Int = 0xDEADD065
-    var p = lhs.pointer
-    while (p.hasAt) {
-      val k = p.at
-      val v1 = p.atVal1
-      val v2 = p.atVal2
-      hash ^= (k.## ^ (v1.## * 41 + v2.##))
-      p = p.nextPtr
-    }
-    hash
-  }
+  override def hashCode: Int = MMap2.hash(lhs)(ptrStart, 0xDEADD065)
 
   /** Returns a string representation of the contents of the map.
     */
   override def toString: String = {
     val sb = new StringBuilder
     sb.append("MMap(")
-    var prefix = ""
-    var p = pointer
-    while (p.hasAt) {
-      sb.append(prefix)
-      prefix = ", "
-      sb.append(p.at.toString)
+    @tailrec def rec(p: Ptr, prefix: String): Unit = p match {
+      case Valid(vp) =>
+        sb.append(prefix)
+        sb.append(ptrKey(vp).toString)
       sb.append(" -> (")
-      sb.append(p.atVal1.toString)
+      sb.append(ptrVal1(vp).toString)
       sb.append(", ")
-      sb.append(p.atVal2.toString)
-      sb.append(")")
-      p = p.nextPtr
+      sb.append(ptrVal2(vp).toString)
+        sb.append(")")
+        rec(ptrNext(vp), ", ")
     }
+    rec(ptrStart, "")
     sb.append(")")
     sb.toString
   }
@@ -101,25 +81,25 @@ trait MMap2[@sp(Int, Long) K, V1, V2] extends Keyed[K] { lhs =>
   /** Returns whether the key is present in the Map with the given value
     * or not.
     */
-  def containsItem(key: K, value1: V1, value2: V2): Boolean = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) (ptr.atVal1 == value1 && ptr.atVal2 == value2) else false
+  def containsItem(key: K, value1: V1, value2: V2): Boolean = ptrFind(key) match {
+    case Valid(vp) if ptrVal1(vp) == value1 && ptrVal2(vp) == value2 => true
+    case _ => false
   }
 
   /** Returns the key's current value1 in the map, throwing an exception
     * if the key is not found.
     */
-  def apply1(key: K): V1 = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) ptr.atVal1 else throw new KeyNotFoundException(key.toString)
+  def apply1(key: K): V1 = ptrFind(key) match {
+    case Valid(vp) => ptrVal1(vp)
+    case _ => throw new KeyNotFoundException(key.toString)
   }
 
   /** Returns the key's current value1 in the map, throwing an exception
     * if the key is not found.
     */
-  def apply2(key: K): V2 = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) ptr.atVal2 else throw new KeyNotFoundException(key.toString)
+  def apply2(key: K): V2 = ptrFind(key) match {
+    case Valid(vp) => ptrVal2(vp)
+    case _ => throw new KeyNotFoundException(key.toString)
   }
 
   /** Returns the key's current value (1st part) in the map, 
@@ -132,9 +112,9 @@ trait MMap2[@sp(Int, Long) K, V1, V2] extends Keyed[K] { lhs =>
     * In cases where a lazy parameter would be desired, you should use
     * something like: myMap.get1(key).getOrElse(default).
     */
-  def getOrElse1(key: K, fallback1: V1): V1 = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) ptr.atVal1 else fallback1
+  def getOrElse1(key: K, fallback1: V1): V1 = ptrFind(key) match {
+    case Valid(vp) => ptrVal1(vp)
+    case _ => fallback1
   }
 
   /** Returns the key's current value (2nd part) in the map,
@@ -147,24 +127,36 @@ trait MMap2[@sp(Int, Long) K, V1, V2] extends Keyed[K] { lhs =>
     * In cases where a lazy parameter would be desired, you should use
     * something like: myMap.get2(key).getOrElse(default).
     */
-  def getOrElse2(key: K, fallback2: V2): V2 = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) ptr.atVal2 else fallback2
+  def getOrElse2(key: K, fallback2: V2): V2 = ptrFind(key) match {
+    case Valid(vp) => ptrVal2(vp)
+    case _ => fallback2
   }
 
   /** Returns the key's current value (1st part) in the map as an Opt, returning
     * Opt.empty if the key is not found.
     */
-  def get1(key: K): Opt[V1] = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) Opt(ptr.atVal1) else Opt.empty[V1]
+  def get1(key: K): Opt[V1] = ptrFind(key) match {
+    case Valid(vp) => Opt(ptrVal1(vp))
+    case _ => Opt.empty[V1]
   }
 
   /** Returns the key's current value (1st part) in the map as an Opt, returning
     * Opt.empty if the key is not found.
     */
-  def get2(key: K): Opt[V2] = {
-    val ptr = findPointerAt(key)
-    if (ptr.hasAt) Opt(ptr.atVal2) else Opt.empty[V2]
+  def get2(key: K): Opt[V2] = ptrFind(key) match {
+    case Valid(vp) => Opt(ptrVal2(vp))
+    case _ => Opt.empty[V2]
   }
+}
+
+trait MutMMap2[@sp(Int, Long) K, V1, V2] extends MMap2[K, V1, V2] with Removable[K] { lhs =>
+  def copy: MutMMap2[K, V1, V2]
+
+  /** Stores the value `(value1, value2)` for the key `key`.
+    * 
+    * If a previous value was associated with the key,
+    * it is overwritten.
+    * 
+    */
+  def update(key: K, value1: V1, value2: V2): Unit
 }

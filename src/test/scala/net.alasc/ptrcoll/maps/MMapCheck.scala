@@ -12,6 +12,7 @@ import Arbitrary.arbitrary
 import scala.collection.mutable
 import scala.reflect._
 import scala.{specialized => sp}
+import scala.annotation.tailrec
 
 import spire.util.Opt
 
@@ -121,18 +122,18 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
 
   property("pointer iteration") {
     forAll { (kvs: Map[K, V]) =>
-      import syntax.all._
       val map1 = factory.fromMap(kvs)
       val map2 = factory.empty[K, V]
-      import map1.PtrTC
-      var ptr = map1.pointer
-      while (ptr.hasAt) {
-        val k = ptr.at
-        val v = ptr.atVal
-        map2.contains(k) shouldBe false
-        map2(k) = v
-        ptr = ptr.nextPtr
+      @tailrec def rec(p: map1.Ptr): Unit = p match {
+        case Valid(vp) =>
+          val k = map1.ptrKey(vp)
+          val v = map1.ptrVal(vp)
+          map2.contains(k) shouldBe false
+          map2(k) = v
+          rec(map1.ptrNext(vp))
+        case _ =>
       }
+      rec(map1.ptrStart)
       map1.size shouldBe kvs.size
       map2.size shouldBe kvs.size
       map1 shouldBe map2

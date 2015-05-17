@@ -11,45 +11,43 @@ trait BitSSet[@sp(Int) K] extends SortedSSet[K] {
   def copy: BitSSet[K]
 }
 
-class BitSSetImpl(var words: Array[Long], var wordSize: Int) extends BitSSet[Int] with Keyed[Int] with HasPtrAt[Int, RawPtr] { self =>
+class BitSSetImpl(var words: Array[Long], var wordSize: Int) extends BitSSet[Int] {
   def orderK = spire.std.int.IntAlgebra
   def ctK = classTag[Int]
 
   def copy: BitSSet[Int] = new BitSSetImpl(words.clone, wordSize)
 
-  @inline final def nullPtr: Ptr = Ptr(-1)
-  def pointer: Ptr = {
+  def ptrStart: Ptr = {
     var w = 0
     while(w < wordSize && words(w) == 0L) {
       w += 1
     }
-    if (w == wordSize) return nullPtr
+    if (w == wordSize) return NullPtr[Tag]
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
-    Ptr(index)
+    ValidPtr[Tag](index)
   }
   @inline final def contains(item: Int): Boolean = {
     val w = item >>> 3
     val bit = item & 0x7
     w < wordSize && (words(w) & (1 << bit)) != 0
   }
-  final def findPointerAt(item: Int): Ptr =
-    if (contains(item)) Ptr(item) else nullPtr
-  final def hasAt(ptr: RawPtr): Boolean = ptr >= 0L
-  final def nextPtr(ptr: RawPtr): RawPtr = {
-    var w = ptr.toInt >>> 3
-    var bit = (ptr & 0x7).toInt
+  final def ptrFind(item: Int): Ptr =
+    if (contains(item)) ValidPtr[Tag](item) else NullPtr[Tag]
+  final def ptrNext(ptr: ValidPtr): Ptr = {
+    var w = ptr.v.toInt >>> 3
+    var bit = (ptr.v & 0x7).toInt
     val nextBit = Util.nextBitAfter(words(w), bit)
-    if (nextBit >= 0) return (ptr - bit + nextBit)
+    if (nextBit >= 0) return ValidPtr[Tag](ptr.v - bit + nextBit)
     w += 1
-    if (w == wordSize) return nullPtr
+    if (w == wordSize) return NullPtr[Tag]
     while(w < wordSize && words(w) == 0L) {
       w += 1
     }
-    if (w == wordSize) return nullPtr
+    if (w == wordSize) return NullPtr[Tag]
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
-    Ptr(index)
+    ValidPtr[Tag](index)
   }
-  final def at(ptr: RawPtr) = ptr.toInt
+  final def ptrKey(ptr: ValidPtr) = ptr.v.toInt
   final def add(item: Int): Boolean = {
     val w = item.toInt >>> 3
     val bit = item & 0x7
@@ -73,21 +71,12 @@ class BitSSetImpl(var words: Array[Long], var wordSize: Int) extends BitSSet[Int
   }
   final def -=(item: Int): this.type = { remove(item); this }
   final def +=(item: Int): this.type = { add(item); this }
-  final def removeAndAdvance(ptr: ValidPtr): Ptr = {
-    val nextPtr = PtrTC.nextPtr(ptr)
-    removeAt(ptr)
+  final def ptrRemoveAndAdvance(ptr: ValidPtr): Ptr = {
+    val nextPtr = ptrNext(ptr)
+    ptrRemove(ptr)
     nextPtr
   }
-  final def removeAt(ptr: ValidPtr): Unit = remove(ptr.toInt)
-  final def isEmpty: Boolean = {
-    var w = 0
-    while (w < wordSize) {
-      if (words(w) != 0L) return false
-      w += 1
-    }
-    true
-  }
-  final def nonEmpty: Boolean = !isEmpty
+  final def ptrRemove(ptr: ValidPtr): Unit = remove(ptr.v.toInt)
   final def size: Int = {
     var count = 0
     var w = 0
@@ -97,8 +86,15 @@ class BitSSetImpl(var words: Array[Long], var wordSize: Int) extends BitSSet[Int
     }
     count
   }
-  @inline final def Ptr(rawPtr: RawPtr) = rawPtr.asInstanceOf[Ptr]
-  @inline final implicit def PtrTC: HasPtrAt[Int, Ptr] = self.asInstanceOf[HasPtrAt[Int, Ptr]]
+  final def isEmpty: Boolean = {
+    var w = 0
+    while (w < wordSize) {
+      if (words(w) != 0L) return false
+      w += 1
+    }
+    true
+  }
+  final def nonEmpty: Boolean = !isEmpty
 }
 
 object BitSSet extends MutSSetFactory[Int, Dummy] {

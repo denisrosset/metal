@@ -9,8 +9,6 @@ import spire.algebra.Order
 import spire.syntax.cfor._
 import spire.util.Opt
 
-import syntax.all._
-
 /** Mutable hash map where values are pairs (V1, V2). */
 class HashMMap2[@sp(Int, Long) K, V1, V2](
   /** Slots for keys. */
@@ -34,7 +32,7 @@ class HashMMap2[@sp(Int, Long) K, V1, V2](
   /** size - 1, used for hashing. */
   var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int)(implicit val ctK: ClassTag[K], val ctV1: ClassTag[V1], val ctV2: ClassTag[V2]) extends MutMMap2[K, V1, V2] with HasPtrAt[K, RawPtr] with HasPtrVal1[V1, RawPtr] with HasPtrVal2[V2, RawPtr] { self =>
+  var limit: Int)(implicit val ctK: ClassTag[K], val ctV1: ClassTag[V1], val ctV2: ClassTag[V2]) extends MutMMap2[K, V1, V2] {
 
   final def size: Int = len
   final override def isEmpty: Boolean = len == 0
@@ -77,33 +75,32 @@ class HashMMap2[@sp(Int, Long) K, V1, V2](
     val i = key.## & 0x7fffffff
     loop(i, i)
   }
-  @inline final def remove(key: K): Boolean = {
-    val ptr = findPointerAt(key)
-    if (hasAt(ptr)) {
-      removeAt(ptr.asInstanceOf[ValidPtr])
+  @inline final def remove(key: K): Boolean = ptrFind(key) match {
+    case Valid(vp) =>
+      ptrRemove(vp)
       true
-    } else false
+    case _ => false
   }
-  @inline final def removeAndAdvance(ptr: ValidPtr): Ptr = {
-    val next = PtrTC.nextPtr(ptr)
-    removeAt(ptr)
+  @inline final def ptrRemoveAndAdvance(ptr: ValidPtr): Ptr = {
+    val next = ptrNext(ptr)
+    ptrRemove(ptr)
     next
   }
   @inline final def -=(key: K): this.type = { remove(key); this }
-  @inline final def removeAt(ptr: ValidPtr): Unit = {
-    val j = ptr.toInt
+  @inline final def ptrRemove(ptr: ValidPtr): Unit = {
+    val j = ptr.v.toInt
     buckets(j) = 2
     vals(2*j) = null
     vals(2*j + 1) = null
     len -= 1
   }
-  @inline final def contains(key: K): Boolean = hasAt(findPointerAt(key))
-  @inline final def findPointerAt(key: K): Ptr = {
+  @inline final def contains(key: K): Boolean = ptrFind(key).nonNull
+  @inline final def ptrFind(key: K): Ptr = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) nullPtr
-      else if (status == 3 && keys(j) == key) Ptr(j)
+      if (status == 0) NullPtr[Tag]
+      else if (status == 3 && keys(j) == key) ValidPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = key.## & 0x7fffffff
@@ -161,25 +158,19 @@ class HashMMap2[@sp(Int, Long) K, V1, V2](
     null
   }
 
-  @inline final def nullPtr: Ptr = Ptr(-1L)
-  @inline final def pointer: Ptr = {
+  @inline final def ptrStart: Ptr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) Ptr(i) else nullPtr
+    if (i < buckets.length) ValidPtr[Tag](i) else NullPtr[Tag]
   }
-  @inline final def Ptr(rawPtr: RawPtr): Ptr = rawPtr.asInstanceOf[Ptr]
-  // PtrTC implementation
-  @inline final def nextPtr(ptr: RawPtr): RawPtr = {
-    var i = ptr.toInt + 1
+  @inline final def ptrNext(ptr: ValidPtr): Ptr = {
+    var i = ptr.v.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) Ptr(i) else nullPtr
+    if (i < buckets.length) ValidPtr[Tag](i) else NullPtr[Tag]
   }
-  @inline final def hasAt(ptr: RawPtr): Boolean = ptr != -1
-  @inline final def at(ptr: RawPtr): K = keys(ptr.toInt)
-  @inline final def atVal1(ptr: RawPtr): V1 = vals(ptr.toInt*2).asInstanceOf[V1]
-  @inline final def atVal2(ptr: RawPtr): V2 = vals(ptr.toInt*2+1).asInstanceOf[V2]
-
-  @inline implicit final def PtrTC: HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr] = self.asInstanceOf[HasPtrAt[K, Ptr] with HasPtrVal1[V1, Ptr] with HasPtrVal2[V2, Ptr]]
+  @inline final def ptrKey(ptr: ValidPtr): K = keys(ptr.v.toInt)
+  @inline final def ptrVal1(ptr: ValidPtr): V1 = vals(ptr.v.toInt*2).asInstanceOf[V1]
+  @inline final def ptrVal2(ptr: ValidPtr): V2 = vals(ptr.v.toInt*2+1).asInstanceOf[V2]
 }
 
 object HashMMap2 extends MutMMap2Factory[Any, Dummy, Any, Any] {

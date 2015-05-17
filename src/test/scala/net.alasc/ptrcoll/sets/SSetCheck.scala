@@ -14,8 +14,7 @@ import spire.std.any._
 
 import scala.collection.mutable
 import scala.reflect._
-
-import syntax.all._
+import scala.annotation.tailrec
 
 abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: MutSSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
@@ -26,14 +25,15 @@ abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: MutSSetFactory[LB, 
 
   def hybridEq(d: SSet[A], s: mutable.Set[A]): Boolean =
     d.size == s.size && {
-      import d.PtrTC
-      var ptr = d.pointer
-      var res = true
-      while (ptr.hasAt && res) {
-        if (!s.contains(ptr.at)) res = false
-        ptr = ptr.nextPtr
+      @tailrec def rec(p: d.Ptr): Boolean = (p.asInstanceOf[d.Ptr]) match {
+        case Valid(vp) =>
+          if (s.contains(d.ptrKey(vp)))
+            rec(d.ptrNext(vp))
+          else
+            false
+        case _ => true
       }
-      res
+      rec(d.ptrStart)
     }
 
   property("fromArray") {
@@ -99,6 +99,7 @@ abstract class SSetCheck[A: ClassTag, LB, Extra[_]](factory: MutSSetFactory[LB, 
     }
   }
    */
+
   property("adding elements (+=)") {
     forAll { xs: Set[A] =>
       val set = factory.empty[A]

@@ -3,12 +3,11 @@ package sets
 
 import scala.{specialized => sp}
 import scala.reflect.ClassTag
+import scala.annotation.tailrec
 
 import spire.algebra.Order
 
-import syntax.all._
-
-trait SSet[@sp(Int) K] extends Keyed[K] { lhs =>
+trait SSet[@sp(Int) K] extends Countable with Searchable[K] { lhs =>
   implicit def ctK: ClassTag[K]
 
   def copy: SSet[K]
@@ -16,14 +15,14 @@ trait SSet[@sp(Int) K] extends Keyed[K] { lhs =>
   override def toString: String = {
     val sb = new StringBuilder
     sb.append("SSet(")
-    var prefix = ""
-    var p = pointer
-    while(p.hasAt) {
-      sb.append(prefix)
-      sb.append(p.at.toString)
-      prefix = ", "
-      p = p.nextPtr
+    @tailrec def rec(p: Ptr, prefix: String): Unit = p match {
+      case Valid(vp) =>
+        sb.append(prefix)
+        sb.append(ptrKey(vp).toString)
+        rec(ptrNext(vp), ", ")
+      case _ =>
     }
+    rec(ptrStart, "")
     sb.append(")")
     sb.toString
   }
@@ -38,15 +37,16 @@ trait SSet[@sp(Int) K] extends Keyed[K] { lhs =>
     * return false.
     */
   override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: SSet[_] =>
-      if (size != rhs.size || ctK != rhs.ctK) return false
-      val s = rhs.asInstanceOf[SSet[K]]
-      var p = lhs.pointer
-      while (p.hasAt) {
-        if (!s.contains(p.at)) return false
-        p = p.nextPtr
+    case rhs: SSet[K] if size == rhs.size && ctK == rhs.ctK =>
+      @tailrec def rec(lp: Ptr): Boolean = lp match {
+        case Valid(vlp) =>
+          if (rhs.contains(ptrKey(vlp)))
+            rec(ptrNext(vlp))
+          else
+            false
+        case _ => true
       }
-      true
+      rec(lhs.ptrStart)
     case _ => false
   }
 
@@ -60,17 +60,15 @@ trait SSet[@sp(Int) K] extends Keyed[K] { lhs =>
     * This is an O(n) operation.
     */
   override def hashCode: Int = {
-    var hash: Int = 0xDEADD065
-    var p = lhs.pointer
-    while (p.hasAt) {
-      hash ^= p.at.##
-      p = p.nextPtr
+    @tailrec def rec(p: Ptr, h: Int): Int = p match {
+      case Valid(vp) => rec(ptrNext(vp), h ^ ptrKey(vp).##)
+      case _ => h
     }
-    hash
+    rec(ptrStart, 0xDEADD065)
   }
 }
 
-trait MutSSet[@sp(Int) K] extends SSet[K] with MutKeyed[K] { lhs =>
+trait MutSSet[@sp(Int) K] extends SSet[K] with Removable[K] { lhs =>
   /**
     * Adds item to the set.
     * 
