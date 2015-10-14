@@ -4,6 +4,8 @@ import scala.reflect.ClassTag
 
 import spire.algebra.Order
 
+import syntax._
+
 trait SortedSet[K] extends MSet[K] { self =>
   implicit def orderK: Order[K]
   def copy: SortedSet[K]

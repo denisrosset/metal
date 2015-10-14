@@ -4,6 +4,8 @@ import scala.reflect.ClassTag
 
 import spire.syntax.cfor._
 
+import syntax._
+
 trait MSetFactory[LB, Extra[_]] {
 
   type LBEv[A] = A <:< LB

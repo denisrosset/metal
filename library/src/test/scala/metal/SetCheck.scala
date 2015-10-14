@@ -17,6 +17,8 @@ import scala.annotation.tailrec
 
 import metal.{Set => MetalSet}
 
+import syntax._
+
 abstract class SetCheck[A: ClassTag, LB, Extra[_]](factory: MSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 

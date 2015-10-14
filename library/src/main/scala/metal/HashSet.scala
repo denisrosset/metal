@@ -6,6 +6,8 @@ import scala.reflect.ClassTag
 import spire.algebra.Order
 import spire.syntax.cfor._
 
+import syntax._
+
 class HashSet[@specialized(Int) K](
   /** Slots for items. */
   var items: Array[K],

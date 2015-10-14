@@ -16,6 +16,8 @@ import spire.util.Opt
 
 import metal.{Map => MetalMap, Set => MetalSet}
 
+import syntax._
+
 abstract class MapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: ClassTag, VLB](factory: MMapFactory[KLB, KExtra, VLB])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 

@@ -4,6 +4,9 @@ import scala.reflect.ClassTag
 
 import spire.syntax.cfor._
 
+import syntax._
+
+
 trait MMapFactory[KLB, KExtra[_], VLB] {
 
   type KLBEv[K] = K <:< KLB

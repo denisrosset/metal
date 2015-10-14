@@ -4,6 +4,8 @@ import scala.math.max
 import scala.reflect.{ClassTag, classTag}
 import spire.algebra.Order
 
+import syntax._
+
 trait BitSet[K] extends SortedSet[K] {
 
   def words: Array[Long]
