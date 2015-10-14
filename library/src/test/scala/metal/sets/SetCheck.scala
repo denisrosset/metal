@@ -1,5 +1,4 @@
 package metal
-package sets
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
@@ -16,7 +15,7 @@ import scala.collection.mutable
 import scala.reflect._
 import scala.annotation.tailrec
 
-import metal.sets.{Set => MetalSet}
+import metal.{Set => MetalSet}
 
 abstract class SetCheck[A: ClassTag, LB, Extra[_]](factory: MSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {

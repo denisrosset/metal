@@ -31,7 +31,13 @@ object OpsMacrosP {
   def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
     import c.universe._
     val (ev, lhs) = findEvLhs(c)
-    c.Expr[Boolean](q"$lhs.ptrFindP($ev.encode($key))($ev) match { case VPtr(vp) => vp.remove; true; case _ => false }")
+    c.Expr[Boolean](q"""
+$lhs.ptrFindP($ev.encode($key))($ev) match { 
+  case VPtr(vp) => 
+    $lhs.ptrRemove(vp)
+    true
+  case _ => false
+}""")
   }
 
   def -=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
@@ -40,7 +46,7 @@ object OpsMacrosP {
     c.Expr[T](q"""
 $lhs.ptrFindP($ev.encode($key))($ev) match { 
   case VPtr(vp) => 
-    vp.remove
+    $lhs.ptrRemove(vp)
     $lhs
   case _ => 
     $lhs 

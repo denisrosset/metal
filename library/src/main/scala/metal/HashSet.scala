@@ -1,8 +1,6 @@
 package metal
-package sets
 
 import scala.annotation.{switch, tailrec}
-import scala.{specialized => sp}
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
@@ -50,19 +48,30 @@ class HashSet[@specialized(Int) K](
     * On average, this is an O(1) operation; the (unlikely) worst-case
     * is O(n).
     */
-  @inline final def ptrFind(item: K): Ptr[Tag] = {
+  @inline final def ptrFind(key: K): Ptr[Tag] = {
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && items(j) == item) VPtr[Tag](j)
+      else if (status == 3 && items(j) == key) VPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
-    val i = item.## & 0x7fffffff
+    val i = key.## & 0x7fffffff
     loop(i, i)
   }
 
-  @inline final def ptrFindP(key: Long)(implicit ev: Primitive[K]): Ptr[Tag] = ptrFind(ev.decode(key))
+  @inline final def ptrFindP(key: Long)(implicit ev: Primitive[K]): Ptr[Tag] = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
+      val j = i & mask
+      val status = buckets(j)
+      if (status == 0) Ptr.Null[Tag]
+      else if (status == 3 && ev.arrayEqual(items, j, key)) VPtr[Tag](j)
+      else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
+    }
+    val i = ev.hash(key) & 0x7fffffff
+    loop(i, i)
+
+  }
 
   final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
     val next = ptrNext(ptr)
@@ -107,7 +116,36 @@ class HashSet[@specialized(Int) K](
     loop(i, i)
   }
 
-  @inline final def ptrAddKeyP(key: Long)(implicit ev: Primitive[K]): VPtr[Tag] = ptrAddKey(ev.decode(key))
+  @inline final def ptrAddKeyP(key: Long)(implicit ev: Primitive[K]): VPtr[Tag] = {
+    @inline def addHere(j: Int, oldStatus: Int): VPtr[Tag] = {
+      ev.arrayWrite(items, j, key)
+      buckets(j) = 3
+      len += 1
+      if (oldStatus == 0) {
+        used += 1
+        if (used > limit) {
+          grow()
+          ptrFindP(key).get
+        } else VPtr[Tag](j)
+      } else VPtr[Tag](j)
+    }
+
+    @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
+      val j = i & mask
+      val status = buckets(j)
+      if (status == 3) {
+        if (ev.arrayEqual(items, j, key))
+          VPtr[Tag](j)
+        else
+          loop((i << 2) + i + perturbation + 1, perturbation >> 5)
+      } else if (status == 2) ptrFindP(key) match {
+        case VPtr(vp) => vp
+        case _ => addHere(j, status)
+      } else addHere(j, status)
+    }
+    val i = ev.hash(key) & 0x7fffffff
+    loop(i, i)
+  }
 
   /**
     * Grow the underlying array to best accomodate the set's size.
@@ -178,9 +216,9 @@ object HashSet extends MSetFactory[Any, Dummy] {
 
   @inline final def startSize = 8
 
-  def empty[@sp(Int) K](implicit ct: ClassTag[K], d: Dummy[K], e: LBEv[K]): HashSet[K] = ofSize(0)(ct, d, e)
+  def empty[K](implicit ct: ClassTag[K], d: Dummy[K], e: LBEv[K]): HashSet[K] = ofSize(0)(ct, d, e)
 
-  def apply[@sp(Int) K](items: K*)(implicit ct: ClassTag[K], d: Dummy[K], e: LBEv[K]): HashSet[K] = {
+  def apply[K](items: K*)(implicit ct: ClassTag[K], d: Dummy[K], e: LBEv[K]): HashSet[K] = {
     val s = ofSize[K](items.size)(ct, d, e)
     items.foreach { a => s += a }
     s
@@ -193,7 +231,7 @@ object HashSet extends MSetFactory[Any, Dummy] {
     * This method is useful if you know you'll be adding a large number
     * of elements in advance and you want to save a few resizes.
     */
-  def ofSize[@sp(Int) K: ClassTag: Dummy: LBEv](n: Int) =
+  def ofSize[K:ClassTag:Dummy:LBEv](n: Int) =
     ofAllocatedSize(n / 2 * 3)
 
   /**
@@ -203,7 +241,7 @@ object HashSet extends MSetFactory[Any, Dummy] {
     * underlying array to be. In most cases ofSize() is probably what
     * you want instead.
     */
-  private[metal] def ofAllocatedSize[@sp(Int) K: ClassTag](n: Int) = {
+  private[metal] def ofAllocatedSize[K:ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
       case n if n < 0 => throw PtrCollOverflowError(n)
       case 0 => 8

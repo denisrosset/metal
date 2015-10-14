@@ -1,7 +1,5 @@
 package metal
-package sets
 
-import scala.{specialized => sp}
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
 

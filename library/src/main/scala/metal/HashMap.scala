@@ -1,5 +1,4 @@
 package metal
-package maps
 
 import scala.annotation.{switch, tailrec}
 import scala.reflect.ClassTag

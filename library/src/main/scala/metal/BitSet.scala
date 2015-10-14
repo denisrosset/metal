@@ -1,7 +1,5 @@
 package metal
-package sets
 
-import scala.{specialized => sp}
 import scala.math.max
 import scala.reflect.{ClassTag, classTag}
 import spire.algebra.Order

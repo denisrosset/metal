@@ -1,5 +1,4 @@
 package metal
-package maps
 
 import scala.reflect.ClassTag
 import scala.annotation.tailrec

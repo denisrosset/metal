@@ -46,17 +46,27 @@ object Primitive {
     @inline final def decode(l: Long): Int = l.toInt
     @inline final def bytes = 4
   }
-/*
+
   implicit object short extends Primitive[Short] {
+    @inline final def equal(x: Long, y: Long): Boolean = x == y
+    @inline final def hash(x: Long): Int = x.toInt
+    @inline final override def arrayEqual(a: Array[_], i: Int, y: Long): Boolean = a.asInstanceOf[Array[Short]](i) == y.toShort
+    @inline final override def arrayRead(a: Array[_], i: Int): Long = a.asInstanceOf[Array[Short]](i).toLong
+    @inline final override def arrayWrite(a: Array[_], i: Int, l: Long): Unit = { a.asInstanceOf[Array[Short]](i) = l.toShort }
     @inline final def encode(a: Short): Long = a.toLong
     @inline final def decode(l: Long): Short = l.toShort
     @inline final def bytes = 2
   }
 
   implicit object byte extends Primitive[Byte] {
+    @inline final def equal(x: Long, y: Long): Boolean = x == y
+    @inline final def hash(x: Long): Int = x.toInt
+    @inline final override def arrayEqual(a: Array[_], i: Int, y: Long): Boolean = a.asInstanceOf[Array[Byte]](i) == y.toByte
+    @inline final override def arrayRead(a: Array[_], i: Int): Long = a.asInstanceOf[Array[Byte]](i).toLong
+    @inline final override def arrayWrite(a: Array[_], i: Int, l: Long): Unit = { a.asInstanceOf[Array[Byte]](i) = l.toByte }
     @inline final def encode(a: Byte): Long = a.toLong
     @inline final def decode(l: Long): Byte = l.toByte
     @inline final def bytes = 1
-  }*/
+  }
 
 }

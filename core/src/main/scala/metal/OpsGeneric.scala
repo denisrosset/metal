@@ -16,7 +16,7 @@ final class RemovableSearchableOps[K](val lhs: Searchable[K] with Removable[K]) 
     */
   @inline final def remove(key: K): Boolean = lhs.ptrFind(key) match {
     case VPtr(vp) =>
-      vp.remove
+      lhs.ptrRemove(vp)
       true
     case _ => false
   }
@@ -24,7 +24,7 @@ final class RemovableSearchableOps[K](val lhs: Searchable[K] with Removable[K]) 
   /** Removes key from collection. */
   @inline final def -=(key: K): lhs.type = lhs.ptrFind(key) match {
     case VPtr(vp) =>
-      vp.remove
+      lhs.ptrRemove(vp)
       lhs
     case _ => lhs
   }

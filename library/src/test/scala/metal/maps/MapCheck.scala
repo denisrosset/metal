@@ -1,5 +1,4 @@
-package net.alasc.ptrcoll
-package maps
+package metal
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
@@ -11,20 +10,21 @@ import Arbitrary.arbitrary
 
 import scala.collection.mutable
 import scala.reflect._
-import scala.{specialized => sp}
 import scala.annotation.tailrec
 
 import spire.util.Opt
 
-abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: ClassTag, VLB](factory: MutMMapFactory[KLB, KExtra, VLB])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
+import metal.{Map => MetalMap, Set => MetalSet}
+
+abstract class MapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: ClassTag, VLB](factory: MMapFactory[KLB, KExtra, VLB])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
   import scala.collection.immutable.Map
-
-  def hybridEq(d: MMap[K, V], s: mutable.Map[K, V]): Boolean =
+  def hybridEq(d: MetalMap[K, V], s: mutable.Map[K, V]): Boolean =
     d.size == s.size && s.forall { case (k, v) => d.get(k) == Opt(v) }
 
+  /*
   property("fromArrays") {
     forAll { (pairs: List[(K, V)]) =>
       val (ks, vs) = pairs.unzip
@@ -32,16 +32,16 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
       val control = mutable.Map(pairs: _*)
       hybridEq(map, control) shouldBe true
     }
-  }
+  }*/
 
   property("Companion.fromMap") {
     forAll { pairs: List[(K, V)] =>
-      val map = factory.fromMap(pairs.toMap)
+      val mmap = factory.fromMap(pairs.toMap)
       val control = mutable.Map(pairs: _*)
-      hybridEq(map, control) shouldBe true
+      hybridEq(mmap, control) shouldBe true
     }
   }
-
+/*
   property("equals (==), hashCode (##)") {
     forAll { (xs: Map[K, V], ys: Map[K, V]) =>
       val a = factory.fromMap(xs)
@@ -73,6 +73,7 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
       }
     }
   }
+ */
 /*
   property("clear") {
     forAll { kvs: List[(A, B)] =>
@@ -82,6 +83,7 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
     }
   }
  */
+  /*
   property("adding elements (update)") {
     forAll { kvs: Map[K, V] =>
       val map = factory.empty[K, V]
@@ -140,7 +142,6 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
     }
   }
 
-  /*
   property("foreach") {
     forAll { (kvs: Map[A, B]) =>
       val map1 = DMap.fromIterable(kvs)
@@ -232,14 +233,14 @@ abstract class MMapCheck[K: Arbitrary: ClassTag, KLB, KExtra[_], V: Arbitrary: C
    */
 }
 
-class IntIntMMapCheck extends MMapCheck[Int, Any, Dummy, Int, Any](HashMMap)
-class IntBooleanMMapCheck extends MMapCheck[Int, Any, Dummy, Boolean, Any](HashMMap)
-class IntStringMMapCheck extends MMapCheck[Int, Any, Dummy, String, Any](HashMMap)
+class IntIntMapCheck extends MapCheck[Int, Any, Dummy, Int, Any](HashMap)
+class IntBooleanMapCheck extends MapCheck[Int, Any, Dummy, Boolean, Any](HashMap)
+class IntStringMapCheck extends MapCheck[Int, Any, Dummy, String, Any](HashMap)
 
-class LongIntMMapCheck extends MMapCheck[Long, Any, Dummy, Int, Any](HashMMap)
-class LongBooleanMMapCheck extends MMapCheck[Long, Any, Dummy, Boolean, Any](HashMMap)
-class LongStringMMapCheck extends MMapCheck[Long, Any, Dummy, String, Any](HashMMap)
+class LongIntMapCheck extends MapCheck[Long, Any, Dummy, Int, Any](HashMap)
+class LongBooleanMapCheck extends MapCheck[Long, Any, Dummy, Boolean, Any](HashMap)
+class LongStringMapCheck extends MapCheck[Long, Any, Dummy, String, Any](HashMap)
 
-class StringIntMMapCheck extends MMapCheck[String, Any, Dummy, Int, Any](HashMMap)
-class StringBooleanMMapCheck extends MMapCheck[String, Any, Dummy, Boolean, Any](HashMMap)
-class StringStringMMapCheck extends MMapCheck[String, Any, Dummy, String, Any](HashMMap)
+class StringIntMapCheck extends MapCheck[String, Any, Dummy, Int, Any](HashMap)
+class StringBooleanMapCheck extends MapCheck[String, Any, Dummy, Boolean, Any](HashMap)
+class StringStringMapCheck extends MapCheck[String, Any, Dummy, String, Any](HashMap)
