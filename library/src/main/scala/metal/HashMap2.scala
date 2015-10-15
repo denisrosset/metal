@@ -31,7 +31,7 @@ class HashMap2[K, V1, V2](
   /** size - 1, used for hashing. */
   var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int)(implicit val ctK: ClassTag[K], val ctV1: ClassTag[V1], val ctV2: ClassTag[V2]) extends MMap2[K, V1, V2] {
+  var limit: Int)(implicit val ctK: ClassTag[K], val ctV1: ClassTag[V1], val ctV2: ClassTag[V2]) extends Map2[K, V1, V2] {
 
   final def size: Int = len
 
@@ -185,7 +185,7 @@ class HashMap2[K, V1, V2](
 
 }
 
-object HashMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
+object HashMap2 extends Map2Factory[Any, Dummy, Any, Any] {
 
   def empty[K, V1, V2](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV1: ClassTag[V1], ctV2: ClassTag[V2]): HashMap2[K, V1, V2] = ofSize(0)(ctK, d, e, ctV1, ctV2)
 

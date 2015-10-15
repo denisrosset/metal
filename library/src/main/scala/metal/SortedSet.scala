@@ -6,9 +6,17 @@ import spire.algebra.Order
 
 import syntax._
 
-trait SortedSet[K] extends MSet[K] { self =>
+trait ISortedSet[K] extends ISet[K] { self =>
+
+  def copy: ISortedSet[K]
+}
+
+trait SortedSet[K] extends Set[K] with ISortedSet[K] { self =>
+
   implicit def orderK: Order[K]
+
   def copy: SortedSet[K]
+
 }
 
 final class SortedSetImpl[@specialized(Int) K](allocatedSize: Int)(implicit val ctK: ClassTag[K], val orderK: Order[K]) extends SortedSet[K] {
@@ -88,7 +96,7 @@ final class SortedSetImpl[@specialized(Int) K](allocatedSize: Int)(implicit val 
   @inline final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = items.asInstanceOf[Array[L]](ptr.v.toInt)
 }
 
-object SortedSet extends MSetFactory[Any, Order] {
+object SortedSet extends SetFactory[Any, Order] {
   def empty[K](implicit c: ClassTag[K], ord: Order[K], e: LBEv[K]): SortedSet[K] = new SortedSetImpl[K](8)
   def apply[K](items: K*)(implicit ct: ClassTag[K], ord: Order[K], e: LBEv[K]): SortedSet[K] = {
     val s = empty[K](ct, ord, e)

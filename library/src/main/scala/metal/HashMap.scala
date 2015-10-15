@@ -28,7 +28,7 @@ class HashMap[K, V](
   var mask: Int,
   /** Point at which we should grow. */
   var limit: Int
-)(implicit val ctK: ClassTag[K], val ctV: ClassTag[V]) extends MMap[K, V] { self =>
+)(implicit val ctK: ClassTag[K], val ctV: ClassTag[V]) extends Map[K, V] { self =>
 
   @inline final def size: Int = len
 
@@ -175,7 +175,7 @@ class HashMap[K, V](
 
 }
 
-object HashMap extends MMapFactory[Any, Dummy, Any] {
+object HashMap extends MapFactory[Any, Dummy, Any] {
 
   def empty[K, V](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV: ClassTag[V]): HashMap[K, V] = ofSize(0)(ctK, d, e, ctV)
 

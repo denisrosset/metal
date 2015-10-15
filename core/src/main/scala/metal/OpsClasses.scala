@@ -40,6 +40,8 @@ final class AddOps[K, T <: AddKeys[K] with NoValues](val lhs: T) {
 
 }
 
+//final class AppendableOps[V, T <: 
+
 final class SearchableAddOps[K](val lhs: AddKeys[K] with Searchable[K] with NoValues) {
 
   /**

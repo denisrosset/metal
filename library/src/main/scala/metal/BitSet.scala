@@ -108,7 +108,7 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet
 
 }
 
-object BitSet extends MSetFactory[Int, Dummy] {
+object BitSet extends SetFactory[Int, Dummy] {
 
   @inline final def startSize = 2
 

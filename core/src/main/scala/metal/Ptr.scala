@@ -18,9 +18,11 @@ class Ptr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {
 }
 
 object Ptr {
+
   implicit def fromVPtr[T <: Pointable#Tag](vPtr: VPtr[T]): Ptr[T] = new Ptr[T](vPtr.v)
   @inline final def apply[T <: Pointable#Tag](v: Long): Ptr[T] = new Ptr[T](v)
   @inline final def Null[T <: Pointable#Tag]: Ptr[T] = new Ptr[T](-1L)
+
 }
 
 class VPtr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {

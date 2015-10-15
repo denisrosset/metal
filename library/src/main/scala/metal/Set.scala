@@ -5,10 +5,11 @@ import scala.annotation.tailrec
 
 import spire.algebra.Order
 
-trait Set[K] extends Countable with Searchable[K] with NoValues { lhs =>
+/** Immutable set part. */
+trait ISet[K] extends Countable with Searchable[K] with NoValues { lhs =>
   implicit def ctK: ClassTag[K]
 
-  def copy: Set[K]
+  def copy: ISet[K]
 
   override def toString: String = {
     val c = lhs
@@ -36,9 +37,9 @@ trait Set[K] extends Countable with Searchable[K] with NoValues { lhs =>
     * return false.
     */
   override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: Set[K] if size == rhs.size && ctK == rhs.ctK =>
-      val c = lhs.asInstanceOf[Set[K]]
-      val r = rhs.asInstanceOf[Set[K]]
+    case rhs: ISet[K] if size == rhs.size && ctK == rhs.ctK =>
+      val c = lhs.asInstanceOf[ISet[K]]
+      val r = rhs.asInstanceOf[ISet[K]]
       @tailrec def rec(lp: Ptr[c.Tag]): Boolean = lp match {
         case VPtr(vlp) =>
           if (r.ptrFind[K](vlp.key).nonNull)
@@ -70,8 +71,8 @@ trait Set[K] extends Countable with Searchable[K] with NoValues { lhs =>
   }
 }
 
-trait MSet[K] extends Set[K] with Removable[K] with AddKeys[K] { lhs =>
+trait Set[K] extends ISet[K] with Removable[K] with AddKeys[K] { lhs =>
 
-  def copy: MSet[K]
+  def copy: Set[K]
 
 }

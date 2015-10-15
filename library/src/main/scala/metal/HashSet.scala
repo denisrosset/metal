@@ -26,7 +26,7 @@ class HashSet[K](
   /** size - 1, used for hashing. */
   var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int)(implicit val ctK: ClassTag[K]) extends MSet[K] { self =>
+  var limit: Int)(implicit val ctK: ClassTag[K]) extends Set[K] { self =>
 
   // Set implementation
 
@@ -172,7 +172,7 @@ class HashSet[K](
 
 }
 
-object HashSet extends MSetFactory[Any, Dummy] {
+object HashSet extends SetFactory[Any, Dummy] {
 
   @inline final def startSize = 8
 

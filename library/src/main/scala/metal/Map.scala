@@ -6,13 +6,13 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 import spire.util.Opt
 
-trait Map[K, V] extends Searchable[K] with Countable with Values[V] { lhs =>
+trait IMap[K, V] extends Searchable[K] with Countable with Values[V] { lhs =>
 
   implicit def ctK: ClassTag[K]
 
   implicit def ctV: ClassTag[V]
 
-  def copy: Map[K, V]
+  def copy: IMap[K, V]
 
   /** Checks if two Maps are equal.
     * 
@@ -23,7 +23,7 @@ trait Map[K, V] extends Searchable[K] with Countable with Values[V] { lhs =>
     *  will return false.
     */
   override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: Map[K, V] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV == rhs.ctV => Map.isSubset(lhs, rhs)(lhs.ptrStart)
+    case rhs: IMap[K, V] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV == rhs.ctV => Map.isSubset(lhs, rhs)(lhs.ptrStart)
     case _ => false
   }
   /** Hashes the contents of the map to an Int value.
@@ -55,15 +55,15 @@ trait Map[K, V] extends Searchable[K] with Countable with Values[V] { lhs =>
 
 }
 
-trait MMap[K, V] extends Map[K, V] with AddKeys[K] with Removable[K] with Updatable[V] { lhs =>
+trait Map[K, V] extends IMap[K, V] with AddKeys[K] with Removable[K] with Updatable[V] { lhs =>
 
-  def copy: MMap[K, V]
+  def copy: Map[K, V]
 
 }
 
 object Map {
 
-  @inline @tailrec final def isSubset[K, V](lm: Map[K, V], rm: Map[K, V])(lp: Ptr[lm.Tag]): Boolean = lp.asInstanceOf[Ptr[lm.Tag]] match {
+  @inline @tailrec final def isSubset[K, V](lm: IMap[K, V], rm: IMap[K, V])(lp: Ptr[lm.Tag]): Boolean = lp.asInstanceOf[Ptr[lm.Tag]] match {
     case VPtr(lvp) =>
       val k = lm.ptrKey(lvp)
       rm.ptrFind(k) match {
@@ -73,7 +73,7 @@ object Map {
     case _ => true
   }
 
-  @inline @tailrec final def hash[K, V](m: Map[K, V])(p: Ptr[m.Tag], h: Int): Int = p.asInstanceOf[Ptr[m.Tag]] match {
+  @inline @tailrec final def hash[K, V](m: IMap[K, V])(p: Ptr[m.Tag], h: Int): Int = p.asInstanceOf[Ptr[m.Tag]] match {
       case VPtr(vp) =>
         val k = m.ptrKey(vp)
         val v = m.ptrValue(vp)
