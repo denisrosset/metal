@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 
 /** Immutable set part. */
-trait ISet[K] extends Countable with Searchable[K] with NoValues { lhs =>
+trait ISet[K] extends ShapeK with Countable with Searchable[K] { lhs =>
   implicit def ctK: ClassTag[K]
 
   def copy: ISet[K]

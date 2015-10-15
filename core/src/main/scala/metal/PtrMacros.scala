@@ -1,28 +1,10 @@
 package metal
 
-import scala.reflect.macros.whitebox.Context
+import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
+
+import MacroUtils._
 
 object PtrMacros {
-
-  def extract[T](c: Context)(implicit tagT: c.WeakTypeTag[T]): (c.Symbol, c.Type) = {
-    import c.universe._
-    tagT.tpe match {
-      case TypeRef(containerType@SingleType(_, container), _, Nil) => (container, containerType)
-      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
-    }
-  }
-
-  def extractTypeOf[T, TC[_]](c: Context)(implicit tagT: c.WeakTypeTag[T], tc: c.WeakTypeTag[TC[_]]): (c.Symbol, c.Type, c.Type) = {
-    import c.universe._
-    tagT.tpe match {
-      case TypeRef(containerType@SingleType(_, container), _, Nil) =>
-        val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
-        val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
-        val aType: Type = tcTypeParam.asSeenFrom(containerType, tcClass)
-        (container, containerType, aType)
-      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
-    }
-  }
 
   def next[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Ptr[T]] = {
     import c.universe._

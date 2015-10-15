@@ -1,6 +1,6 @@
 package metal
 
-trait Countable extends Nextable {
+trait Countable extends Nextable { // TODO: split Countable into HasStart and Countable
 
   /** Returns a pointer to the start of this collection instance. */
   def ptrStart: Ptr[Tag]

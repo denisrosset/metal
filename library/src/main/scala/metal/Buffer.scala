@@ -1,5 +1,4 @@
 package metal
-package seqs
 
 import scala.reflect.ClassTag
 

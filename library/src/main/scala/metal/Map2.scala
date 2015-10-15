@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 import spire.util.Opt
 
-trait IMap2[K, V1, V2] extends Searchable[K] with Countable with Values1[V1] with Values2[V2] { lhs =>
+trait IMap2[K, V1, V2] extends ShapeKV1V2 with Searchable[K] with Countable with Values1[V1] with Values2[V2] { lhs =>
 
   implicit def ctK: ClassTag[K]
 
