@@ -45,6 +45,7 @@ lazy val commonSettings = Seq(
     "org.scalacheck" %% "scalacheck" % "1.12.1" % "test"
   ),
   scalacOptions ++= Seq(
+//    "-Ymacro-debug-lite",
     "-Yinline-warnings",
     "-deprecation",
     "-unchecked",

@@ -1,5 +1,4 @@
 package metal
-package maps
 
 import scala.annotation.{switch, tailrec}
 import scala.{specialized => sp}
@@ -10,13 +9,13 @@ import spire.syntax.cfor._
 import spire.util.Opt
 
 /** Mutable hash map where values are pairs (V1, V2). */
-class HashMap2[@sp(Int, Long) K, V1, V2](
+class HashMap2[K, V1, V2](
   /** Slots for keys. */
   var keys: Array[K],
-  /** Slots for values, used to store alternatively values of type V1 and V2.
-    * Thus vals.length == 2 * keys.length.
-    */
-  var vals: Array[Any],
+  /** Slots for values of type 1. */
+  var vals1: Array[V1],
+  /** Slots for values of type 2. */
+  var vals2: Array[V2],
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
@@ -42,34 +41,36 @@ class HashMap2[@sp(Int, Long) K, V1, V2](
 
   def copy: HashMap2[K, V1, V2] = new HashMap2[K, V1, V2](
     keys = keys.clone,
-    vals = vals.clone,
+    vals1 = vals1.clone,
+    vals2 = vals2.clone,
     buckets = buckets.clone,
     len = len,
     used = used,
     mask = mask,
     limit = limit)
 
-  final def update(key: K, value1: V1, value2: V2): Unit = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): Unit = {
+  final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
+    val keysL = keys.asInstanceOf[Array[L]]
+    @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) {
-        keys(j) = key
-        vals(2*j) = value1
-        vals(2*j + 1) = value2
+        keysL(j) = key
         buckets(j) = 3
         len += 1
         used += 1
-        if (used > limit) grow()
-      } else if (status == 2 && !contains(key)) {
-        keys(j) = key
-        vals(2*j) = value1
-        vals(2*j + 1) = value2
+        if (used > limit) {
+          grow()
+          val VPtr(vp) = ptrFind[L](key)
+          vp
+        } else VPtr[Tag](j)
+      } else if (status == 2 && ptrFind[L](key).isNull) {
+        keysL(j) = key
         buckets(j) = 3
         len += 1
-      } else if (keys(j) == key) {
-        vals(2*j) = value1
-        vals(2*j + 1) = value2
+        VPtr[Tag](j)
+      } else if (keysL(j) == key) {
+        VPtr[Tag](j)
       } else {
         loop((i << 2) + i + perturbation + 1, perturbation >> 5)
       }
@@ -78,37 +79,27 @@ class HashMap2[@sp(Int, Long) K, V1, V2](
     loop(i, i)
   }
 
-  @inline final def remove(key: K): Boolean = ptrFind(key) match {
-    case VPtr(vp) =>
-      ptrRemove(vp)
-      true
-    case _ => false
-  }
-
-  @inline final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
+  final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
     val next = ptrNext(ptr)
     ptrRemove(ptr)
     next
   }
 
-  @inline final def -=(key: K): this.type = { remove(key); this }
-
-  @inline final def ptrRemove(ptr: VPtr[Tag]): Unit = {
+  final def ptrRemove(ptr: VPtr[Tag]): Unit = {
     val j = ptr.v.toInt
     buckets(j) = 2
-    vals(2*j) = null
-    vals(2*j + 1) = null
+    vals1(j) = null.asInstanceOf[V1]
+    vals2(j) = null.asInstanceOf[V2]
     len -= 1
   }
 
-  @inline final def contains(key: K): Boolean = ptrFind(key).nonNull
-
-  @inline final def ptrFind(key: K): Ptr[Tag] = {
+  final def ptrFind[@specialized L](key: L): Ptr[Tag] = {
+    val keysL = keys.asInstanceOf[Array[L]]
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && keys(j) == key) VPtr[Tag](j)
+      else if (status == 3 && keysL(j) == key) VPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = key.## & 0x7fffffff
@@ -127,7 +118,8 @@ class HashMap2[@sp(Int, Long) K, V1, V2](
     */
   private[this] def absorb(rhs: HashMap2[K, V1, V2]): Unit = {
     keys = rhs.keys
-    vals = rhs.vals
+    vals1 = rhs.vals1
+    vals2 = rhs.vals2
     buckets = rhs.buckets
     len = rhs.len
     used = rhs.used
@@ -151,44 +143,51 @@ class HashMap2[@sp(Int, Long) K, V1, V2](
     * trigger specialization without allocating an actual instance.
     * 
     * Growing is an O(n) operation, where n is the map's size.
-   */
-  final def grow(): Dummy[K] = {
+    */
+  final def grow(): Unit = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
     val map = HashMap2.ofSize[K, V1, V2](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
-        val v1 = vals(2*i).asInstanceOf[V1]
-        val v2 = vals(2*i+1).asInstanceOf[V2]
-        map.update(keys(i), v1, v2)
+        val vp = map.ptrAddKeyFromArray(keys, i)
+        map.ptrUpdate1FromArray(vp, vals1, i)
+        map.ptrUpdate2FromArray(vp, vals2, i)
       }
     }
     absorb(map)
-    null
   }
 
-  @inline final def ptrStart: Ptr[Tag] = {
+  final def ptrStart: Ptr[Tag] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
+  final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
     var i = ptr.v.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrKey(ptr: VPtr[Tag]): K = keys(ptr.v.toInt)
+  final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = keys.asInstanceOf[Array[L]](ptr.v.toInt)
 
-  @inline final def ptrValue1(ptr: VPtr[Tag]): V1 = vals(ptr.v.toInt*2).asInstanceOf[V1]
+  final def ptrValue1[@specialized W1](ptr: VPtr[Tag]): W1 = vals1.asInstanceOf[Array[W1]](ptr.v.toInt)
 
-  @inline final def ptrValue2(ptr: VPtr[Tag]): V2 = vals(ptr.v.toInt*2+1).asInstanceOf[V2]
+  final def ptrValue2[@specialized W2](ptr: VPtr[Tag]): W2 = vals2.asInstanceOf[Array[W2]](ptr.v.toInt)
+
+  final def ptrUpdate1[@specialized W1](ptr: VPtr[Tag], v: W1): Unit = {
+    vals1.asInstanceOf[Array[W1]](ptr.v.toInt) = v
+  }
+
+  final def ptrUpdate2[@specialized W2](ptr: VPtr[Tag], v: W2): Unit = {
+    vals2.asInstanceOf[Array[W2]](ptr.v.toInt) = v
+  }
 
 }
 
 object HashMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
 
-  def empty[@sp(Int, Long) K, V1, V2](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV1: ClassTag[V1], ctV2: ClassTag[V2]): HashMap2[K, V1, V2] = ofSize(0)(ctK, d, e, ctV1, ctV2)
+  def empty[K, V1, V2](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV1: ClassTag[V1], ctV2: ClassTag[V2]): HashMap2[K, V1, V2] = ofSize(0)(ctK, d, e, ctV1, ctV2)
 
   /** Creates a HashMap that can hold n unique keys without resizing itself.
     *
@@ -201,7 +200,7 @@ object HashMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
     * Example: HashMap.ofSize[Int, String](100).
     */
 
-  def ofSize[@sp(Int, Long) K: ClassTag: Dummy: KLBEv, V1: ClassTag, V2: ClassTag](n: Int): HashMap2[K, V1, V2] = ofAllocatedSize(n / 2 * 3)
+  def ofSize[K: ClassTag: Dummy: KLBEv, V1: ClassTag, V2: ClassTag](n: Int): HashMap2[K, V1, V2] = ofAllocatedSize(n / 2 * 3)
 
   /** Allocates an empty HashMap, with underlying storage of size n.
     * 
@@ -209,15 +208,16 @@ object HashMap2 extends MMap2Factory[Any, Dummy, Any, Any] {
     * underlying array to be. In most cases ofSize() is probably what
     * you want instead.
     */
-  private[metal] def ofAllocatedSize[@sp(Int, Long) K: ClassTag, V1: ClassTag, V2: ClassTag](n: Int) = {
+  private[metal] def ofAllocatedSize[K: ClassTag, V1: ClassTag, V2: ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
-      case n if n < 0 => throw PtrCollOverflowError(n)
+      case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }
     new HashMap2[K, V1, V2](
       keys = new Array[K](sz),
-      vals = new Array[Any](sz*2),
+      vals1 = new Array[V1](sz),
+      vals2 = new Array[V2](sz),
       buckets = new Array[Byte](sz),
       len = 0,
       used = 0,

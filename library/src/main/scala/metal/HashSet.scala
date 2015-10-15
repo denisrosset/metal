@@ -84,7 +84,7 @@ class HashSet[K](
       if (oldStatus == 0) {
         used += 1
         if (used > limit) {
-          grow[L]
+          grow()
           ptrFind[L](key).get
         } else VPtr[Tag](j)
       } else VPtr[Tag](j)
@@ -124,17 +124,15 @@ class HashSet[K](
     * 
     * Growing is an O(n) operation, where n is the set's size.
     */
-  final def grow[@specialized L]: Dummy[L] = {
+  final def grow(): Unit = {
     val next = buckets.length * (if (buckets.length < 10000) 4 else 2)
     val set = HashSet.ofAllocatedSize[K](next)
-    val itemsL = items.asInstanceOf[Array[L]]
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
-        set.ptrAddKey[L](itemsL(i))
+        set.ptrAddKeyFromArray(items, i)
       }
     }
     absorb(set)
-    null
   }
 
   /**

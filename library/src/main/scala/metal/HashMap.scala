@@ -56,7 +56,7 @@ class HashMap[K, V](
         len += 1
         used += 1
         if (used > limit) {
-          grow
+          grow()
           val VPtr(vp) = ptrFind[L](key)
           vp
         } else VPtr[Tag](j)
@@ -143,91 +143,19 @@ class HashMap[K, V](
     * 
     * Growing is an O(n) operation, where n is the map's size.
    */
-  final def grow: Unit = ctK match {
-    case DoubleCT => growSpec[Double]
-    case FloatCT => growSpec[Float]
-    case LongCT => growSpec[Long]
-    case IntCT => growSpec[Int]
-    case ShortCT => growSpec[Short]
-    case ByteCT => growSpec[Byte]
-    case BooleanCT => growSpec[Boolean]
-    case _ => growGen
-  }
-
-  final def growSpec[@specialized L]: Dummy[L] = {
-    ctV match {
-      case DoubleCT => growSpecKV[L, Double]
-      case FloatCT => growSpecKV[L, Float]
-      case LongCT => growSpecKV[L, Long]
-      case IntCT => growSpecKV[L, Int]
-      case ShortCT => growSpecKV[L, Short]
-      case ByteCT => growSpecKV[L, Byte]
-      case BooleanCT => growSpecKV[L, Boolean]
-      case _ => growSpecK[L]
-    }
-    null
-  }
-
-  final def growGen: Unit = {
-    ctV match {
-      case DoubleCT => growSpecV[Double]
-      case FloatCT => growSpecV[Float]
-      case LongCT => growSpecV[Long]
-      case IntCT => growSpecV[Int]
-      case ShortCT => growSpecV[Short]
-      case ByteCT => growSpecV[Byte]
-      case BooleanCT => growSpecV[Boolean]
-      case _ => growSpecV[V]
-    }
-  }
-
-  final def growSpecKV[@specialized L, @specialized W](): Dummy2[L, W] = {
+  final def grow(): Unit = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
     val map = HashMap.ofSize[K, V](next)
-    val keysL = keys.asInstanceOf[Array[L]]
-    val valsW = vals.asInstanceOf[Array[W]]
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
-        val vp = map.ptrAddKey[L](keysL(i))
-        map.ptrUpdate[W](vp, valsW(i))
+        val vp = map.ptrAddKeyFromArray(keys, i)
+        map.ptrUpdateFromArray(vp, vals, i)
       }
     }
     absorb(map)
-    null
   }
 
-  final def growSpecK[@specialized L](): Dummy[L] = {
-    val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = HashMap.ofSize[K, V](next)
-    val keysL = keys.asInstanceOf[Array[L]]
-    cfor(0)(_ < buckets.length, _ + 1) { i =>
-      if (buckets(i) == 3) {
-        val vp = map.ptrAddKey[L](keysL(i))
-        map.ptrUpdate[V](vp, vals(i))
-      }
-    }
-    absorb(map)
-    null
-  }
-
-  final def growSpecV[@specialized W](): Dummy[W] = {
-    val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = HashMap.ofSize[K, V](next)
-    val valsW = vals.asInstanceOf[Array[W]]
-    cfor(0)(_ < buckets.length, _ + 1) { i =>
-      if (buckets(i) == 3) {
-        val vp = map.ptrAddKey[K](keys(i))
-        map.ptrUpdate[W](vp, valsW(i))
-      }
-    }
-    absorb(map)
-    null
-  }
-
-
-// TODO: optimize primitives because specialization is all-or-nothing
-
-   final def ptrNull: Ptr[Tag] = Ptr.Null[Tag]
+  final def ptrNull: Ptr[Tag] = Ptr.Null[Tag]
 
   final def ptrStart: Ptr[Tag] = {
     var i = 0
@@ -272,7 +200,7 @@ object HashMap extends MMapFactory[Any, Dummy, Any] {
     */
   private[metal] def ofAllocatedSize[K:ClassTag, V:ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
-      case n if n < 0 =>  sys.error(s"Bad allocated size $n for collection")
+      case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }

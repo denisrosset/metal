@@ -16,12 +16,12 @@ trait MSetFactory[LB, Extra[_]] {
 
   def ofSize[A:ClassTag:Extra:LBEv](n: Int): MSet[A]
 
-/*  def fromArray[A:ClassTag:Extra:LBEv](array: Array[A]): MSet[A] = {
+  def fromArray[A:ClassTag:Extra:LBEv](array: Array[A]): MSet[A] = {
     val sset = ofSize[A](array.length)
     cforRange(0 until array.length) { i =>
       sset += array(i)
     }
     sset
-  }*/
+  }
 
 }
