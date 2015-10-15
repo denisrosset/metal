@@ -11,6 +11,7 @@ trait SortedSet[K] extends MSet[K] { self =>
   def copy: SortedSet[K]
 }
 
+/*
 final class SortedSetImpl[@specialized(Int) K](allocatedSize: Int)(implicit val ctK: ClassTag[K], val orderK: Order[K]) extends SortedSet[K] {
 
   private[this] var _items: Array[K] = new Array[K](allocatedSize)
@@ -64,8 +65,6 @@ final class SortedSetImpl[@specialized(Int) K](allocatedSize: Int)(implicit val 
     if (ind >= 0) VPtr[Tag](ind) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrFindP(key: Long)(implicit ev: Primitive[K]): Ptr[Tag] = ptrFind(ev.decode(key))
-
   @inline final def ptrAddKey(key: K): VPtr[Tag] = {
     val pos = findWhere(key)
     if (pos < 0) {
@@ -83,12 +82,9 @@ final class SortedSetImpl[@specialized(Int) K](allocatedSize: Int)(implicit val 
     } else VPtr[Tag](pos)
   }
 
-  @inline final def ptrAddKeyP(key: Long)(implicit ev: Primitive[K]): VPtr[Tag] = ptrAddKey(ev.decode(key))
-
   @inline final def ptrStart: Ptr[Tag] = if (_size == 0) Ptr.Null[Tag] else VPtr[Tag](0)
   @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = if (ptr.v == _size - 1) Ptr.Null[Tag] else VPtr[Tag](ptr.v + 1)
   @inline final def ptrKey(ptr: VPtr[Tag]): K = _items(ptr.v.toInt)
-  @inline final def ptrKeyP(ptr: VPtr[Tag])(implicit ev: Primitive[K]): Long = ev.arrayRead(_items, ptr.v.toInt)
 }
 
 object SortedSet extends MSetFactory[Any, Order] {
@@ -100,3 +96,4 @@ object SortedSet extends MSetFactory[Any, Order] {
   }
   def ofSize[K](n: Int)(implicit c: ClassTag[K], ord: Order[K], e: LBEv[K]): SortedSet[K] = new SortedSetImpl[K](n)
 }
+ */

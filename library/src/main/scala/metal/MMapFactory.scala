@@ -15,11 +15,11 @@ trait MMapFactory[KLB, KExtra[_], VLB] {
 
   def ofSize[K:ClassTag:KExtra:KLBEv, V:ClassTag](n: Int): MMap[K, V]
 
-  def fromMap[K:ClassTag:KExtra:KLBEv, V:ClassTag](map: scala.collection.Map[K, V]): MMap[K, V] = {
+/*  def fromMap[K:ClassTag:KExtra:KLBEv, V:ClassTag](map: scala.collection.Map[K, V]): MMap[K, V] = {
     val mmap = empty[K, V]
     val keyIt = map.keysIterator
     while (keyIt.hasNext) {
-      val k = keyIt.next
+      val k: K = keyIt.next
       mmap(k) = map(k)
     }
     mmap
@@ -31,6 +31,6 @@ trait MMapFactory[KLB, KExtra[_], VLB] {
       mmap(keysArray(i)) = valuesArray(i)
     }
     mmap
-  }
+  }*/
 
 }

@@ -37,10 +37,11 @@ trait Set[K] extends Countable with Searchable[K] with NoValues { lhs =>
     */
   override def equals(rhs: Any): Boolean = rhs match {
     case rhs: Set[K] if size == rhs.size && ctK == rhs.ctK =>
-      val c = lhs
+      val c = lhs.asInstanceOf[Set[K]]
+      val r = rhs.asInstanceOf[Set[K]]
       @tailrec def rec(lp: Ptr[c.Tag]): Boolean = lp match {
         case VPtr(vlp) =>
-          if (rhs.ptrFind(vlp.key).nonNull)
+          if (r.ptrFind[K](vlp.key).nonNull)
             rec(vlp.next)
           else
             false

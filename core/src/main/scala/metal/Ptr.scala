@@ -5,10 +5,10 @@ class Ptr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {
   @inline final def isNull = v == -1L
   @inline final def nonNull = !isNull
 
-  final def keyOrElse[A](orElse: A): A = macro PtrMacros.keyOrElse[T, A]
+/*  final def keyOrElse[A](orElse: A): A = macro PtrMacros.keyOrElse[T, A]
   final def valueOrElse[A](orElse: A): A = macro PtrMacros.valueOrElse[T, A]
   final def value1OrElse[A](orElse: A): A = macro PtrMacros.value1OrElse[T, A]
-  final def value2OrElse[A](orElse: A): A = macro PtrMacros.value2OrElse[T, A]
+  final def value2OrElse[A](orElse: A): A = macro PtrMacros.value2OrElse[T, A]*/
 
   // for name-based extractors
   @inline final def isEmpty = isNull
@@ -27,15 +27,16 @@ class VPtr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {
   @inline final def nonNull: Boolean = true
 
   final def next: Ptr[T] = macro PtrMacros.next[T]
-  final def key[A]: A = macro PtrMacros.key[T, A]
-  final def value[A]: A = macro PtrMacros.value[T, A]
-  final def value1[A]: A = macro PtrMacros.value1[T, A]
-  final def value2[A]: A = macro PtrMacros.value2[T, A]
-  final def update[A](newValue: A): Unit = macro PtrMacros.update[T, A]
-  final def update1[A](newValue: A): Unit = macro PtrMacros.update1[T, A]
-  final def update2[A](newValue: A): Unit = macro PtrMacros.update2[T, A]
   final def remove: Unit = macro PtrMacros.remove[T]
   final def removeAndAdvance: Ptr[T] = macro PtrMacros.removeAndAdvance[T]
+
+  final def key[A]: A = macro PtrMacros.key[T, A]
+  final def value[A]: A = macro PtrMacros.value[T, A]
+  final def update[A](newValue: A): Unit = macro PtrMacros.update[T, A]
+  /*  final def value1[A]: A = macro PtrMacros.value1[T, A]
+  final def value2[A]: A = macro PtrMacros.value2[T, A]
+  final def update1[A](newValue: A): Unit = macro PtrMacros.update1[T, A]
+  final def update2[A](newValue: A): Unit = macro PtrMacros.update2[T, A]*/
 
 }
 

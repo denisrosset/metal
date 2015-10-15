@@ -5,29 +5,19 @@ import spire.util.Opt
 final class SearchableOps[K](val lhs: Searchable[K]) extends AnyVal {
 
   /** Returns whether `key` is present in the collection. */
-  @inline final def contains(key: K): Boolean = lhs.ptrFind(key).nonNull
+  @inline final def contains(key: K): Boolean = macro OpsMacros.contains[K]
 
 }
 
-final class RemovableSearchableOps[K](val lhs: Searchable[K] with Removable[K]) {
+final class RemovableSearchableOps[K, T <: Searchable[K] with Removable[K]](val lhs: T) extends AnyVal {
 
   /** Removes any value associated with key, and returns whether
     * an operation was performed.
     */
-  @inline final def remove(key: K): Boolean = lhs.ptrFind(key) match {
-    case VPtr(vp) =>
-      lhs.ptrRemove(vp)
-      true
-    case _ => false
-  }
+  @inline final def remove(key: K): Boolean = macro OpsMacros.remove[K]
 
   /** Removes key from collection. */
-  @inline final def -=(key: K): lhs.type = lhs.ptrFind(key) match {
-    case VPtr(vp) =>
-      lhs.ptrRemove(vp)
-      lhs
-    case _ => lhs
-  }
+  @inline final def -=(key: K): T = macro OpsMacros.-=[K, T]
 
   /*
    final def --=(coll: Nextable with Countable with PointableKey[K]): lhs.type = {
@@ -43,17 +33,14 @@ final class RemovableSearchableOps[K](val lhs: Searchable[K] with Removable[K]) 
 
 }
 
-final class AddOps[K, T <: AddKeys[K] with NoValues](val lhs: T) {
+final class AddOps[K, T <: AddKeys[K] with NoValues](val lhs: T) extends AnyVal {
 
   /** Adds item to the set, and returns the set. */
-    def +=(key: K): T = {
-      lhs.ptrAddKey(key)
-      lhs
-    }
+  @inline final def +=(key: K): T =  macro OpsMacros.+=[K, T]
 
 }
 
-final class SearchableAddOps[K](val lhs: AddKeys[K] with Searchable[K] with NoValues) {
+final class SearchableAddOps[K](val lhs: AddKeys[K] with Searchable[K] with NoValues) extends AnyVal {
 
   /**
     * Adds item to the set.
@@ -61,15 +48,11 @@ final class SearchableAddOps[K](val lhs: AddKeys[K] with Searchable[K] with NoVa
     * Returns whether or not the item was added. If item was already in
     * the set, this method will do nothing and return false.
     */
-  def add(key: K): Boolean = {
-    val contained = lhs.ptrFind(key).nonNull
-    lhs.ptrAddKey(key)
-    contained
-  }
+  @inline final def add(key: K): Boolean = macro OpsMacros.add[K]
 
 }
 
-final class UpdateOps[K, V](val lhs: AddKeys[K] with Updatable[V]) {
+final class UpdateOps[K, V](val lhs: AddKeys[K] with Updatable[V]) extends AnyVal {
 
   /** Stores the value `value` for the key `key`.
     * 
@@ -79,27 +62,21 @@ final class UpdateOps[K, V](val lhs: AddKeys[K] with Updatable[V]) {
     * This method is usually invoked as map(key) = value, but can also
     * be invoked as map.update(key, value).
     */
-  def update(key: K, value: V): Unit = lhs.ptrUpdate(lhs.ptrAddKey(key), value)
+  @inline final def update(key: K, value: V): Unit = macro OpsMacros.update[K, V]
 
 }
 
-final class SearchableValuesOps[K, V](val lhs: Searchable[K] with Values[V]) {
+final class SearchableValuesOps[K, V](val lhs: Searchable[K] with Values[V]) extends AnyVal {
 
   /** Returns whether the key is present in the Map with the given value
     * or not.
     */
-  def containsItem(key: K, value: V): Boolean = lhs.ptrFind(key) match {
-    case VPtr(vp) => lhs.ptrValue(vp) == value
-    case _ => false
-  }
+  @inline final def containsItem(key: K, value: V): Boolean = macro OpsMacros.containsItem[K, V]
 
   /** Returns the key's current value in the map, throwing an exception
     * if the key is not found.
     */
-  def apply(key: K): V = lhs.ptrFind(key) match {
-    case VPtr(vp) => lhs.ptrValue(vp)
-    case _ => throw new NoSuchElementException("key not found: " + key)
-  }
+  @inline final def apply(key: K): V = macro OpsMacros.mapply[K, V]
 
   /** Returns the key's current value in the map, returning the given
     * fallback value if the key is not found.
@@ -111,20 +88,11 @@ final class SearchableValuesOps[K, V](val lhs: Searchable[K] with Values[V]) {
     * In cases where a lazy parameter would be desired, you should use
     * something like: myMap.get(key).getOrElse(default).
     */
-  // TODO: replace by macro so lazy/eager does not make sense
-  def getOrElse(key: K, fallback: V): V = lhs.ptrFind(key) match {
-    case VPtr(vp) => lhs.ptrValue(vp)
-    case _ => fallback
-  }
+  @inline final def getOrElse(key: K, fallback: V): V = macro OpsMacros.getOrElse[K, V]
 
   /** Returns the key's current value in the map as an Opt, returning
     * Opt.empty if the key is not found.
     */
-  def get(key: K): Opt[V] = lhs.ptrFind(key) match {
-    case VPtr(vp) =>
-      val v: V = lhs.ptrValue(vp)
-      Opt[V](v)
-    case _ => Opt.empty[V]
-  }
+  @inline final def get(key: K): Opt[V] = macro OpsMacros.get[K, V]
 
 }

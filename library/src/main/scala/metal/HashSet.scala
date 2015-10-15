@@ -8,7 +8,7 @@ import spire.syntax.cfor._
 
 import syntax._
 
-class HashSet[@specialized(Int) K](
+class HashSet[K](
   /** Slots for items. */
   var items: Array[K],
   /** Status of the slots in the hash table.
@@ -50,29 +50,17 @@ class HashSet[@specialized(Int) K](
     * On average, this is an O(1) operation; the (unlikely) worst-case
     * is O(n).
     */
-  @inline final def ptrFind(key: K): Ptr[Tag] = {
+  final def ptrFind[@specialized L](key: L): Ptr[Tag] = {
+    val itemsL = items.asInstanceOf[Array[L]]
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && items(j) == key) VPtr[Tag](j)
+      else if (status == 3 && itemsL(j) == key) VPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
-    val i = key.## & 0x7fffffff
+    val i = key.hashCode & 0x7fffffff
     loop(i, i)
-  }
-
-  @inline final def ptrFindP(key: Long)(implicit ev: Primitive[K]): Ptr[Tag] = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && ev.arrayEqual(items, j, key)) VPtr[Tag](j)
-      else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-    }
-    val i = ev.hash(key) & 0x7fffffff
-    loop(i, i)
-
   }
 
   final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
@@ -87,16 +75,17 @@ class HashSet[@specialized(Int) K](
     len -= 1
   }
 
-  def ptrAddKey(key: K): VPtr[Tag] = {
+  final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
+    val itemsL = items.asInstanceOf[Array[L]]
     @inline def addHere(j: Int, oldStatus: Int): VPtr[Tag] = {
-      items(j) = key
+      itemsL(j) = key
       buckets(j) = 3
       len += 1
       if (oldStatus == 0) {
         used += 1
         if (used > limit) {
-          grow()
-          ptrFind(key).get
+          grow[L]
+          ptrFind[L](key).get
         } else VPtr[Tag](j)
       } else VPtr[Tag](j)
     }
@@ -105,47 +94,16 @@ class HashSet[@specialized(Int) K](
       val j = i & mask
       val status = buckets(j)
       if (status == 3) {
-        if (items(j) == key)
+        if (itemsL(j) == key)
           VPtr[Tag](j)
         else
           loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      } else if (status == 2) ptrFind(key) match {
+      } else if (status == 2) ptrFind[L](key) match {
         case VPtr(vp) => vp
         case _ => addHere(j, status)
       } else addHere(j, status)
     }
-    val i = key.## & 0x7fffffff
-    loop(i, i)
-  }
-
-  @inline final def ptrAddKeyP(key: Long)(implicit ev: Primitive[K]): VPtr[Tag] = {
-    @inline def addHere(j: Int, oldStatus: Int): VPtr[Tag] = {
-      ev.arrayWrite(items, j, key)
-      buckets(j) = 3
-      len += 1
-      if (oldStatus == 0) {
-        used += 1
-        if (used > limit) {
-          grow()
-          ptrFindP(key).get
-        } else VPtr[Tag](j)
-      } else VPtr[Tag](j)
-    }
-
-    @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 3) {
-        if (ev.arrayEqual(items, j, key))
-          VPtr[Tag](j)
-        else
-          loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      } else if (status == 2) ptrFindP(key) match {
-        case VPtr(vp) => vp
-        case _ => addHere(j, status)
-      } else addHere(j, status)
-    }
-    val i = ev.hash(key) & 0x7fffffff
+    val i = key.hashCode & 0x7fffffff
     loop(i, i)
   }
 
@@ -166,13 +124,17 @@ class HashSet[@specialized(Int) K](
     * 
     * Growing is an O(n) operation, where n is the set's size.
     */
-  final def grow(): Unit = {
+  final def grow[@specialized L]: Dummy[L] = {
     val next = buckets.length * (if (buckets.length < 10000) 4 else 2)
     val set = HashSet.ofAllocatedSize[K](next)
+    val itemsL = items.asInstanceOf[Array[L]]
     cfor(0)(_ < buckets.length, _ + 1) { i =>
-      if (buckets(i) == 3) set += items(i)
+      if (buckets(i) == 3) {
+        set.ptrAddKey[L](itemsL(i))
+      }
     }
     absorb(set)
+    null
   }
 
   /**
@@ -186,31 +148,29 @@ class HashSet[@specialized(Int) K](
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the set was previously large).
     */
-  private[this] def absorb(that: HashSet[K]): Dummy[K] = {
+  private[this] def absorb(that: HashSet[K]): Unit = {
     items = that.items
     buckets = that.buckets
     len = that.len
     used = that.used
     mask = that.mask
     limit = that.limit
-    null
   }
 
-  @inline final def ptrStart: Ptr[Tag] = {
+  final def ptrStart: Ptr[Tag] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
+  final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
     var i = ptr.v.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrKey(ptr: VPtr[Tag]): K = items(ptr.v.toInt)
-
-  @inline final def ptrKeyP(ptr: VPtr[Tag])(implicit ev: Primitive[K]): Long = ev.arrayRead(items, ptr.v.toInt)
+  final def ptrKey[@specialized L](ptr: VPtr[Tag]): L =
+    items.asInstanceOf[Array[L]](ptr.v.toInt)
 
 }
 
@@ -245,7 +205,7 @@ object HashSet extends MSetFactory[Any, Dummy] {
     */
   private[metal] def ofAllocatedSize[K:ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
-      case n if n < 0 => throw PtrCollOverflowError(n)
+      case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }

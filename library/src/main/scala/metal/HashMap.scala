@@ -45,26 +45,27 @@ class HashMap[K, V](
     mask = mask,
     limit = limit)
 
-  @inline final def ptrAddKey(key: K): VPtr[Tag] = {
+  final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
+    val keysL = keys.asInstanceOf[Array[L]]
     @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) {
-        keys(j) = key
+        keysL(j) = key
         buckets(j) = 3
         len += 1
         used += 1
         if (used > limit) {
-          grow()
-          val VPtr(vp) = ptrFind(key)
+          grow
+          val VPtr(vp) = ptrFind[L](key)
           vp
         } else VPtr[Tag](j)
-      } else if (status == 2 && ptrFind(key).isNull) {
-        keys(j) = key
+      } else if (status == 2 && ptrFind[L](key).isNull) {
+        keysL(j) = key
         buckets(j) = 3
         len += 1
         VPtr[Tag](j)
-      } else if (keys(j) == key) {
+      } else if (keysL(j) == key) {
         VPtr[Tag](j)
       } else {
         loop((i << 2) + i + perturbation + 1, perturbation >> 5)
@@ -74,76 +75,34 @@ class HashMap[K, V](
     loop(i, i)
   }
 
-  @inline final def ptrAddKeyP(key: Long)(implicit ev: Primitive[K]): VPtr[Tag] = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 0) {
-        ev.arrayWrite(keys, j, key)
-        buckets(j) = 3
-        len += 1
-        used += 1
-        if (used > limit) {
-          grow()
-          val VPtr(vp) = ptrFindP(key)
-          vp
-        } else VPtr[Tag](j)
-      } else if (status == 2 && ptrFindP(key).isNull) {
-        ev.arrayWrite(keys, j, key)
-        buckets(j) = 3
-        len += 1
-        VPtr[Tag](j)
-      } else if (keys(j) == key) {
-        VPtr[Tag](j)
-      } else {
-        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      }
-    }
-    val i = ev.hash(key) & 0x7fffffff
-    loop(i, i)
+  final def ptrUpdate[@specialized W](ptr: VPtr[Tag], v: W): Unit = {
+    vals.asInstanceOf[Array[W]](ptr.v.toInt) = v
   }
 
-  @inline final def ptrUpdate(ptr: VPtr[Tag], v: V): Unit = {
-    vals(ptr.v.toInt) = v
-  }
 
-  @inline final def ptrUpdateP(ptr: VPtr[Tag], v: Long)(implicit ev: Primitive[V]): Unit =
-    ev.arrayWrite(vals, ptr.v.toInt, v)
-
-  @inline final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
+  final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
     val next = ptrNext(ptr)
     ptrRemove(ptr)
     next
   }
 
-  @inline final def ptrRemove(ptr: VPtr[Tag]): Unit = {
+  final def ptrRemove(ptr: VPtr[Tag]): Unit = {
     val j = ptr.v.toInt
     buckets(j) = 2
     vals(j) = null.asInstanceOf[V]
     len -= 1
   }
 
-  @inline final def ptrFind(key: K): Ptr[Tag] = {
+  final def ptrFind[@specialized L](key: L): Ptr[Tag] = {
+    val keysL = keys.asInstanceOf[Array[L]]
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && keys(j) == key) VPtr[Tag](j)
+      else if (status == 3 && keysL(j) == key) VPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = key.## & 0x7fffffff
-    loop(i, i)
-  }
-
-  @inline final def ptrFindP(key: Long)(implicit ev: Primitive[K]): Ptr[Tag] = {
-    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && ev.arrayEqual(keys, j, key)) VPtr[Tag](j)
-      else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-    }
-    val i = ev.hash(key) & 0x7fffffff
     loop(i, i)
   }
 
@@ -184,40 +143,107 @@ class HashMap[K, V](
     * 
     * Growing is an O(n) operation, where n is the map's size.
    */
-  final def grow(): Dummy2[K, V] = {
+  final def grow: Unit = ctK match {
+    case DoubleCT => growSpec[Double]
+    case FloatCT => growSpec[Float]
+    case LongCT => growSpec[Long]
+    case IntCT => growSpec[Int]
+    case ShortCT => growSpec[Short]
+    case ByteCT => growSpec[Byte]
+    case BooleanCT => growSpec[Boolean]
+    case _ => growGen
+  }
+
+  final def growSpec[@specialized L]: Dummy[L] = {
+    ctV match {
+      case DoubleCT => growSpecKV[L, Double]
+      case FloatCT => growSpecKV[L, Float]
+      case LongCT => growSpecKV[L, Long]
+      case IntCT => growSpecKV[L, Int]
+      case ShortCT => growSpecKV[L, Short]
+      case ByteCT => growSpecKV[L, Byte]
+      case BooleanCT => growSpecKV[L, Boolean]
+      case _ => growSpecK[L]
+    }
+    null
+  }
+
+  final def growGen: Unit = {
+    ctV match {
+      case DoubleCT => growSpecV[Double]
+      case FloatCT => growSpecV[Float]
+      case LongCT => growSpecV[Long]
+      case IntCT => growSpecV[Int]
+      case ShortCT => growSpecV[Short]
+      case ByteCT => growSpecV[Byte]
+      case BooleanCT => growSpecV[Boolean]
+      case _ => growSpecV[V]
+    }
+  }
+
+  final def growSpecKV[@specialized L, @specialized W](): Dummy2[L, W] = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
     val map = HashMap.ofSize[K, V](next)
+    val keysL = keys.asInstanceOf[Array[L]]
+    val valsW = vals.asInstanceOf[Array[W]]
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
-        val vp = map.ptrAddKey(keys(i))
-        map.ptrUpdate(vp, vals(i))
+        val vp = map.ptrAddKey[L](keysL(i))
+        map.ptrUpdate[W](vp, valsW(i))
       }
     }
     absorb(map)
     null
   }
 
-  @inline final def ptrNull: Ptr[Tag] = Ptr.Null[Tag]
+  final def growSpecK[@specialized L](): Dummy[L] = {
+    val next = keys.length * (if (keys.length < 10000) 4 else 2)
+    val map = HashMap.ofSize[K, V](next)
+    val keysL = keys.asInstanceOf[Array[L]]
+    cfor(0)(_ < buckets.length, _ + 1) { i =>
+      if (buckets(i) == 3) {
+        val vp = map.ptrAddKey[L](keysL(i))
+        map.ptrUpdate[V](vp, vals(i))
+      }
+    }
+    absorb(map)
+    null
+  }
 
-  @inline final def ptrStart: Ptr[Tag] = {
+  final def growSpecV[@specialized W](): Dummy[W] = {
+    val next = keys.length * (if (keys.length < 10000) 4 else 2)
+    val map = HashMap.ofSize[K, V](next)
+    val valsW = vals.asInstanceOf[Array[W]]
+    cfor(0)(_ < buckets.length, _ + 1) { i =>
+      if (buckets(i) == 3) {
+        val vp = map.ptrAddKey[K](keys(i))
+        map.ptrUpdate[W](vp, valsW(i))
+      }
+    }
+    absorb(map)
+    null
+  }
+
+
+// TODO: optimize primitives because specialization is all-or-nothing
+
+   final def ptrNull: Ptr[Tag] = Ptr.Null[Tag]
+
+  final def ptrStart: Ptr[Tag] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
+  final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
     var i = ptr.v.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrKey(ptr: VPtr[Tag]): K = keys(ptr.v.toInt)
+  final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = keys.asInstanceOf[Array[L]](ptr.v.toInt)
 
-  @inline final def ptrKeyP(ptr: VPtr[Tag])(implicit ev: Primitive[K]): Long = ev.arrayRead(keys, ptr.v.toInt)
-
-  @inline final def ptrValue(ptr: VPtr[Tag]): V = vals(ptr.v.toInt)
-
-  @inline final def ptrValueP(ptr: VPtr[Tag])(implicit ev: Primitive[V]): Long = ev.arrayRead(vals, ptr.v.toInt)
+  final def ptrValue[@specialized W](ptr: VPtr[Tag]): W = vals.asInstanceOf[Array[W]](ptr.v.toInt)
 
 }
 
@@ -246,7 +272,7 @@ object HashMap extends MMapFactory[Any, Dummy, Any] {
     */
   private[metal] def ofAllocatedSize[K:ClassTag, V:ClassTag](n: Int) = {
     val sz = Util.nextPowerOfTwo(n) match {
-      case n if n < 0 => throw PtrCollOverflowError(n)
+      case n if n < 0 =>  sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }

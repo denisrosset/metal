@@ -14,7 +14,7 @@ trait BitSet[K] extends SortedSet[K] {
 
 }
 
-class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] {
+final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] {
 
   def orderK = spire.std.int.IntAlgebra
 
@@ -22,7 +22,7 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
 
   def copy: BitSet[Int] = new BitSetImpl(words.clone, wordSize)
 
-  @inline final def ptrStart: Ptr[Tag] = {
+  def ptrStart: Ptr[Tag] = {
     var w = 0
     while(w < wordSize && words(w) == 0L) {
       w += 1
@@ -32,22 +32,15 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
     Ptr[Tag](index)
   }
 
-  @inline final def ptrFind(item: Int): Ptr[Tag] = {
-    val w = item >>> 3
-    val bit = item & 0x7
+  def ptrFind[@specialized L](keyL: L): Ptr[Tag] = {
+    val key = keyL.asInstanceOf[Int]
+    val w = key >>> 3
+    val bit = key & 0x7
     val contained = w < wordSize && (words(w) & (1 << bit)) != 0
-    if (contained) Ptr[Tag](item) else Ptr.Null[Tag]
+    if (contained) Ptr[Tag](key) else Ptr.Null[Tag]
   }
 
-  @inline final def ptrFindP(itemP: Long)(implicit p: Primitive[Int]): Ptr[Tag] = {
-    val item = itemP.toInt
-    val w = item >>> 3
-    val bit = item & 0x7
-    val contained = w < wordSize && (words(w) & (1 << bit)) != 0
-    if (contained) Ptr[Tag](item) else Ptr.Null[Tag]
-  }
-
-  @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
+  def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
     var w = ptr.v.toInt >>> 3
     var bit = (ptr.v & 0x7).toInt
     val nextBit = Util.nextBitAfter(words(w), bit)
@@ -62,13 +55,12 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
     Ptr[Tag](index)
   }
 
-  @inline final def ptrKey(ptr: VPtr[Tag]) = ptr.v.toInt
+  def ptrKey[@specialized L](ptr: VPtr[Tag]): L = ptr.v.toInt.asInstanceOf[L]
 
-  @inline final def ptrKeyP(ptr: VPtr[Tag])(implicit p: Primitive[Int]): Long = ptr.v
-
-  @inline final def ptrAddKey(item: Int): VPtr[Tag] = {
-    val w = item >>> 3
-    val bit = item & 0x7
+  def ptrAddKey[@specialized L](keyL: L): VPtr[Tag] = {
+    val key = keyL.asInstanceOf[Int]
+    val w = key >>> 3
+    val bit = key & 0x7
     if (w >= words.length) {
       val newWords = new Array[Long](Util.nextPowerOfTwo(w + 1))
       java.lang.System.arraycopy(words, 0, newWords, 0, wordSize)
@@ -76,12 +68,10 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
     }
     words(w) |= (1 << bit)
     wordSize = max(wordSize, w + 1)
-    VPtr[Tag](item)
+    VPtr[Tag](key)
   }
 
-  final def ptrAddKeyP(itemP: Long)(implicit p: Primitive[Int]): VPtr[Tag] = ptrAddKey(itemP.toInt)
-
-  final def ptrRemove(ptr: VPtr[Tag]): Unit = {
+  def ptrRemove(ptr: VPtr[Tag]): Unit = {
     val w = ptr.v.toInt >>> 3
     val bit = ptr.v & 0x7
     if (w >= wordSize) return
@@ -89,13 +79,13 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
     words(w) -= masked
   }
 
-  final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
+  def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
     val nextPtr = ptrNext(ptr)
     ptrRemove(ptr)
     nextPtr
   }
 
-  final def size: Int = {
+  def size: Int = {
     var count = 0
     var w = 0
     while(w < wordSize) {
@@ -105,7 +95,7 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
     count
   }
 
-  final def isEmpty: Boolean = {
+  def isEmpty: Boolean = {
     var w = 0
     while (w < wordSize) {
       if (words(w) != 0L) return false
@@ -114,7 +104,7 @@ class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet[Int] 
     true
   }
 
-  final def nonEmpty: Boolean = !isEmpty
+  def nonEmpty: Boolean = !isEmpty
 
 }
 
@@ -132,7 +122,7 @@ object BitSet extends MSetFactory[Int, Dummy] {
     s.asInstanceOf[BitSet[K]]
   }
 
-  private[metal] def ofAllocatedWordSize[K:ClassTag:Dummy:LBEv](nWords: Int)(implicit ev: K <:< Int): BitSet[K] = new BitSetImpl(
+  private[metal] def ofAllocatedWordSize[K:ClassTag:Dummy:LBEv](nWords: Int): BitSet[K] = new BitSetImpl(
     words = new Array[Long](nWords),
     wordSize = 0).asInstanceOf[BitSet[K]]
 

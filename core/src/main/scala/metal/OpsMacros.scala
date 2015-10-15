@@ -4,143 +4,9 @@ import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, s
 import spire.macros.{SyntaxUtil, InlineUtil}
 import spire.util.Opt
 
-object OpsMacrosP {
-
-  def findEvLhs[T[_], A](c: Context) = {
-    import c.universe._
-    c.prefix.tree match {
-      case Apply(Apply(TypeApply(_, _), List(lhs)), List(ev)) => (ev, lhs)
-      case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
-    }
-  }
-
-  def findEvKEvVLhs[T[_], A](c: Context) = {
-    import c.universe._
-    c.prefix.tree match {
-      case Apply(Apply(TypeApply(_, _), List(lhs)), List(evK, evV)) => (evK, evV, lhs)
-      case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
-    }
-  }
-
-  def contains[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
-    import c.universe._
-    val (ev, lhs) = findEvLhs(c)
-    c.Expr[Boolean](q"$lhs.ptrFindP($ev.encode($key))($ev).nonNull")
-  }
-
-  def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
-    import c.universe._
-    val (ev, lhs) = findEvLhs(c)
-    c.Expr[Boolean](q"""
-$lhs.ptrFindP($ev.encode($key))($ev) match { 
-  case VPtr(vp) => 
-    $lhs.ptrRemove(vp)
-    true
-  case _ => false
-}""")
-  }
-
-  def -=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
-    import c.universe._
-    val (ev, lhs) = findEvLhs(c)
-    c.Expr[T](q"""
-$lhs.ptrFindP($ev.encode($key))($ev) match { 
-  case VPtr(vp) => 
-    $lhs.ptrRemove(vp)
-    $lhs
-  case _ => 
-    $lhs 
-}
-""")
-  }
-
-  def +=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
-    import c.universe._
-    val (ev, lhs) = findEvLhs(c)
-    c.Expr[T](q"$lhs.ptrAddKeyP($ev.encode($key)); $lhs")
-  }
-
-  def add[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
-    import c.universe._
-    val util = SyntaxUtil[c.type](c)
-    val (ev, lhs) = findEvLhs(c)
-    val encoded = util.name("encoded")
-    val contained = util.name("contained")
-    val tree = q"""
-{
-  val $encoded = $ev.encode($key)
-  val $contained = $lhs.ptrFindP($encoded).nonNull
-  $lhs.ptrAddKeyP($encoded)
-  $contained
-}
-"""
-    c.Expr[Boolean](tree)
-  }
-  //     new InlineUtil[c.type](c).inlineAndReset[Unit](tree)
-  def update[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Unit] = {
-    import c.universe._
-    val (evK, evV, lhs) = findEvKEvVLhs(c)
-    val tree = q"$lhs.ptrUpdateP($lhs.ptrAddKeyP($evK.encode($key)), $evV.encode($value))"
-    c.Expr[Unit](tree)
-  }
-
-  def containsItem[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Boolean] = {
-    import c.universe._
-    val (evK, evV, lhs) = findEvKEvVLhs(c)
-    val tree = q"""
-$lhs.ptrFindP($evK.encode($key)) match {
-  case VPtr(vp) => $evV.decode($lhs.ptrValueP(vp)) == $value
-  case _ => false
-}
-"""
-    c.Expr[Boolean](tree)
-  }
-
-  def apply[K, V](c: Context)(key: c.Expr[K]): c.Expr[V] = {
-    import c.universe._
-    val (evK, evV, lhs) = findEvKEvVLhs(c)
-    val tree = q"""
-$lhs.ptrFindP($evK.encode($key)) match {
-  case VPtr(vp) => $evV.decode($lhs.ptrValueP(vp))
-  case _ => throw new NoSuchElementException("key not found: " + $key)
-}
-"""
-    c.Expr[V](tree)
-  }
-
-  def getOrElse[K, V](c: Context)(key: c.Expr[K], fallback: c.Expr[V]): c.Expr[V] = {
-    import c.universe._
-    val (evK, evV, lhs) = findEvKEvVLhs(c)
-    val tree = q"""
-$lhs.ptrFindP($evK.encode($key)) match {
-  case VPtr(vp) => $evV.decode($lhs.ptrValueP(vp))
-  case _ => $fallback
-}
-"""
-    c.Expr[V](tree)
-  }
-
-  def get[K, V](c: Context)(key: c.Expr[K]): c.Expr[Opt[V]] = {
-    import c.universe._
-    val (evK, evV, lhs) = findEvKEvVLhs(c)
-    val util = SyntaxUtil[c.type](c)
-    val v = util.name("v")
-    val tree = q"""
-$lhs.ptrFindP($evK.encode($key)) match {
-  case VPtr(vp) =>
-    val $v: V = $evV.decode($lhs.ptrValue(vp))
-    Opt[V]($v)
-  case _ => Opt.empty[V]
-}
-"""
-    c.Expr[Opt[V]](tree)
-  }
-
-}
-
 object OpsMacros {
 
-  def findLhs[A](c: Context) = {
+  def findLhs(c: Context): c.Tree = {
     import c.universe._
     c.prefix.tree match {
       case Apply(TypeApply(_, _), List(lhs)) => lhs
@@ -148,16 +14,178 @@ object OpsMacros {
     }
   }
 
-/*  def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+  def findLhsType[TC[_]](c: Context)(implicit tc: c.WeakTypeTag[TC[_]]): (c.Tree, c.Type) = {
     import c.universe._
-    val lhs = findLhs(c)
-    c.Expr[Boolean](q"$lhs.ptrFind($key) match { case VPtr(vp) => vp.remove; true; case _ => false }")
+    c.prefix.tree match {
+      case Apply(TypeApply(_, _), List(lhs)) =>
+        val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
+        val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
+        val aType: Type = tcTypeParam.asSeenFrom(lhs.tpe, tcClass)
+        (lhs, aType)
+      case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
+    }
   }
 
-  def -=[K, L](c: Context)(key: c.Expr[K]): c.Expr[L] = {
+
+  def findLhsTypeType[TC1[_], TC2[_]](c: Context)(implicit tc1: c.WeakTypeTag[TC1[_]], tc2: c.WeakTypeTag[TC2[_]]): (c.Tree, c.Type, c.Type) = {
     import c.universe._
-    val lhs = findLhs(c)
-    c.Expr[L](q"$lhs.ptrFind($key) match { case VPtr(vp) => vp.remove; $lhs; case _ => $lhs }")
- }  */
+    c.prefix.tree match {
+      case Apply(TypeApply(_, _), List(lhs)) =>
+        val tc1Class: ClassSymbol = tc1.tpe.typeSymbol.asClass
+        val tc1TypeParam: Type = tc1Class.typeParams(0).asType.toType
+        val tc2Class: ClassSymbol = tc2.tpe.typeSymbol.asClass
+        val tc2TypeParam: Type = tc2Class.typeParams(0).asType.toType
+        val a1Type: Type = tc1TypeParam.asSeenFrom(lhs.tpe, tc1Class)
+        val a2Type: Type = tc2TypeParam.asSeenFrom(lhs.tpe, tc2Class)
+        (lhs, a1Type, a2Type)
+      case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
+    }
+  }
+
+  def contains[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[Keys](c)
+    c.Expr[Boolean](q"$lhs.ptrFind[$kType]($key).nonNull")
+  }
+
+  def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[Keys](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[Boolean](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match { 
+    case VPtr(vp) => 
+      $lhsCache.ptrRemove(vp)
+      true
+    case _ => 
+      false 
+  }
+}""")
+  }
+
+  def -=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[Removable](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[T](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match {
+    case VPtr(vp) => 
+      $lhsCache.ptrRemove(vp)
+      $lhs
+    case _ => 
+      $lhs 
+  }
+}
+""")
+  }
+
+  def +=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[AddKeys](c)
+    c.Expr[T](q"$lhs.ptrAddKey[$kType]($key); $lhs")
+  }
+
+  def add[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+    import c.universe._
+    val util = SyntaxUtil[c.type](c)
+    val (lhs, kType) = findLhsType[AddKeys](c)
+    val lhsCache = util.name("lhsCache")
+    val keyCache = util.name("keyCache")
+    val contained = util.name("contained")
+    c.Expr[Boolean](q"""
+{
+  val $lhsCache = $lhs
+  val $keyCache = $key
+  val $contained = $lhsCache.ptrFind[$kType]($keyCache).nonNull
+  $lhsCache.ptrAddKey[$kType]($keyCache)
+  $contained
+}
+""")
+  }
+
+  def update[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Unit] = {
+    import c.universe._
+    val (lhs, kType, vType) = findLhsTypeType[AddKeys, Updatable](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[Unit](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrUpdate[$vType]($lhsCache.ptrAddKey[$kType]($key), $value)
+}
+""")
+  }
+
+
+  def containsItem[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Boolean] = {
+    import c.universe._
+    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[Boolean](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match {
+    case VPtr(vp) => $lhsCache.ptrValue[$vType](vp) == $value
+    case _ => false
+  }
+}
+""")
+  }
+
+  def mapply[K, V](c: Context)(key: c.Expr[K]): c.Expr[V] = {
+    import c.universe._
+    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[V](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match {
+    case VPtr(vp) => vp.value[$vType]
+    case _ => throw new NoSuchElementException("key not found: " + $key)
+  }
+}
+""")
+  }
+
+  def getOrElse[K, V](c: Context)(key: c.Expr[K], fallback: c.Expr[V]): c.Expr[V] = {
+    import c.universe._
+    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[V](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match {
+    case VPtr(vp) => $lhsCache.ptrValue[$vType](vp)
+    case _ => $fallback
+  }
+}
+""")
+  }
+
+  def get[K, V](c: Context)(key: c.Expr[K]): c.Expr[Opt[V]] = {
+    import c.universe._
+    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[Opt[V]](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match {
+    case VPtr(vp) =>
+      spire.util.Opt[$vType]($lhsCache.ptrValue[$vType](vp))
+    case _ => spire.util.Opt.empty[$vType]
+  }
+}
+""")
+  }
 
 }

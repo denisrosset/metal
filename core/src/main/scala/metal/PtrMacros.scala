@@ -4,30 +4,6 @@ import scala.reflect.macros.whitebox.Context
 
 object PtrMacros {
 
-  def next[T <: Pointable#Tag : c.WeakTypeTag](c: Context): c.Expr[Ptr[T]] = {
-    import c.universe._
-    val ptr = c.prefix.tree
-    val tagT = implicitly[c.WeakTypeTag[T]]
-    val TypeRef(SingleType(_, container), _, Nil) = tagT.tpe
-    c.Expr[Ptr[T]](q"Ptr[$tagT]($container.ptrNext(VPtr[$container.Tag]($ptr.v)).v)")
-  }
-
-  def remove[T <: Pointable#Tag : c.WeakTypeTag](c: Context): c.Expr[Unit] = {
-    import c.universe._
-    val ptr = c.prefix.tree
-    val tagT = implicitly[c.WeakTypeTag[T]]
-    val TypeRef(SingleType(_, container), _, Nil) = tagT.tpe
-    c.Expr[Unit](q"$container.ptrRemove(VPtr[$container.Tag]($ptr.v))")
-  }
-
-  def removeAndAdvance[T <: Pointable#Tag : c.WeakTypeTag](c: Context): c.Expr[Ptr[T]] = {
-    import c.universe._
-    val ptr = c.prefix.tree
-    val tagT = implicitly[c.WeakTypeTag[T]]
-    val TypeRef(SingleType(_, container), _, Nil) = tagT.tpe
-    c.Expr[Ptr[T]](q"Ptr[$tagT]($container.ptrRemoveAndAdvance(VPtr[$container.Tag]($ptr.v)).v)")
-  }
-
   def extract[T](c: Context)(implicit tagT: c.WeakTypeTag[T]): (c.Symbol, c.Type) = {
     import c.universe._
     tagT.tpe match {
@@ -36,38 +12,62 @@ object PtrMacros {
     }
   }
 
-  def primitive[T:c.WeakTypeTag, TC[_]](c: Context)(containerType: c.Type)(implicit tc: c.WeakTypeTag[TC[_]]): Option[c.Tree] = {
+  def extractTypeOf[T, TC[_]](c: Context)(implicit tagT: c.WeakTypeTag[T], tc: c.WeakTypeTag[TC[_]]): (c.Symbol, c.Type, c.Type) = {
     import c.universe._
-    val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
-    val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
-    val aType: Type = tcTypeParam.asSeenFrom(containerType, tcClass)
-    c.inferImplicitValue(internal.typeRef(NoPrefix, symbolOf[Primitive[_]], List(aType))) match {
-      case EmptyTree => None
-      case primitive => Some(primitive)
+    tagT.tpe match {
+      case TypeRef(containerType@SingleType(_, container), _, Nil) =>
+        val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
+        val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
+        val aType: Type = tcTypeParam.asSeenFrom(containerType, tcClass)
+        (container, containerType, aType)
+      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
     }
+  }
+
+  def next[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Ptr[T]] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val (container, _) = extract[T](c)
+    c.Expr[Ptr[T]](q"Ptr[$tagT]($container.ptrNext(VPtr[$container.Tag]($lhs.v)).v)")
+  }
+
+  def remove[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Unit] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val (container, _) = extract[T](c)
+    c.Expr[Unit](q"$container.ptrRemove(VPtr[$container.Tag]($lhs.v))")
+  }
+
+  def removeAndAdvance[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Ptr[T]] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val (container, _) = extract[T](c)
+    c.Expr[Ptr[T]](q"Ptr[$tagT]($container.ptrRemoveAndAdvance(VPtr[$container.Tag]($lhs.v)).v)")
   }
 
   def key[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, containerType) = extract[T](c)
-    primitive[T, Keys](c)(containerType) match {
-      case None => c.Expr[A](q"$container.ptrKey(VPtr[$container.Tag]($lhs.v))")
-      case Some(primitive) => c.Expr[A](q"$primitive.decode($container.ptrKeyP(VPtr[$container.Tag]($lhs.v)))")
-    }
+    val (container, containerType, aType) = extractTypeOf[T, Keys](c)
+    c.Expr[A](q"$container.ptrKey[$aType](VPtr[$container.Tag]($lhs.v))")
   }
 
-  def value[T : c.WeakTypeTag, A : c.WeakTypeTag](c: Context): c.Expr[A] = {
+  def value[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, containerType) = extract[T](c)
-    primitive[T, Values](c)(containerType) match {
-      case None => c.Expr[A](q"$container.ptrValue(VPtr[$container.Tag]($lhs.v))")
-      case Some(primitive) => c.Expr[A](q"$primitive.decode($container.ptrValueP(VPtr[$container.Tag]($lhs.v)))")
-    }
+    val (container, containerType, aType) = extractTypeOf[T, Keys](c)
+    c.Expr[A](q"$container.ptrValue[$aType](VPtr[$container.Tag]($lhs.v))")
   }
 
-  def value1[T : c.WeakTypeTag, A : c.WeakTypeTag](c: Context): c.Expr[A] = {
+  def update[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(newValue: c.Expr[A]): c.Expr[Unit] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val (container, containerType, aType) = extractTypeOf[T, Keys](c)
+    c.Expr[Unit](q"$container.ptrUpdate[$aType](VPtr[$container.Tag]($lhs.v), $newValue)")
+  }
+
+  /*
+   def value1[T : c.WeakTypeTag, A : c.WeakTypeTag](c: Context): c.Expr[A] = {
     import c.universe._
     val lhs = c.prefix.tree
     val (container, containerType) = extract[T](c)
@@ -127,16 +127,6 @@ object PtrMacros {
     }
   }
 
-  def update[T : c.WeakTypeTag, A : c.WeakTypeTag](c: Context)(newValue: c.Expr[A]): c.Expr[Unit] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType) = extract[T](c)
-    primitive[T, Values](c)(containerType) match {
-      case None => c.Expr[Unit](q"$container.ptrUpdate(VPtr[$container.Tag]($lhs.v), $newValue)")
-      case Some(primitive) => c.Expr[Unit](q"$container.ptrUpdateP(VPtr[$container.Tag], $primitive.encode($newValue))")
-    }
-  }
-
   def update1[T : c.WeakTypeTag, A : c.WeakTypeTag](c: Context)(newValue: c.Expr[A]): c.Expr[Unit] = {
     import c.universe._
     val lhs = c.prefix.tree
@@ -155,6 +145,6 @@ object PtrMacros {
       case None => c.Expr[Unit](q"$container.ptrUpdate2(VPtr[$container.Tag]($lhs.v), $newValue)")
       case Some(primitive) => c.Expr[Unit](q"$container.ptrUpdate2P(VPtr[$container.Tag], $primitive.encode($newValue))")
     }
-  }
+  }*/
 
 }
