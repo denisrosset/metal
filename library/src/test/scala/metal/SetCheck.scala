@@ -19,7 +19,7 @@ import metal.{Set => MetalSet}
 
 import syntax._
 
-abstract class SetCheck[A: ClassTag, LB, Extra[_]](factory: MSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
+abstract class SetCheck[A: ClassTag, LB, Extra[_]](factory: SetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   implicit def A: Arbitrary[A]
@@ -279,7 +279,7 @@ abstract class SetCheck[A: ClassTag, LB, Extra[_]](factory: MSetFactory[LB, Extr
   }*/
 }
 
-abstract class AutoSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: MSetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB) extends SetCheck[A, LB, Extra](factory) {
+abstract class AutoSetCheck[A: Arbitrary: ClassTag: Order, LB, Extra[_]](factory: SetFactory[LB, Extra])(implicit extra: Extra[A], lbev: A <:< LB) extends SetCheck[A, LB, Extra](factory) {
   def A: Arbitrary[A] = implicitly[Arbitrary[A]]
 }
 

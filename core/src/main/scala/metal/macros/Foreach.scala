@@ -1,4 +1,5 @@
 package metal
+package macros
 
 import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
 import spire.macros.{SyntaxUtil, InlineUtil}
@@ -6,9 +7,9 @@ import spire.util.Opt
 
 import MacroUtils._
 
-object LoopMacros {
+object Foreach {
 
-  def foreachK[K](c: Context)(body: c.Expr[K => Unit]): c.Expr[Unit] = {
+  def k[K](c: Context)(body: c.Expr[K => Unit]): c.Expr[Unit] = {
     import c.universe._
     val (lhs, kType) = findLhsType[Keys](c)
     val util = SyntaxUtil[c.type](c)
@@ -28,7 +29,7 @@ object LoopMacros {
     new InlineUtil[c.type](c).inlineAndReset[Unit](tree)
   }
 
-  def foreachV[V](c: Context)(body: c.Expr[V => Unit]): c.Expr[Unit] = {
+  def v[V](c: Context)(body: c.Expr[V => Unit]): c.Expr[Unit] = {
     import c.universe._
     val (lhs, vType) = findLhsType[Values](c)
     val util = SyntaxUtil[c.type](c)
@@ -48,7 +49,7 @@ object LoopMacros {
     new InlineUtil[c.type](c).inlineAndReset[Unit](tree)
   }
 
-  def foreachKV[K, V](c: Context)(body: c.Expr[(K, V) => Unit]): c.Expr[Unit] = {
+  def kv[K, V](c: Context)(body: c.Expr[(K, V) => Unit]): c.Expr[Unit] = {
     import c.universe._
     val (lhs, kType, vType) = findLhsTypeType[Keys, Values](c)
     val util = SyntaxUtil[c.type](c)
@@ -69,7 +70,7 @@ object LoopMacros {
     new InlineUtil[c.type](c).inlineAndReset[Unit](tree)
   }
 
-  def foreachKV1V2[K, V1, V2](c: Context)(body: c.Expr[(K, V1, V2) => Unit]): c.Expr[Unit] = {
+  def kv1v2[K, V1, V2](c: Context)(body: c.Expr[(K, V1, V2) => Unit]): c.Expr[Unit] = {
     import c.universe._
     val (lhs, kType, v1Type, v2Type) = findLhsTypeTypeType[Keys, Values1, Values2](c)
     val util = SyntaxUtil[c.type](c)
@@ -95,10 +96,7 @@ object LoopMacros {
 
 /*
 
-def foreach[U](p: K => U): Unit
-def foreach[U](p: (K, V) => U): Unit
-def foreach[U](p: (K, V1, V2) => U): Unit
-
+def foreach(p: (VPtr[lhs.Tag] => 
 def count(p: K => Boolean): Int
 def count(p: (K, V) => Boolean): Int
 def count(p: (K, V1, V2) => Boolean): Int

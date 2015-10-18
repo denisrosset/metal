@@ -2,9 +2,6 @@ package metal
 
 import spire.util.Opt
 
-// missing: foreach, forall, exists
-// missing: variants of fold
-// missing:
 object syntax {
 
   implicit def searchableOps[K](lhs: Searchable[K]): SearchableOps[K] = new SearchableOps(lhs)
