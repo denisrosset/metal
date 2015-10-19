@@ -59,7 +59,7 @@ class HashSet[K](
       else if (status == 3 && itemsL(j) == key) VPtr[Tag](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
-    val i = key.hashCode & 0x7fffffff
+    val i = key.## & 0x7fffffff
     loop(i, i)
   }
 
@@ -103,7 +103,7 @@ class HashSet[K](
         case _ => addHere(j, status)
       } else addHere(j, status)
     }
-    val i = key.hashCode & 0x7fffffff
+    val i = key.## & 0x7fffffff
     loop(i, i)
   }
 

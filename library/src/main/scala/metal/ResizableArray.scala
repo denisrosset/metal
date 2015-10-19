@@ -4,7 +4,7 @@ import scala.reflect.ClassTag
 
 import spire.syntax.cfor._
 
-trait ResizableArray[@specialized V] extends ShapeV with Searchable[Int] with Countable with Values[V] { self =>
+trait ResizableArray[@specialized V] extends ShapeV with Keys[Int] with Countable with Values[V] { self =>
 
   implicit def ct: ClassTag[V]
   var array: Array[V]

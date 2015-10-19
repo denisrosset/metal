@@ -19,7 +19,7 @@ trait SortedSet[K] extends Set[K] with ISortedSet[K] { self =>
 
 }
 
-final class SortedSetImpl[@specialized(Int) K](allocatedSize: Int)(implicit val ctK: ClassTag[K], val orderK: Order[K]) extends SortedSet[K] {
+final class SortedSetImpl[K](allocatedSize: Int)(implicit val ctK: ClassTag[K], val orderK: Order[K]) extends SortedSet[K] {
 
   var items: Array[K] = new Array[K](allocatedSize)
   var size: Int = 0

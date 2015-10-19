@@ -1,6 +1,8 @@
 package metal
 
-class Ptr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {
+import spire.algebra._
+
+class Ptr[T <: Pointable#Tag](val v: Long) extends AnyVal {
 
   override def toString = s"Ptr($v)"
   @inline final def isNull = v == -1L
@@ -15,6 +17,19 @@ class Ptr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {
   @inline final def isEmpty = isNull
   @inline final def get: VPtr[T] = new VPtr[T](v)
 
+  def foreach(body: VPtr[T] => Unit): Unit = macro PtrMacros.foreach[T]
+  def count(body: VPtr[T] => Boolean): Int = macro PtrMacros.count[T]
+  def exists(body: VPtr[T] => Boolean): Boolean = macro PtrMacros.exists[T]
+  def forall(body: VPtr[T] => Boolean): Boolean = macro PtrMacros.forall[T]
+  def foldLeft[A](z: A)(body: (A, VPtr[T]) => A): A = macro PtrMacros.foldLeft[T, A]
+  def /:[A](z: A)(body: (A, VPtr[T]) => A): A = macro PtrMacros.foldLeft[T, A]
+
+  def minBy[A](body: VPtr[T] => A)(implicit orderA: Order[A]): Ptr[T] = macro PtrMacros.minBy[T, A]
+  def maxBy[A](body: VPtr[T] => A)(implicit orderA: Order[A]): Ptr[T] = macro PtrMacros.maxBy[T, A]
+
+  def sumBy[A](body: VPtr[T] => A)(implicit am: AdditiveMonoid[A]): A = macro PtrMacros.sumBy[T, A]
+  def productBy[A](body: VPtr[T] => A)(implicit mm: MultiplicativeMonoid[A]): A = macro PtrMacros.productBy[T, A]
+
 }
 
 object Ptr {
@@ -25,7 +40,7 @@ object Ptr {
 
 }
 
-class VPtr[T <: Pointable#Tag] protected[metal] (val v: Long) extends AnyVal {
+class VPtr[T <: Pointable#Tag](val v: Long) extends AnyVal {
 
   override def toString = s"VPtr($v)"
   @inline final def isNull: Boolean = false
