@@ -157,7 +157,7 @@ class HashMap2[K, V1, V2](
     absorb(map)
   }
 
-  final def ptrStart: Ptr[Tag] = {
+  final def ptr: Ptr[Tag] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]

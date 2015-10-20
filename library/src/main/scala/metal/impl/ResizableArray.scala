@@ -140,7 +140,7 @@ trait ResizableArray[@specialized V] extends ShapeV with Keys[Int] with Countabl
 
   final def ptrValue[@specialized W](vp: VPtr[Tag]): W = array.asInstanceOf[Array[W]](vp.v.toInt)
 
-  final def ptrStart: Ptr[Tag] = if (isEmpty) Ptr.Null else VPtr[Tag](0)
+  final def ptr: Ptr[Tag] = if (isEmpty) Ptr.Null else VPtr[Tag](0)
 
   final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = if (ptr.v == size - 1) Ptr.Null[Tag] else VPtr[Tag](ptr.v + 1)
 

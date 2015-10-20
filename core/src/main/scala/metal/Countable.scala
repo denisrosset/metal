@@ -1,9 +1,9 @@
 package metal
 
-trait Countable extends Nextable { // TODO: split Countable into HasStart and Countable
+trait Countable extends Nextable {
 
   /** Returns a pointer to the start of this collection instance. */
-  def ptrStart: Ptr[Tag]
+  def ptr: Ptr[Tag]
 
   /** Returns true if the collection is empty, false otherwise. */
   def isEmpty: Boolean

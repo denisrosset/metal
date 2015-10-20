@@ -91,7 +91,7 @@ final class SortedSetImpl[K](allocatedSize: Int)(implicit val ctK: ClassTag[K], 
     } else VPtr[Tag](pos)
   }
 
-  @inline final def ptrStart: Ptr[Tag] = if (size == 0) Ptr.Null[Tag] else VPtr[Tag](0)
+  @inline final def ptr: Ptr[Tag] = if (size == 0) Ptr.Null[Tag] else VPtr[Tag](0)
   @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = if (ptr.v == size - 1) Ptr.Null[Tag] else VPtr[Tag](ptr.v + 1)
   @inline final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = items.asInstanceOf[Array[L]](ptr.v.toInt)
 }

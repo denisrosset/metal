@@ -22,7 +22,7 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends BitSet
 
   def copy: BitSet[Int] = new BitSetImpl(words.clone, wordSize)
 
-  def ptrStart: Ptr[Tag] = {
+  def ptr: Ptr[Tag] = {
     var w = 0
     while(w < wordSize && words(w) == 0L) {
       w += 1

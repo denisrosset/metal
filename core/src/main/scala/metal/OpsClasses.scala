@@ -27,7 +27,7 @@ final class RemovableSearchableOps[K, T <: Searchable[K] with Removable[K]](val 
    rec(vp.next)
    case _ =>
    }
-   rec(coll.ptrStart)
+   rec(coll.ptr)
    lhs
    }*/
 

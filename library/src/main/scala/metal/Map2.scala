@@ -25,7 +25,7 @@ trait IMap2[K, V1, V2] extends ShapeKV1V2 with Searchable[K] with Countable with
     *  will return false.
     */
   override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: IMap2[K, V1, V2] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV1 == rhs.ctV1 && lhs.ctV2 == rhs.ctV2 => IMap2.isSubset(lhs, rhs)(lhs.ptrStart)
+    case rhs: IMap2[K, V1, V2] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV1 == rhs.ctV1 && lhs.ctV2 == rhs.ctV2 => IMap2.isSubset(lhs, rhs)(lhs.ptr)
     case _ => false
   }
 
@@ -35,7 +35,7 @@ trait IMap2[K, V1, V2] extends ShapeKV1V2 with Searchable[K] with Countable with
     * that maps with the same contents will have the same hashCode
     * regardless of the order those items appear.
     */
-  override def hashCode: Int = IMap2.hash(lhs)(ptrStart, 0xDEADD065)
+  override def hashCode: Int = IMap2.hash(lhs)(ptr, 0xDEADD065)
 
   /** Returns a string representation of the contents of the map.
     */
@@ -54,7 +54,7 @@ trait IMap2[K, V1, V2] extends ShapeKV1V2 with Searchable[K] with Countable with
         rec(ptrNext(vp), ", ")
       case _ =>
     }
-    rec(ptrStart, "")
+    rec(ptr, "")
     sb.append(")")
     sb.toString
   }

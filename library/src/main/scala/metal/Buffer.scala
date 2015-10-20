@@ -6,6 +6,8 @@ import spire.algebra._
 import spire.math.QuickSort
 import spire.syntax.all._
 
+import impl._
+
 final class Buffer[@specialized V](var array: Array[V], var size: Int)(implicit val ct: ClassTag[V]) extends ResizableArray[V] {
 
   def copy: Buffer[V] = new Buffer(array.clone, size)

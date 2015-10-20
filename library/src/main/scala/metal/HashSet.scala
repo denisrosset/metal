@@ -155,7 +155,7 @@ class HashSet[K](
     limit = that.limit
   }
 
-  final def ptrStart: Ptr[Tag] = {
+  final def ptr: Ptr[Tag] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
     if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]

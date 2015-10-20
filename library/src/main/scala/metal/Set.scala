@@ -22,7 +22,7 @@ trait ISet[K] extends ShapeK with Countable with Searchable[K] { lhs =>
         rec(c.ptrNext(vp), ", ")
       case _ =>
     }
-    rec(c.ptrStart, "")
+    rec(c.ptr, "")
     sb.append(")")
     sb.toString
   }
@@ -48,7 +48,7 @@ trait ISet[K] extends ShapeK with Countable with Searchable[K] { lhs =>
             false
         case _ => true
       }
-      rec(c.ptrStart)
+      rec(c.ptr)
     case _ => false
   }
 
@@ -67,7 +67,7 @@ trait ISet[K] extends ShapeK with Countable with Searchable[K] { lhs =>
       case VPtr(vp) => rec(c.ptrNext(vp), h ^ c.ptrKey(vp).##)
       case _ => h
     }
-    rec(c.ptrStart, 0xDEADD065)
+    rec(c.ptr, 0xDEADD065)
   }
 }
 
