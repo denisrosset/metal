@@ -1,4 +1,5 @@
 package metal
+package impl
 
 import scala.annotation.{switch, tailrec}
 import scala.{specialized => sp}
@@ -9,13 +10,13 @@ import spire.syntax.cfor._
 import spire.util.Opt
 
 /** Mutable hash map where values are pairs (V1, V2). */
-class HashMap2[K, V1, V2](
+class HashMap2Impl[K, V1, V2](
   /** Slots for keys. */
   var keys: Array[K],
   /** Slots for values of type 1. */
-  var vals1: Array[V1],
+  var values1: Array[V1],
   /** Slots for values of type 2. */
-  var vals2: Array[V2],
+  var values2: Array[V2],
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
@@ -31,23 +32,33 @@ class HashMap2[K, V1, V2](
   /** size - 1, used for hashing. */
   var mask: Int,
   /** Point at which we should grow. */
-  var limit: Int)(implicit val ctK: ClassTag[K], val ctV1: ClassTag[V1], val ctV2: ClassTag[V2]) extends Map2[K, V1, V2] {
+  var limit: Int)(implicit val K: Methods[K], val V1: Methods[V1], val V2: Methods[V2]) extends IHashMap2[K, V1, V2] with MHashMap2[K, V1, V2] {
 
-  final def size: Int = len
+  final def size: Long = len
 
   final override def isEmpty: Boolean = len == 0
 
   final override def nonEmpty: Boolean = len > 0
 
-  def copy: HashMap2[K, V1, V2] = new HashMap2[K, V1, V2](
+  def result(): IHashMap2[K, V1, V2] = this
+
+  def mutableCopy(): MHashMap2[K, V1, V2] = new HashMap2Impl[K, V1, V2](
     keys = keys.clone,
-    vals1 = vals1.clone,
-    vals2 = vals2.clone,
+    values1 = values1.clone,
+    values2 = values2.clone,
     buckets = buckets.clone,
     len = len,
     used = used,
     mask = mask,
     limit = limit)
+
+  def keyArray(ptr: VPtr[Tag]): Array[K] = keys
+  def keyIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
+  def value1Array(ptr: VPtr[Tag]): Array[V1] = values1
+  def value1Index(ptr: VPtr[Tag]): Int = ptr.v.toInt
+  def value2Array(ptr: VPtr[Tag]): Array[V2] = values2
+  def value2Index(ptr: VPtr[Tag]): Int = ptr.v.toInt
+
 
   final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
     val keysL = keys.asInstanceOf[Array[L]]
@@ -88,8 +99,8 @@ class HashMap2[K, V1, V2](
   final def ptrRemove(ptr: VPtr[Tag]): Unit = {
     val j = ptr.v.toInt
     buckets(j) = 2
-    vals1(j) = null.asInstanceOf[V1]
-    vals2(j) = null.asInstanceOf[V2]
+    values1(j) = null.asInstanceOf[V1]
+    values2(j) = null.asInstanceOf[V2]
     len -= 1
   }
 
@@ -116,10 +127,10 @@ class HashMap2[K, V1, V2](
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the map was previously large).
     */
-  private[this] def absorb(rhs: HashMap2[K, V1, V2]): Unit = {
+  private[this] def absorb(rhs: MHashMap2[K, V1, V2]): Unit = {
     keys = rhs.keys
-    vals1 = rhs.vals1
-    vals2 = rhs.vals2
+    values1 = rhs.values1
+    values2 = rhs.values2
     buckets = rhs.buckets
     len = rhs.len
     used = rhs.used
@@ -146,12 +157,12 @@ class HashMap2[K, V1, V2](
     */
   final def grow(): Unit = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = HashMap2.ofSize[K, V1, V2](next)
+    val map = MHashMap2.ofSize[K, V1, V2](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
         val vp = map.ptrAddKeyFromArray(keys, i)
-        map.ptrUpdate1FromArray(vp, vals1, i)
-        map.ptrUpdate2FromArray(vp, vals2, i)
+        map.ptrUpdate1FromArray(vp, values1, i)
+        map.ptrUpdate2FromArray(vp, values2, i)
       }
     }
     absorb(map)
@@ -171,53 +182,41 @@ class HashMap2[K, V1, V2](
 
   final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = keys.asInstanceOf[Array[L]](ptr.v.toInt)
 
-  final def ptrValue1[@specialized W1](ptr: VPtr[Tag]): W1 = vals1.asInstanceOf[Array[W1]](ptr.v.toInt)
+  final def ptrValue1[@specialized W1](ptr: VPtr[Tag]): W1 = values1.asInstanceOf[Array[W1]](ptr.v.toInt)
 
-  final def ptrValue2[@specialized W2](ptr: VPtr[Tag]): W2 = vals2.asInstanceOf[Array[W2]](ptr.v.toInt)
+  final def ptrValue2[@specialized W2](ptr: VPtr[Tag]): W2 = values2.asInstanceOf[Array[W2]](ptr.v.toInt)
 
   final def ptrUpdate1[@specialized W1](ptr: VPtr[Tag], v: W1): Unit = {
-    vals1.asInstanceOf[Array[W1]](ptr.v.toInt) = v
+    values1.asInstanceOf[Array[W1]](ptr.v.toInt) = v
   }
 
   final def ptrUpdate2[@specialized W2](ptr: VPtr[Tag], v: W2): Unit = {
-    vals2.asInstanceOf[Array[W2]](ptr.v.toInt) = v
+    values2.asInstanceOf[Array[W2]](ptr.v.toInt) = v
   }
 
 }
 
-object HashMap2 extends Map2Factory[Any, Dummy, Any, Any] {
+object HashMap2Impl {
 
-  def empty[K, V1, V2](implicit ctK: ClassTag[K], d: Dummy[K], e: KLBEv[K], ctV1: ClassTag[V1], ctV2: ClassTag[V2]): HashMap2[K, V1, V2] = ofSize(0)(ctK, d, e, ctV1, ctV2)
-
-  /** Creates a HashMap that can hold n unique keys without resizing itself.
-    *
-    * Note that the internal representation will allocate more space
-    * than requested to satisfy the requirements of internal
-    * alignment. Map uses arrays whose lengths are powers of two, and
-    * needs at least 33% of the map free to enable good hashing
-    * performance.
-    * 
-    * Example: HashMap.ofSize[Int, String](100).
-    */
-
-  def ofSize[K: ClassTag: Dummy: KLBEv, V1: ClassTag, V2: ClassTag](n: Int): HashMap2[K, V1, V2] = ofAllocatedSize(n / 2 * 3)
-
-  /** Allocates an empty HashMap, with underlying storage of size n.
+  /** Allocates an empty HashMap2, with underlying storage of size n.
     * 
     * This method is useful if you know exactly how big you want the
     * underlying array to be. In most cases ofSize() is probably what
     * you want instead.
     */
-  private[metal] def ofAllocatedSize[K: ClassTag, V1: ClassTag, V2: ClassTag](n: Int) = {
+  private[metal] def ofAllocatedSize[K, V1, V2](n: Int)(implicit K: Methods[K], V1: Methods[V1], V2: Methods[V2]) = {
+    import K.{classTag => ctK}
+    import V1.{classTag => ctV1}
+    import V2.{classTag => ctV2}
     val sz = Util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }
-    new HashMap2[K, V1, V2](
-      keys = new Array[K](sz),
-      vals1 = new Array[V1](sz),
-      vals2 = new Array[V2](sz),
+    new HashMap2Impl[K, V1, V2](
+      keys = K.newArray(sz),
+      values1 = V1.newArray(sz),
+      values2 = V2.newArray(sz),
       buckets = new Array[Byte](sz),
       len = 0,
       used = 0,

@@ -31,18 +31,15 @@ class HashMapImpl[K, V](
   var limit: Int
 )(implicit val K: Methods[K], val V: Methods[V]) extends IHashMap[K, V] with MHashMap[K, V] {
 
-  @inline final def size: Int = len
+  @inline final def size: Long = len
 
   @inline final override def isEmpty: Boolean = len == 0
 
   @inline final override def nonEmpty: Boolean = len > 0
 
   def keyArray(ptr: VPtr[Tag]): Array[K] = keys
-
   def keyIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
-
   def valueArray(ptr: VPtr[Tag]): Array[V] = values
-
   def valueIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
 
   def result(): IHashMap[K, V] = this
@@ -156,7 +153,7 @@ class HashMapImpl[K, V](
    */
   final def grow(): Unit = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = HashMap.ofSize[K, V](next)
+    val map = MHashMap.ofSize[K, V](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
         val vp = map.ptrAddKeyFromArray(keys, i)
@@ -183,5 +180,33 @@ class HashMapImpl[K, V](
   final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = keys.asInstanceOf[Array[L]](ptr.v.toInt)
 
   final def ptrValue[@specialized W](ptr: VPtr[Tag]): W = values.asInstanceOf[Array[W]](ptr.v.toInt)
+
+}
+
+object HashMapImpl {
+
+  /** Allocates an empty HashMapImpl, with underlying storage of size n.
+    * 
+    * This method is useful if you know exactly how big you want the
+    * underlying array to be. In most cases ofSize() is probably what
+    * you want instead.
+    */
+  private[metal] def ofAllocatedSize[K, V](n: Int)(implicit K: Methods[K], V: Methods[V]) = {
+    import K.{classTag => ctK}
+    import V.{classTag => ctV}
+    val sz = Util.nextPowerOfTwo(n) match {
+      case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
+      case 0 => 8
+      case n => n
+    }
+    new HashMapImpl[K, V](
+      keys = K.newArray(sz),
+      values = V.newArray(sz),
+      buckets = new Array[Byte](sz),
+      len = 0,
+      used = 0,
+      mask = sz - 1,
+      limit = (sz * 0.65).toInt)
+  }
 
 }

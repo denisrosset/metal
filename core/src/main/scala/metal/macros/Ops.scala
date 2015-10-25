@@ -1,4 +1,5 @@
 package metal
+package macros
 
 import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
 import spire.macros.{SyntaxUtil, InlineUtil}
@@ -6,7 +7,7 @@ import spire.util.Opt
 
 import MacroUtils._
 
-object OpsMacros {
+object Ops {
 
   def contains[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
     import c.universe._

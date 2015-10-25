@@ -1,78 +1,40 @@
 package metal
 
-import scala.reflect.ClassTag
-import scala.annotation.tailrec
+import spire.util.Opt
 
-import spire.algebra.Order
+trait FSet[K] extends FColl with ElementsK[K] with Enumerable with Searchable[K] with JavaMethods[FSet[K]] { lhs =>
 
-/** Immutable set part. */
-trait ISet[K] extends ShapeK with Countable with Searchable[K] { lhs =>
-  implicit def ctK: ClassTag[K]
+  implicit def K: Methods[K]
 
-  def copy: ISet[K]
+  type IType <: ISet[K]
+  type MType <: MSet[K]
 
-  override def toString: String = {
-    val c = lhs
-    val sb = new StringBuilder
-    sb.append("Set(")
-    @tailrec def rec(p: Ptr[c.Tag], prefix: String): Unit = p match {
-      case VPtr(vp) =>
-        sb.append(prefix)
-        sb.append(c.ptrKey(vp).toString)
-        rec(c.ptrNext(vp), ", ")
-      case _ =>
-    }
-    rec(c.ptr, "")
-    sb.append(")")
-    sb.toString
+  def mutableCopy(): MSet[K] with MType
+
+  override def stringPrefix = "FSet"
+
+  final def ptrCastT(any: Any): Opt[FSet[K]] = any match {
+    case rhs: FSet[K] if lhs.K == rhs.K => Opt(rhs)
+    case _ => Opt.empty[FSet[K]]
   }
 
-  /**
-    * Check if two SSets are equal.
-    *
-    * Equal means the sets have the same type (which is checked
-    * using the ClassTag instances) and the same contents.
-    *
-    * Comparing SSets with any of Scala's collection types will
-    * return false.
-    */
-  override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: ISet[K] if size == rhs.size && ctK == rhs.ctK =>
-      val c = lhs.asInstanceOf[ISet[K]]
-      val r = rhs.asInstanceOf[ISet[K]]
-      @tailrec def rec(lp: Ptr[c.Tag]): Boolean = lp match {
-        case VPtr(vlp) =>
-          if (r.ptrFind[K](vlp.key).nonNull)
-            rec(vlp.next)
-          else
-            false
-        case _ => true
-      }
-      rec(c.ptr)
-    case _ => false
-  }
+  def keyArray(ptr: VPtr[Tag]): Array[K]
+  def keyIndex(ptr: VPtr[Tag]): Int
 
-  /**
-    * Hashes the contents of the set to an Int value.
-    *
-    * By xor'ing all the set's values together, we can be sure that
-    * sets with the same contents will have the same hashCode
-    * regardless of the order those elements appear.
-    *
-    * This is an O(n) operation.
-    */
-  override def hashCode: Int = {
-    val c = lhs
-    @tailrec def rec(p: Ptr[c.Tag], h: Int): Int = p match {
-      case VPtr(vp) => rec(c.ptrNext(vp), h ^ c.ptrKey(vp).##)
-      case _ => h
-    }
-    rec(c.ptr, 0xDEADD065)
-  }
+  def ptrHash(ptr: VPtr[Tag]): Int =
+    K.hashElement(keyArray(ptr), keyIndex(ptr))
+
+  def ptrToString(ptr: VPtr[Tag]): String = K.toStringElement(keyArray(ptr), keyIndex(ptr))
+
+  def ptrEquals(thisPtr: VPtr[Tag], that: FSet[K]): Boolean =
+    that.ptrFindFromArray(keyArray(thisPtr), keyIndex(thisPtr)).nonNull
+
 }
 
-trait Set[K] extends ISet[K] with Removable[K] with AddKeys[K] { lhs =>
+trait ISet[K] extends IColl with FSet[K]
 
-  def copy: Set[K]
+trait MSet[K] extends MColl with FSet[K] with Removable[K] with AddKeys[K] {
+
+  def result(): ISet[K] with IType
 
 }

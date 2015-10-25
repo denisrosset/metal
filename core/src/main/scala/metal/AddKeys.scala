@@ -1,14 +1,19 @@
 package metal
 
+/** Trait for containers for which keys can be added. */
 trait AddKeys[K] extends Keys[K] {
 
-  /** Adds the given key to the collection. If the key is already present, returns the pointer
+  /** Adds the given key to the container. If the key is already present, returns the pointer
     * associated with the existing key.
     * If the key is new, any eventual associated values are undefined (they should immediately
     * be updated).
     */
   def ptrAddKey[@specialized L](key: L): VPtr[Tag]
 
+  /** Adds the given key to the container, similarly to `ptrAddKey`, but takes the key
+    * from the given array, which should be of type `Array[K]`. The array type is however
+    * recovered at runtime to avoid boxing.
+    */
   def ptrAddKeyFromArray(array: Array[_], i: Int): VPtr[Tag] = array match {
     // the additional type cast is needed to avoid boxing
     case a: Array[Double] => ptrAddKey[Double](a.asInstanceOf[Array[Double]](i))

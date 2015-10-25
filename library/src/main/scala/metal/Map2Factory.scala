@@ -6,29 +6,33 @@ import spire.syntax.cfor._
 
 import syntax._
 
-trait Map2Factory[KLB, KExtra[_], VLB1, VLB2] {
+trait Map2Factory[KLB, KExtra[_], VLB1, VLB2, MP2[_, _, _] <: MMap2[_, _, _]] {
 
   type KLBEv[K] = K <:< KLB
 
-  def empty[K: ClassTag: KExtra: KLBEv, V1: ClassTag, V2: ClassTag]: Map2[K, V1, V2]
+  def empty[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods]: MP2[K, V1, V2] = ofSize[K, V1, V2](0)
 
-  def ofSize[K: ClassTag: KExtra: KLBEv, V1: ClassTag, V2: ClassTag](n: Int): Map2[K, V1, V2]
+  def ofSize[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](n: Int): MP2[K, V1, V2]
 
-  def fromMap[K: ClassTag: KExtra: KLBEv, V1: ClassTag, V2: ClassTag](map: scala.collection.Map[K, (V1, V2)]): Map2[K, V1, V2] = {
+  def fromMap[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](map: scala.collection.Map[K, (V1, V2)]): MP2[K, V1, V2] = {
     val mmap = empty[K, V1, V2]
     val keyIt = map.keysIterator
     while (keyIt.hasNext) {
       val k = keyIt.next
       val (v1, v2) = map(k)
-      update2Ops(mmap).update(k, (v1, v2))
+      val vp = mmap.ptrAddKey(k)
+      mmap.ptrUpdate1(vp, v1)
+      mmap.ptrUpdate2(vp, v2)
     }
     mmap
   }
 
-  def fromArrays[K: ClassTag: KExtra: KLBEv, V1: ClassTag, V2: ClassTag](keysArray: Array[K], values1Array: Array[V1], values2Array: Array[V2]): Map2[K, V1, V2] = {
+  def fromArrays[K:Methods: KExtra: KLBEv, V1:Methods, V2:Methods](keysArray: Array[K], values1Array: Array[V1], values2Array: Array[V2]): MP2[K, V1, V2] = {
     val mmap = empty[K, V1, V2]
     cforRange(0 until keysArray.length) { i =>
-      mmap.update(keysArray(i), (values1Array(i), values2Array(i)))
+      val vp = mmap.ptrAddKeyFromArray(keysArray, i)
+      mmap.ptrUpdate1FromArray(vp, values1Array, i)
+      mmap.ptrUpdate2FromArray(vp, values2Array, i)
     }
     mmap
   }

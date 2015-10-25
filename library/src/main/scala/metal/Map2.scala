@@ -6,86 +6,65 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 import spire.util.Opt
 
-trait IMap2[K, V1, V2] extends ShapeKV1V2 with Searchable[K] with Countable with Values1[V1] with Values2[V2] { lhs =>
+trait FMap2[K, V1, V2] extends FColl with ElementsKV1V2[K, V1, V2] with Searchable[K] with Enumerable with Values1[V1] with Values2[V2] with JavaMethods[FMap2[K, V1, V2]] { lhs =>
 
-  implicit def ctK: ClassTag[K]
+  implicit def K: Methods[K]
+  implicit def V1: Methods[V1]
+  implicit def V2: Methods[V2]
 
-  implicit def ctV1: ClassTag[V1]
+  type IType <: IMap2[K, V1, V2]
+  type MType <: MMap2[K, V1, V2]
 
-  implicit def ctV2: ClassTag[V2]
+  def mutableCopy(): MMap2[K, V1, V2] with MType
 
-  def copy: IMap2[K, V1, V2]
+  override def stringPrefix = "FMap2"
 
-  /** Checks if two Map2 are equal.
-    * 
-    * Equal means the maps have the same types (which is checked
-    * using the ClassTag instances) and the same contents.
-    * 
-    * Comparing Maps with any other collection types (including Scala's)
-    *  will return false.
-    */
-  override def equals(rhs: Any): Boolean = rhs match {
-    case rhs: IMap2[K, V1, V2] if lhs.size == rhs.size && lhs.ctK == rhs.ctK && lhs.ctV1 == rhs.ctV1 && lhs.ctV2 == rhs.ctV2 => IMap2.isSubset(lhs, rhs)(lhs.ptr)
-    case _ => false
+  final def ptrCastT(any: Any): Opt[FMap2[K, V1, V2]] = any match {
+    case rhs: FMap2[K, V1, V2] if lhs.K == rhs.K && lhs.V1 == rhs.V1 && lhs.V2 == rhs.V2 => Opt(rhs)
+    case _ => Opt.empty[FMap2[K, V1, V2]]
   }
 
-  /** Hashes the contents of the map to an Int value.
-    * 
-    * By xor'ing all the map's keys and values together, we can be sure
-    * that maps with the same contents will have the same hashCode
-    * regardless of the order those items appear.
-    */
-  override def hashCode: Int = IMap2.hash(lhs)(ptr, 0xDEADD065)
+  def keyArray(ptr: VPtr[Tag]): Array[K]
+  def keyIndex(ptr: VPtr[Tag]): Int
+  def value1Array(ptr: VPtr[Tag]): Array[V1]
+  def value1Index(ptr: VPtr[Tag]): Int
+  def value2Array(ptr: VPtr[Tag]): Array[V2]
+  def value2Index(ptr: VPtr[Tag]): Int
 
-  /** Returns a string representation of the contents of the map.
-    */
-  override def toString: String = {
-    val sb = new StringBuilder
-    sb.append("Map(")
-    @tailrec def rec(p: Ptr[Tag], prefix: String): Unit = p match {
-      case VPtr(vp) =>
-        sb.append(prefix)
-        sb.append(ptrKey[K](vp).toString)
-      sb.append(" -> (")
-      sb.append(ptrValue1[V1](vp).toString)
-      sb.append(", ")
-      sb.append(ptrValue2[V2](vp).toString)
-        sb.append(")")
-        rec(ptrNext(vp), ", ")
-      case _ =>
+  def ptrHash(ptr: VPtr[Tag]): Int = {
+    val kh = K.hashElement(keyArray(ptr), keyIndex(ptr))
+    val v1h = V1.hashElement(value1Array(ptr), value1Index(ptr))
+    val v2h = V2.hashElement(value2Array(ptr), value2Index(ptr))
+    kh ^ (v1h * 41) ^ (v2h * 41 * 41)
+  }
+
+  def ptrToString(ptr: VPtr[Tag]): String = {
+    val ks = K.toStringElement(keyArray(ptr), keyIndex(ptr))
+    val v1s = V1.toStringElement(value1Array(ptr), value1Index(ptr))
+    val v2s = V2.toStringElement(value2Array(ptr), value2Index(ptr))
+    s"$ks -> ($v1s, $v2s)"
+  }
+
+  final def ptrEquals(thisPtr: VPtr[Tag], that: FMap2[K, V1, V2]): Boolean =
+    that.ptrFindFromArray(keyArray(thisPtr), keyIndex(thisPtr)) match {
+      case VPtr(thatPtr) =>
+        val thisA1 = value1Array(thisPtr)
+        val thisI1 = value1Index(thisPtr)
+        val thisA2 = value2Array(thisPtr)
+        val thisI2 = value2Index(thisPtr)
+        val thatA1 = that.value1Array(thatPtr)
+        val thatI1 = that.value1Index(thatPtr)
+        val thatA2 = that.value2Array(thatPtr)
+        val thatI2 = that.value2Index(thatPtr)
+        V1.equalsElement(thisA1, thisI1, thatA1, thatI1) &&
+        V2.equalsElement(thisA2, thisI2, thatA2, thatI2)
     }
-    rec(ptr, "")
-    sb.append(")")
-    sb.toString
-  }
-
 }
 
-trait Map2[K, V1, V2] extends IMap2[K, V1, V2] with AddKeys[K] with Removable[K] with Updatable1[V1] with Updatable2[V2] { lhs =>
+trait IMap2[K, V1, V2] extends IColl with FMap2[K, V1, V2]
 
-  def copy: Map2[K, V1, V2]
+trait MMap2[K, V1, V2] extends MColl with FMap2[K, V1, V2] with AddKeys[K] with Removable[K] with Updatable1[V1] with Updatable2[V2] {
 
-}
-
-object IMap2 {
-
-  @inline @tailrec final def isSubset[K, V1, V2](lm: IMap2[K, V1, V2], rm: IMap2[K, V1, V2])(lp: Ptr[lm.Tag]): Boolean = lp.asInstanceOf[Ptr[lm.Tag]] match {
-    case VPtr(lvp) =>
-      val k = lm.ptrKey(lvp)
-      rm.ptrFind(k) match {
-        case VPtr(rvp) if lm.ptrValue1(lvp) == rm.ptrValue1(rvp) && lm.ptrValue2(lvp) == rm.ptrValue2(rvp) => isSubset(lm, rm)(lm.ptrNext(lvp))
-        case _ => false
-      }
-    case _ => true
-  }
-
-  @inline @tailrec final def hash[K, V1, V2](m: IMap2[K, V1, V2])(p: Ptr[m.Tag], h: Int): Int = p.asInstanceOf[Ptr[m.Tag]] match {
-    case VPtr(vp) =>
-      val k = m.ptrKey(vp)
-      val v1 = m.ptrValue1(vp)
-      val v2 = m.ptrValue2(vp)
-      hash(m)(m.ptrNext(vp), h ^ k.## ^ (v1.## * 41 + v2.##))
-    case _ => h
-  }
+  def result(): IMap2[K, V1, V2] with IType
 
 }

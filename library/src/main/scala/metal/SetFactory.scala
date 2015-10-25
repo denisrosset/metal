@@ -6,20 +6,26 @@ import spire.syntax.cfor._
 
 import syntax._
 
-trait SetFactory[LB, Extra[_]] {
+trait MSetFactory[LB, Extra[_], ST[_] <: MSet[_]] {
 
   type LBEv[A] = A <:< LB
 
-  def empty[A:ClassTag:Extra:LBEv]: Set[A]
+  def empty[A:Methods:Extra:LBEv]: ST[A] = ofSize[A](0)
 
-  def apply[A:ClassTag:Extra:LBEv](items: A*): Set[A]
+  def apply[A:Methods:Extra:LBEv](items: A*): ST[A] = {
+    val sset = ofSize[A](items.size)
+    items.foreach { k =>
+      sset.ptrAddKey(k)
+    }
+    sset
+  }
 
-  def ofSize[A:ClassTag:Extra:LBEv](n: Int): Set[A]
+  def ofSize[A:Methods:Extra:LBEv](n: Int): ST[A]
 
-  def fromArray[A:ClassTag:Extra:LBEv](array: Array[A]): Set[A] = {
+  def fromArray[A:Methods:Extra:LBEv](array: Array[A]): ST[A] = {
     val sset = ofSize[A](array.length)
     cforRange(0 until array.length) { i =>
-      sset += array(i)
+      sset.ptrAddKeyFromArray(array, i)
     }
     sset
   }

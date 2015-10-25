@@ -4,7 +4,7 @@ import scala.annotation.tailrec
 
 import spire.util.Opt
 
-trait JavaMethods[T <: JavaMethods[T]] extends Countable { lhs: T =>
+trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
 
   def ptrToString(p: VPtr[Tag]): String
 
@@ -13,6 +13,8 @@ trait JavaMethods[T <: JavaMethods[T]] extends Countable { lhs: T =>
   def ptrCastT(any: Any): Opt[T]
 
   def ptrEquals(thisPtr: VPtr[Tag], that: T): Boolean
+
+  def priorityEquals: Boolean = false
 
   /** Checks if two collections are equal.
     * 
@@ -23,12 +25,15 @@ trait JavaMethods[T <: JavaMethods[T]] extends Countable { lhs: T =>
     * will return false.
     */
   override def equals(any: Any): Boolean = ptrCastT(any) match {
-    case Opt(rhs) if lhs.size == rhs.size =>
-      @tailrec def rec(ptr: Ptr[Tag]): Boolean = ptr match {
-        case VPtr(vp) if ptrEquals(vp, rhs) => rec(ptrNext(vp))
-        case _ => true
-      }
-      rec(ptr)
+    case Opt(rhs) =>
+      if (rhs.priorityEquals) (rhs == lhs)
+      else if (lhs.size == rhs.size) {
+        @tailrec def rec(ptr: Ptr[Tag]): Boolean = ptr match {
+          case VPtr(vp) if ptrEquals(vp, rhs) => rec(ptrNext(vp))
+          case _ => true
+        }
+        rec(ptr)
+      } else false
     case _ => false
   }
 

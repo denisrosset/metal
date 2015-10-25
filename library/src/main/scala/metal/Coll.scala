@@ -14,6 +14,8 @@ trait IColl extends FColl
 
 trait MColl extends FColl {
 
+  var immutable: Boolean = false
+
   def result(): IType
 
 }

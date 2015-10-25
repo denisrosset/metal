@@ -1,73 +1,26 @@
-## PtrColl - Pointer collections
+## Metal - fast unboxed data structures for Scala
 
-PtrColl provides fast, specialized mutable collections that never boxe neither
-allocate helper objects.
+Metal provides fast mutable *containers* whose performance should be close to
+hand-written data structures using raw Java arrays.
 
-The library is heavily inspired by [Debox](http://github.com/non/debox), and uses
-parts of its code (hashed sets and maps).
+In particular:
 
-For performance reasons, PtrColl's types are neither compatible with Scala's
+- Metal containers are themselves not specialized, but, thank to macros, avoid
+  boxing when accessing, storing and updating elements;
+- Metal provides higher-order methods such as `foreach`, `count`, `exists`, ...
+  that are translated into `while` loops during compilation, and whose arguments
+  are inlined, to avoid allocation of closures;
+- Scala iterators are replaced by pointers, represented by value classes that can
+  be manipulated as primitives;
+- mutable containers can be used as builders for immutable containers without
+  additional allocations.
+
+The library is inspired by [Debox](http://github.com/non/debox), and reuses
+parts of its data structures (for example the data structures behind hashed sets and maps).
+
+For performance reasons, Metal's types are neither compatible with Scala's
 collections framework, nor the Debox implementations.
 
-The set of methods available on PtrColl instances is very limited, but guarantees
+The set of methods available on Metal instances is limited, but guarantees
 that no allocations occur outside those for the underlying storage of the collection
 items.
-
-PtrColl replaces collection iterators by collection pointers; under the hood, these
-pointers are represented by primitive values (scala Long) whose interpretation
-depend on the particular collection they are attached to.
-
-Given a collection `coll` and a pointer `ptr: coll.Ptr`, three operations
-can be called:
-
-- `ptr.hasAt: Boolean` checks if the pointer points to an object in the
-underlying collection, or if the pointer is outside the collection bounds,
-- `ptr.at: A` retrieves the value pointed,
-- `ptr.next: Ptr` returns a pointer to the next element in the collection.
-
-PtrColl has an implicit syntax mechanism borrowed from
-[Spire](http://github.com/non/spire) and automatically calls the corresponding
-methods on the collection.
-
-In the future, macros could be used to generate automatically the (light)
-boilerplate needed for operations such as `foreach`, `forall`, `exists`
-and so on.
-
-A simple code example is given by:
-
-```scala
-import net.alasc.ptrcoll
-
-import ptrcoll.syntax.all._
-import ptrcoll.sets._
-
-// collection instance (standard syntax)
-val set = HashSSet("Hi", "Ho", "Ha")
-
-// import of the collection pointer typeclass
-import set.PtrTC
-
-// initializes a pointer to the first element
-var ptr = set.pointer
-
-// iterates through the set
-while (ptr.hasAt) {
-  println(ptr.at)
-  ptr = ptr.next
-}
-```
-
-No allocation is ever performed after the initialization of `set`.
-
-### Collection types
-
-Only sets (named `SSet`, doubling the initial letter) are implemented
-for now in three variants:
-
-- `BitSSet` is a variant of `scala.collection.mutable.BitSet`, where
-the set of integers is encoded as a bitstring in a `Array[Long]`,
-- `SortedSSet` stores the elements in a sorted array, and checks
-  membership using a binary search,
-- `HashSSet` uses a hash table implementation coming from Debox.
-
-Additional types such as `MMap` and `BBuffer` are on the roadmap.

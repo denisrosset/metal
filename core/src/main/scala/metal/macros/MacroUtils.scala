@@ -1,4 +1,5 @@
 package metal
+package macros
 
 import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
 import spire.macros.{SyntaxUtil, InlineUtil}
@@ -33,14 +34,18 @@ object MacroUtils {
     }
   }
 
+  def findType[TC[_]](c: Context)(lhs: c.Tree)(implicit tc: c.WeakTypeTag[TC[_]]): c.Type = {
+    import c.universe._
+    val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
+    val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
+    tcTypeParam.asSeenFrom(lhs.tpe, tcClass)
+  }
+
   def findLhsType[TC[_]](c: Context)(implicit tc: c.WeakTypeTag[TC[_]]): (c.Tree, c.Type) = {
     import c.universe._
     c.prefix.tree match {
       case Apply(TypeApply(_, _), List(lhs)) =>
-        val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
-        val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
-        val aType: Type = tcTypeParam.asSeenFrom(lhs.tpe, tcClass)
-        (lhs, aType)
+        (lhs, findType[TC](c)(lhs))
       case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
     }
   }

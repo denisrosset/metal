@@ -9,7 +9,7 @@ import spire.std.int._
 class SetSuite extends FunSuite {
 
   test("Set operations") {
-    val set = HashSet.empty[String]
+    val set = MHashSet.empty[String]
     set += "Test"
     assert(set.contains("Test"))
     set += "Test1"
@@ -18,16 +18,16 @@ class SetSuite extends FunSuite {
     assert(!set.contains("Test"))
   }
 
-  test("Set[Int].foreach") {
-    val set: Set[Int] = HashSet(0,3,5,6)
+  test("MSet[Int].foreach") {
+    val set: MSet[Int] = MHashSet(0,3,5,6)
     var sum = 0
-    set.foreach { i => sum += i }
+    set.ptr.foreach { p => sum += p.key }
     assert(sum == 14)
   }
 
   test("Set[Int].count") {
-    val set: Set[Int] = SortedSet(0,1,2,3,5,6,10)
-    assert(set.count(_ > 4) == 3)
+    val set: MSet[Int] = MSortedSet(0,1,2,3,5,6,10)
+    assert(set.ptr.count { p => val k = p.key; k > 4 } == 3)
   }
 
 }

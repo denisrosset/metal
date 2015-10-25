@@ -1,4 +1,4 @@
-Design of pointer collections
-=============================
+Design of pointable containers
+==============================
 
-WithPointer
+The elements in containers should be stored in raw Java arrays. 

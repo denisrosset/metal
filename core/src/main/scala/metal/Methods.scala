@@ -4,7 +4,9 @@ import scala.reflect.ClassTag
 
 trait Methods[@specialized A] {
 
-  implicit def classTag: ClassTag[A]
+  protected def classTag: ClassTag[A]
+
+  def newArray(n: Int): Array[A] = classTag.newArray(n)
 
   def fillValue: A
 
@@ -20,6 +22,8 @@ trait Methods[@specialized A] {
     case that: Methods[_] => Methods.this.classTag == that.classTag
     case _ => false
   }
+
+  override def hashCode: Int = classTag.hashCode
 
 }
 
@@ -64,16 +68,22 @@ abstract class SpecMethods[@specialized A](val fillValue: A)(implicit val classT
 trait Methods0 {
 
   implicit def anyVal[A <: AnyVal: ClassTag]: Methods[A] = new Methods[A] {
-    def classTag = implicitly[ClassTag[A]]
-    def fillValue: A = new Array[A](0)(0)
+
+    protected def classTag: ClassTag[A] = implicitly[ClassTag[A]]
+    def fillValue: A = classTag.newArray(0)(0)
     final def hash(a: A): Int = a.hashCode
+
   }
-  
-  implicit val anyRef: Methods[AnyRef] = new Methods[AnyRef] {
-    def classTag = implicitly[ClassTag[AnyRef]]
+
+  object AnyRefMethods extends Methods[AnyRef] {
+
+    protected def classTag: ClassTag[AnyRef] = implicitly[ClassTag[AnyRef]]
     final def fillValue: AnyRef = null
     final def hash(a: AnyRef): Int = a.hashCode
+
   }
+
+  implicit def anyRef[A <: AnyRef]: Methods[A] = AnyRefMethods.asInstanceOf[Methods[A]]
 
 }
 
@@ -122,58 +132,57 @@ object Methods extends Methods1 {
 
   def apply[@specialized A](implicit A: Methods[A]): Methods[A] = A
 
-  implicit val byte: Methods[Byte] = new SpecMethods[Byte](0) {
+  implicit val Byte: Methods[Byte] = new SpecMethods[Byte](0) {
     final def hash(a: Byte): Int = a.toInt
   }
 
-  implicit val short: Methods[Short] = new SpecMethods[Short](0) {
+  implicit val Short: Methods[Short] = new SpecMethods[Short](0) {
     final def hash(a: Short): Int = a.toInt
   }
 
-  implicit val int: Methods[Int] = new SpecMethods[Int](0) {
+  implicit val Int: Methods[Int] = new SpecMethods[Int](0) {
     final def hash(a: Int): Int = a
   }
 
-  implicit val long: Methods[Long] = new SpecMethods[Long](0) {
+  implicit val Long: Methods[Long] = new SpecMethods[Long](0) {
     final def hash(a: Long): Int = (a ^ (a >>> 32)).toInt
   }
 
-  implicit val boolean: Methods[Boolean] = new SpecMethods[Boolean](false) {
+  implicit val Boolean: Methods[Boolean] = new SpecMethods[Boolean](false) {
     private[this] val trueMethods =  true.hashCode
     private[this] val falseMethods = false.hashCode
     final def hash(a: Boolean): Int = if (a) trueMethods else falseMethods
   }
 
-  implicit val unit: Methods[Unit] = new SpecMethods[Unit]( () ) {
+  implicit val Unit: Methods[Unit] = new SpecMethods[Unit]( () ) {
     private[this] val unitMethods =  ().hashCode
     final def hash(a: Unit): Int = unitMethods
   }
 
-  implicit val char: Methods[Char] = new SpecMethods[Char](0) {
+  implicit val Char: Methods[Char] = new SpecMethods[Char](0) {
     final def hash(a: Char): Int = java.lang.Character.hashCode(a)
   }
 
 
-  implicit val float: Methods[Float] = new SpecMethods[Float](0.0f) {
+  implicit val Float: Methods[Float] = new SpecMethods[Float](0.0f) {
     final def hash(a: Float): Int = java.lang.Float.floatToIntBits(a)
   }
 
-  implicit val double: Methods[Double] = new SpecMethods[Double](0.0d) {
+  implicit val Double: Methods[Double] = new SpecMethods[Double](0.0d) {
     final def hash(a: Double): Int = {
       val v = java.lang.Double.doubleToLongBits(a)
         ((v >>> 32) ^ v).toInt
     }
   }
 
-  implicit val longArray: Methods[Array[Long]] = new ArrayMethods[Long]
-  implicit val intArray: Methods[Array[Int]] = new ArrayMethods[Int]
-  implicit val shortArray: Methods[Array[Short]] = new ArrayMethods[Short]
-  implicit val byteArray: Methods[Array[Byte]] = new ArrayMethods[Byte]
-  implicit val charArray: Methods[Array[Char]] = new ArrayMethods[Char]
-  implicit val booleanArray: Methods[Array[Boolean]] = new ArrayMethods[Boolean]
-  implicit val doubleArray: Methods[Array[Double]] = new ArrayMethods[Double]
-  implicit val floatArray: Methods[Array[Float]] = new ArrayMethods[Float]
-  implicit val unitArray: Methods[Array[Unit]] = new ArrayMethods[Unit]
-  implicit val anyRefArray: Methods[Array[AnyRef]] = new ArrayMethods[AnyRef]
+  implicit val LongArray: Methods[Array[Long]] = new ArrayMethods[Long]
+  implicit val IntArray: Methods[Array[Int]] = new ArrayMethods[Int]
+  implicit val ShortArray: Methods[Array[Short]] = new ArrayMethods[Short]
+  implicit val ByteArray: Methods[Array[Byte]] = new ArrayMethods[Byte]
+  implicit val CharArray: Methods[Array[Char]] = new ArrayMethods[Char]
+  implicit val BooleanArray: Methods[Array[Boolean]] = new ArrayMethods[Boolean]
+  implicit val DoubleArray: Methods[Array[Double]] = new ArrayMethods[Double]
+  implicit val FloatArray: Methods[Array[Float]] = new ArrayMethods[Float]
+  implicit val UnitArray: Methods[Array[Unit]] = new ArrayMethods[Unit]
 
 }

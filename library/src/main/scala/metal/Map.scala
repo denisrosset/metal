@@ -6,7 +6,7 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 import spire.util.Opt
 
-trait FMap[K, V] extends FColl with ShapeKV with Searchable[K] with Countable with Values[V] with JavaMethods[FMap[K, V]] { lhs =>
+trait FMap[K, V] extends FColl with ElementsKV[K, V] with Searchable[K] with Enumerable with Values[V] with JavaMethods[FMap[K, V]] { lhs =>
 
   implicit def K: Methods[K]
   implicit def V: Methods[V]
@@ -14,7 +14,9 @@ trait FMap[K, V] extends FColl with ShapeKV with Searchable[K] with Countable wi
   type IType <: IMap[K, V]
   type MType <: MMap[K, V]
 
-  override def stringPrefix = "Map"
+  def mutableCopy(): MMap[K, V] with MType
+
+  override def stringPrefix = "FMap"
 
   final def ptrCastT(any: Any): Opt[FMap[K, V]] = any match {
     case rhs: FMap[K, V] if lhs.K == rhs.K && lhs.V == rhs.V => Opt(rhs)
@@ -23,7 +25,6 @@ trait FMap[K, V] extends FColl with ShapeKV with Searchable[K] with Countable wi
 
   def keyArray(ptr: VPtr[Tag]): Array[K]
   def keyIndex(ptr: VPtr[Tag]): Int
-
   def valueArray(ptr: VPtr[Tag]): Array[V]
   def valueIndex(ptr: VPtr[Tag]): Int
 
@@ -48,10 +49,10 @@ trait FMap[K, V] extends FColl with ShapeKV with Searchable[K] with Countable wi
 
 }
 
-trait IMap[K, V] extends IColl with FMap[K, V] {
-
-}
+trait IMap[K, V] extends IColl with FMap[K, V]
 
 trait MMap[K, V] extends MColl with FMap[K, V] with AddKeys[K] with Removable[K] with Updatable[V] {
+
+  def result(): IMap[K, V] with IType
 
 }
