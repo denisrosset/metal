@@ -13,6 +13,11 @@ trait Call {
     */
   def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree
 
+  /** Instantiates a call to the function/tree `body`, using the elements pointed to by the pointer
+    * named `pointerName` on container `containerName`, providing `value` as a first argument to the 
+    * function (i.e. as in `foldLeft`).
+    */
+
   def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree
 
 }
@@ -80,7 +85,7 @@ $body($v)
 """
   }
 
-    def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
+  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
     val v = util.name("v")
     val vType = findType[Values](c)(lhs)
