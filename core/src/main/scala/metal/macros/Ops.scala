@@ -15,54 +15,6 @@ object Ops {
     c.Expr[Boolean](q"$lhs.ptrFind[$kType]($key).nonNull")
   }
 
-  def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
-    import c.universe._
-    val (lhs, kType) = findLhsType[Keys](c)
-    val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
-    c.Expr[Boolean](q"""
-{
-  val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match { 
-    case VPtr(vp) => 
-      $lhsCache.ptrRemove(vp)
-      true
-    case _ => 
-      false 
-  }
-}""")
-  }
-
-  def -=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
-    import c.universe._
-    val (lhs, kType) = findLhsType[Removable](c)
-    val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
-    c.Expr[T](q"""
-{
-  val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrRemove(vp)
-    case _ => 
-  }
-  $lhsCache
-}
-""")
-  }
-
-  def +=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
-    import c.universe._
-    val (lhs, kType) = findLhsType[AddKeys](c)
-    val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
-    c.Expr[T](q"""
-{
-  val $lhsCache = $lhs
-  $lhsCache.ptrAddKey[$kType]($key)
-  $lhsCache
-}""")
-  }
-
   def add[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
     import c.universe._
     val util = SyntaxUtil[c.type](c)
@@ -77,6 +29,54 @@ object Ops {
   val $contained = $lhsCache.ptrFind[$kType]($keyCache).nonNull
   $lhsCache.ptrAddKey[$kType]($keyCache)
   $contained
+}
+""")
+    }
+
+  def +=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[AddKeys](c)
+    val util = SyntaxUtil[c.type](c)
+    val lhsCache = util.name("$lhsCache")
+    c.Expr[T](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrAddKey[$kType]($key)
+  $lhsCache
+}""")
+  }
+
+  def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[Keys](c)
+    val util = SyntaxUtil[c.type](c)
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    c.Expr[Boolean](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match { 
+    case VPtr($vp) => 
+      $lhsCache.ptrRemove($vp)
+      true
+    case _ => 
+      false 
+  }
+}""")
+  }
+
+  def -=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
+    import c.universe._
+    val (lhs, kType) = findLhsType[Removable](c)
+    val util = SyntaxUtil[c.type](c)
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    c.Expr[T](q"""
+{
+  val $lhsCache = $lhs
+  $lhsCache.ptrFind[$kType]($key) match {
+    case VPtr($vp) => $lhsCache.ptrRemove($vp)
+    case _ => 
+  }
+  $lhsCache
 }
 """)
   }
@@ -94,17 +94,16 @@ object Ops {
 """)
   }
 
-
   def containsItem[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Boolean] = {
     import c.universe._
     val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[Boolean](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue[$vType](vp) == $value
+    case VPtr($vp) => $lhsCache.ptrValue[$vType]($vp) == $value
     case _ => false
   }
 }
@@ -115,12 +114,12 @@ object Ops {
     import c.universe._
     val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[V](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue[$vType](vp)
+    case VPtr($vp) => $lhsCache.ptrValue[$vType]($vp)
     case _ => throw new NoSuchElementException("key not found: " + $key)
   }
 }
@@ -131,12 +130,12 @@ object Ops {
     import c.universe._
     val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[V](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue[$vType](vp)
+    case VPtr($vp) => $lhsCache.ptrValue[$vType]($vp)
     case _ => $fallback
   }
 }
@@ -147,13 +146,13 @@ object Ops {
     import c.universe._
     val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[Opt[V]](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) =>
-      spire.util.Opt[$vType]($lhsCache.ptrValue[$vType](vp))
+    case VPtr($vp) =>
+      spire.util.Opt[$vType]($lhsCache.ptrValue[$vType]($vp))
     case _ => spire.util.Opt.empty[$vType]
   }
 }
@@ -192,12 +191,12 @@ object Ops {
     import c.universe._
     val (lhs, kType, v1Type) = findLhsTypeType[Searchable, Values1](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[V1](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue1[$v1Type](vp)
+    case VPtr($vp) => $lhsCache.ptrValue1[$v1Type]($vp)
     case _ => throw new NoSuchElementException("key not found: " + $key)
   }
 }
@@ -208,12 +207,12 @@ object Ops {
     import c.universe._
     val (lhs, kType, v1Type) = findLhsTypeType[Searchable, Values1](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[V1](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue1[$v1Type](vp)
+    case VPtr($vp) => $lhsCache.ptrValue1[$v1Type]($vp)
     case _ => $fallback
   }
 }
@@ -224,13 +223,13 @@ object Ops {
     import c.universe._
     val (lhs, kType, v1Type) = findLhsTypeType[Searchable, Values1](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[Opt[V1]](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) =>
-      spire.util.Opt[$v1Type]($lhsCache.ptrValue1[$v1Type](vp))
+    case VPtr($vp) =>
+      spire.util.Opt[$v1Type]($lhsCache.ptrValue1[$v1Type]($vp))
     case _ => spire.util.Opt.empty[$v1Type]
   }
 }
@@ -241,12 +240,12 @@ object Ops {
     import c.universe._
     val (lhs, kType, v2Type) = findLhsTypeType[Searchable, Values2](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[V2](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue2[$v2Type](vp)
+    case VPtr($vp) => $lhsCache.ptrValue2[$v2Type]($vp)
     case _ => throw new NoSuchElementException("key not found: " + $key)
   }
 }
@@ -257,12 +256,12 @@ object Ops {
     import c.universe._
     val (lhs, kType, v2Type) = findLhsTypeType[Searchable, Values2](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[V2](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) => $lhsCache.ptrValue2[$v2Type](vp)
+    case VPtr($vp) => $lhsCache.ptrValue2[$v2Type]($vp)
     case _ => $fallback
   }
 }
@@ -273,13 +272,13 @@ object Ops {
     import c.universe._
     val (lhs, kType, v2Type) = findLhsTypeType[Searchable, Values2](c)
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
     c.Expr[Opt[V2]](q"""
 {
   val $lhsCache = $lhs
   $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr(vp) =>
-      spire.util.Opt[$v2Type]($lhsCache.ptrValue2[$v2Type](vp))
+    case VPtr($vp) =>
+      spire.util.Opt[$v2Type]($lhsCache.ptrValue2[$v2Type]($vp))
     case _ => spire.util.Opt.empty[$v2Type]
   }
 }
