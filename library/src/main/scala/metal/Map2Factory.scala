@@ -12,6 +12,18 @@ trait Map2Factory[KLB, KExtra[_], VLB1, VLB2, MP2[_, _, _] <: MMap2[_, _, _]] {
 
   def empty[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods]: MP2[K, V1, V2] = ofSize[K, V1, V2](0)
 
+  def apply[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](kv1v2Triples: (K, V1, V2)*): MP2[K, V1, V2] = {
+    val mmap2 = empty[K, V1, V2]
+    val tripleIt = kv1v2Triples.iterator
+    while (tripleIt.hasNext) {
+      val triple = tripleIt.next
+      val vp = mmap2.ptrAddKey(triple._1)
+      mmap2.ptrUpdate1(vp, triple._2)
+      mmap2.ptrUpdate2(vp, triple._3)
+    }
+    mmap2
+  }
+
   def ofSize[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](n: Int): MP2[K, V1, V2]
 
   def fromMap[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](map: scala.collection.Map[K, (V1, V2)]): MP2[K, V1, V2] = {

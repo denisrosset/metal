@@ -14,6 +14,17 @@ trait MapFactory[KLB, KExtra[_], VLB, MP[_, _] <: MMap[_, _]] {
 
   def ofSize[K:Methods:KExtra:KLBEv, V:Methods](n: Int): MP[K, V]
 
+  def apply[K:Methods:KExtra:KLBEv, V:Methods](kvPairs: (K, V)*): MP[K, V] = {
+    val mmap = empty[K, V]
+    val pairIt = kvPairs.iterator
+    while (pairIt.hasNext) {
+      val pair = pairIt.next
+      val vp = mmap.ptrAddKey(pair._1)
+      mmap.ptrUpdate(vp, pair._2)
+    }
+    mmap
+  }
+
   def fromMap[K:Methods:KExtra:KLBEv, V:Methods](map: scala.collection.Map[K, V]): MP[K, V] = {
     val mmap = empty[K, V]
     val keyIt = map.keysIterator
