@@ -97,6 +97,7 @@ class HashMapImpl[K, V](
   final def ptrRemove(ptr: VPtr[Tag]): Unit = {
     val j = ptr.v.toInt
     buckets(j) = 2
+    keys(j) = null.asInstanceOf[K]
     values(j) = null.asInstanceOf[V]
     len -= 1
   }

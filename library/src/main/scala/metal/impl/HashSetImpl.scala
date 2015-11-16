@@ -78,6 +78,7 @@ class HashSetImpl[K](
   final def ptrRemove(ptr: VPtr[Tag]): Unit = {
     val j = ptr.v.toInt
     buckets(j) = 2
+    items(j) = null.asInstanceOf[K]
     len -= 1
   }
 

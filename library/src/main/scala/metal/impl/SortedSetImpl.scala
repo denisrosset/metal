@@ -57,6 +57,7 @@ final class SortedSetImpl[K](var items: Array[K], var size: Long)(implicit val K
   final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
     val pos = ptr.v.toInt
     java.lang.System.arraycopy(items, pos + 1, items, pos, size.toInt - pos - 1)
+    items(size.toInt) = null.asInstanceOf[K]
     size -= 1
     if (pos >= size) Ptr.Null[Tag] else ptr
   }
