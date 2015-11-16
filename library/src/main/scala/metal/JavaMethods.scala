@@ -26,7 +26,7 @@ trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
     */
   override def equals(any: Any): Boolean = ptrCastT(any) match {
     case Opt(rhs) =>
-      if (rhs.priorityEquals) (rhs == lhs)
+      if (!lhs.priorityEquals && rhs.priorityEquals) (rhs == lhs)
       else if (lhs.size == rhs.size) {
         @tailrec def rec(ptr: Ptr[Tag]): Boolean = ptr match {
           case VPtr(vp) if ptrEquals(vp, rhs) => rec(ptrNext(vp))
