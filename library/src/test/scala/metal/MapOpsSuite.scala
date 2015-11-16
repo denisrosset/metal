@@ -67,6 +67,7 @@ class MapOpsSuite extends FunSuite {
   }
 
   test("get") {
+    val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
     assert(mII.get(6).isEmpty)
     assert(mII.get(1).isDefined)
     assert(mII.get(1).get == 2)
