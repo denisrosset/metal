@@ -75,7 +75,7 @@ final class SortedSetImpl[K](var items: Array[K], var size: Long)(implicit val K
     if (pos < 0) {
       val ipos = ~pos
       val newItemsL = if (size < itemsL.length) itemsL else {
-        val arr = (K.newArray(itemsL.length * 2)).asInstanceOf[Array[L]]
+        val arr = (K.newArray(itemsL.length.max(1) * 2)).asInstanceOf[Array[L]]
         java.lang.System.arraycopy(itemsL, 0, arr, 0, ipos)
         arr
       }
