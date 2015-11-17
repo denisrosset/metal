@@ -6,13 +6,13 @@ import spire.util.Opt
 
 trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
 
-  def ptrToString(p: VPtr[Tag]): String
+  def ptrToString(p: MyVPtr): String
 
-  def ptrHash(p: VPtr[Tag]): Int
+  def ptrHash(p: MyVPtr): Int
 
   def ptrCastT(any: Any): Opt[T]
 
-  def ptrEquals(thisPtr: VPtr[Tag], that: T): Boolean
+  def ptrEquals(thisPtr: MyVPtr, that: T): Boolean
 
   def priorityEquals: Boolean = false
 
@@ -28,8 +28,8 @@ trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
     case Opt(rhs) =>
       if (!lhs.priorityEquals && rhs.priorityEquals) (rhs == lhs)
       else if (lhs.size == rhs.size) {
-        @tailrec def rec(ptr: Ptr[Tag]): Boolean = ptr match {
-          case VPtr(vp) if ptrEquals(vp, rhs) => rec(ptrNext(vp))
+        @tailrec def rec(ptr: MyPtr): Boolean = ptr match {
+          case IsVPtr(vp) if ptrEquals(vp, rhs) => rec(ptrNext(vp))
           case _ => true
         }
         rec(ptr)
@@ -44,8 +44,8 @@ trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
     * regardless of the order those items appear.
     */
   override def hashCode: Int = {
-    @tailrec def rec(p: Ptr[Tag], h: Int): Int = p match {
-      case VPtr(vp) =>
+    @tailrec def rec(p: MyPtr, h: Int): Int = p match {
+      case IsVPtr(vp) =>
         rec(ptrNext(vp), h ^ ptrHash(vp))
       case _ => h
     }
@@ -58,8 +58,8 @@ trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
     val sb = new StringBuilder
     sb.append(stringPrefix)
     sb.append("(")
-    @tailrec def rec(p: Ptr[Tag], prefix: String): Unit = p match {
-      case VPtr(vp) =>
+    @tailrec def rec(p: MyPtr, prefix: String): Unit = p match {
+      case IsVPtr(vp) =>
         sb.append(prefix)
         sb.append(ptrToString(vp))
         rec(ptrNext(vp), ", ")

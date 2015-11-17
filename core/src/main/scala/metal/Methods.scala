@@ -65,7 +65,7 @@ abstract class SpecMethods[@specialized A](val fillValue: A)(implicit val classT
 
 }
 
-trait Methods0 {
+abstract class Methods0 {
 
   implicit def anyVal[A <: AnyVal: ClassTag]: Methods[A] = new Methods[A] {
 
@@ -87,48 +87,7 @@ trait Methods0 {
 
 }
 
-trait Methods1 extends Methods0 {
-
-  implicit def arrayMethods[A: ClassTag](implicit A: Methods[A]): Methods[Array[A]] = new ArrayMethods[A]
-
-}
-
-/** Methods for arrays treating them the same as immutable sequences. 
-  * The double specialization is needed to avoid boxing when using ArrayMethods unspecialized. */
-final class ArrayMethods[@specialized A: ClassTag](implicit A: Methods[A]) extends Methods[Array[A]] {
-
-  def classTag = implicitly[ClassTag[A]].wrap
-
-  def fillValue: Array[A] = null
-
-  def hashSpec[@specialized B](array: Array[B])(implicit d: Dummy[B]): Int = {
-    val B = A.asInstanceOf[Methods[B]]
-    import scala.util.hashing.MurmurHash3._
-    var h = arraySeed
-    var i = 0
-    while (i < array.length) {
-      h = mix(h, B.hash(array(i)))
-      i += 1
-    }
-    finalizeHash(h, array.length)
-  }
-
-  def hash(a: Array[A]): Int = (a.asInstanceOf[Array[_]]) match {
-    case array: Array[Long] => hashSpec[Long](array.asInstanceOf[Array[Long]])
-    case array: Array[Int] => hashSpec[Int](array.asInstanceOf[Array[Int]])
-    case array: Array[Short] => hashSpec[Short](array.asInstanceOf[Array[Short]])
-    case array: Array[Byte] => hashSpec[Byte](array.asInstanceOf[Array[Byte]])
-    case array: Array[Double] => hashSpec[Double](array.asInstanceOf[Array[Double]])
-    case array: Array[Float] => hashSpec[Float](array.asInstanceOf[Array[Float]])
-    case array: Array[Boolean] => hashSpec[Boolean](array.asInstanceOf[Array[Boolean]])
-    case array: Array[Char] => hashSpec[Char](array.asInstanceOf[Array[Char]])
-    case array: Array[Unit] => hashSpec[Unit](array.asInstanceOf[Array[Unit]])
-    case array: Array[A] => hashSpec[A](a)
-  }
-
-}
-
-object Methods extends Methods1 {
+object Methods extends Methods0 {
 
   def apply[@specialized A](implicit A: Methods[A]): Methods[A] = A
 
@@ -174,15 +133,5 @@ object Methods extends Methods1 {
         ((v >>> 32) ^ v).toInt
     }
   }
-
-  implicit val LongArray: Methods[Array[Long]] = new ArrayMethods[Long]
-  implicit val IntArray: Methods[Array[Int]] = new ArrayMethods[Int]
-  implicit val ShortArray: Methods[Array[Short]] = new ArrayMethods[Short]
-  implicit val ByteArray: Methods[Array[Byte]] = new ArrayMethods[Byte]
-  implicit val CharArray: Methods[Array[Char]] = new ArrayMethods[Char]
-  implicit val BooleanArray: Methods[Array[Boolean]] = new ArrayMethods[Boolean]
-  implicit val DoubleArray: Methods[Array[Double]] = new ArrayMethods[Double]
-  implicit val FloatArray: Methods[Array[Float]] = new ArrayMethods[Float]
-  implicit val UnitArray: Methods[Array[Unit]] = new ArrayMethods[Unit]
 
 }

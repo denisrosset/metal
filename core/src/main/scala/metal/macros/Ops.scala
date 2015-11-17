@@ -9,16 +9,18 @@ import MacroUtils._
 
 object Ops {
 
-  def contains[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+  def contains[K:c.WeakTypeTag](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
     import c.universe._
-    val (lhs, kType) = findLhsType[Keys](c)
-    c.Expr[Boolean](q"$lhs.ptrFind[$kType]($key).nonNull")
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    c.Expr[Boolean](q"$lhs.ptrFind[$tagK]($key).nonNull")
   }
 
-  def add[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+  def add[K:c.WeakTypeTag](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
     import c.universe._
     val util = SyntaxUtil[c.type](c)
-    val (lhs, kType) = findLhsType[AddKeys](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
     val lhsCache = util.name("lhsCache")
     val keyCache = util.name("keyCache")
     val contained = util.name("contained")
@@ -26,139 +28,153 @@ object Ops {
 {
   val $lhsCache = $lhs
   val $keyCache = $key
-  val $contained = $lhsCache.ptrFind[$kType]($keyCache).nonNull
-  $lhsCache.ptrAddKey[$kType]($keyCache)
+  val $contained = $lhsCache.ptrFind[$tagK]($keyCache).nonNull
+  $lhsCache.ptrAddKey[$tagK]($keyCache)
   $contained
 }
 """)
     }
 
-  def +=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
+  def +=[K:c.WeakTypeTag, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
     import c.universe._
-    val (lhs, kType) = findLhsType[AddKeys](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
     val util = SyntaxUtil[c.type](c)
     val lhsCache = util.name("$lhsCache")
     c.Expr[T](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrAddKey[$kType]($key)
+  $lhsCache.ptrAddKey[$tagK]($key)
   $lhsCache
 }""")
   }
 
-  def remove[K](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
+  def remove[K:c.WeakTypeTag](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
     import c.universe._
-    val (lhs, kType) = findLhsType[Keys](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[Boolean](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match { 
-    case VPtr($vp) => 
-      $lhsCache.ptrRemove($vp)
-      true
-    case _ => 
-      false 
-  }
+  val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
+  if ($ptr.nonNull) {
+    $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+    true
+  } else false
 }""")
   }
 
-  def -=[K, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
+  def -=[K:c.WeakTypeTag, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
     import c.universe._
-    val (lhs, kType) = findLhsType[Removable](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[T](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr($vp) => $lhsCache.ptrRemove($vp)
-    case _ => 
-  }
+  val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
+  if ($ptr.nonNull)
+    $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
   $lhsCache
 }
 """)
   }
 
-  def update[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Unit] = {
+  def update[K:c.WeakTypeTag, V:c.WeakTypeTag](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Unit] = {
     import c.universe._
-    val (lhs, kType, vType) = findLhsTypeType[AddKeys, Updatable](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
     val lhsCache = util.name("$lhsCache")
     c.Expr[Unit](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrUpdate[$vType]($lhsCache.ptrAddKey[$kType]($key), $value)
+  $lhsCache.ptrUpdate[$tagV]($lhsCache.ptrAddKey[$tagK]($key), $value)
 }
 """)
   }
 
-  def containsItem[K, V](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Boolean] = {
+  def containsItem[K:c.WeakTypeTag, V:c.WeakTypeTag](c: Context)(key: c.Expr[K], value: c.Expr[V]): c.Expr[Boolean] = {
     import c.universe._
-    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[Boolean](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr($vp) => $lhsCache.ptrValue[$vType]($vp) == $value
-    case _ => false
-  }
+  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+  if ($ptr.nonNull) 
+    ($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)) == $value)
+  else
+    false
 }
 """)
   }
 
-  def apply[K, V](c: Context)(key: c.Expr[K]): c.Expr[V] = {
+  def apply[K:c.WeakTypeTag, V:c.WeakTypeTag](c: Context)(key: c.Expr[K]): c.Expr[V] = {
     import c.universe._
-    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr($vp) => $lhsCache.ptrValue[$vType]($vp)
-    case _ => throw new NoSuchElementException("key not found: " + $key)
-  }
+  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+  if ($ptr.nonNull) 
+    $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  else
+    throw new NoSuchElementException("key not found: " + $key)
 }
 """)
   }
 
-  def getOrElse[K, V](c: Context)(key: c.Expr[K], fallback: c.Expr[V]): c.Expr[V] = {
+  def getOrElse[K:c.WeakTypeTag, V:c.WeakTypeTag](c: Context)(key: c.Expr[K], fallback: c.Expr[V]): c.Expr[V] = {
     import c.universe._
-    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr($vp) => $lhsCache.ptrValue[$vType]($vp)
-    case _ => $fallback
-  }
+  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+  if ($ptr.nonNull) 
+    $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  else
+    $fallback
 }
 """)
   }
 
-  def get[K, V](c: Context)(key: c.Expr[K]): c.Expr[Opt[V]] = {
+  def get[K:c.WeakTypeTag, V:c.WeakTypeTag](c: Context)(key: c.Expr[K]): c.Expr[Opt[V]] = {
     import c.universe._
-    val (lhs, kType, vType) = findLhsTypeType[Searchable, Values](c)
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, vp) = util.names("$lhsCache", "$vp")
+    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[Opt[V]](q"""
 {
   val $lhsCache = $lhs
-  $lhsCache.ptrFind[$kType]($key) match {
-    case VPtr($vp) =>
-      spire.util.Opt[$vType]($lhsCache.ptrValue[$vType]($vp))
-    case _ => spire.util.Opt.empty[$vType]
-  }
+  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+  if ($ptr.nonNull)
+    _root_.spire.util.Opt[$tagV]($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  else
+    _root_. spire.util.Opt.empty[$tagV]
 }
 """)
   }
 
+/*
   def update2[K, V1, V2](c: Context)(key: c.Expr[K], value: c.Expr[(V1, V2)]): c.Expr[Unit] = {
     import c.universe._
     val (lhs, kType, v1Type, v2Type) = findLhsTypeTypeType[AddKeys, Updatable1, Updatable2](c)
@@ -284,5 +300,5 @@ object Ops {
 }
 """)
   }
-
+ */
 }

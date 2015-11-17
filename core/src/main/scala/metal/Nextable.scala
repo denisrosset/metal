@@ -6,9 +6,11 @@ package metal
   */
 trait Nextable extends Pointable {
 
+  type Cap <: Nextable
+
   /** Returns a pointer to the next element if available,
     * or returns a null pointer.
     */
-  def ptrNext(ptr: VPtr[Tag]): Ptr[Tag]
+  def ptrNext(ptr: MyVPtr): MyPtr
 
 }

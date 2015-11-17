@@ -29,14 +29,15 @@ class HashSetImpl[K](
   /** Point at which we should grow. */
   var limit: Int)(implicit val K: Methods[K]) extends IHashSet[K] with MHashSet[K] { self =>
 
+  type Cap = Nextable with Removable with Elements[K] with Keys[K] with Searchable[K]
   // Set implementation
 
   @inline final def isEmpty = len == 0
 
   @inline final def nonEmpty = !isEmpty
 
-  def keyArray(ptr: VPtr[Tag]): Array[K] = items
-  def keyIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
+  def keyArray(ptr: MyVPtr): Array[K] = items
+  def keyIndex(ptr: MyVPtr): Int = ptr.raw.toInt
 
   def result(): IHashSet[K] = this
 
@@ -56,35 +57,35 @@ class HashSetImpl[K](
     * On average, this is an O(1) operation; the (unlikely) worst-case
     * is O(n).
     */
-  final def ptrFind[@specialized L](key: L): Ptr[Tag] = {
+  final def ptrFind[@specialized L](key: L): MyPtr = {
     val itemsL = items.asInstanceOf[Array[L]]
-    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): MyPtr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && itemsL(j) == key) VPtr[Tag](j)
+      if (status == 0) Ptr.`null`[Tag, Cap]
+      else if (status == 3 && itemsL(j) == key) VPtr[Tag, Cap](j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = key.## & 0x7fffffff
     loop(i, i)
   }
 
-  final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
+  final def ptrRemoveAndAdvance(ptr: MyVPtr): MyPtr = {
     val next = ptrNext(ptr)
     ptrRemove(ptr)
     next
   }
 
-  final def ptrRemove(ptr: VPtr[Tag]): Unit = {
-    val j = ptr.v.toInt
+  final def ptrRemove(ptr: MyVPtr): Unit = {
+    val j = ptr.raw.toInt
     buckets(j) = 2
     items(j) = null.asInstanceOf[K]
     len -= 1
   }
 
-  final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
+  final def ptrAddKey[@specialized L](key: L): MyVPtr = {
     val itemsL = items.asInstanceOf[Array[L]]
-    @inline def addHere(j: Int, oldStatus: Int): VPtr[Tag] = {
+    @inline def addHere(j: Int, oldStatus: Int): MyVPtr = {
       itemsL(j) = key
       buckets(j) = 3
       len += 1
@@ -93,20 +94,20 @@ class HashSetImpl[K](
         if (used > limit) {
           grow()
           ptrFind[L](key).get
-        } else VPtr[Tag](j)
-      } else VPtr[Tag](j)
+        } else VPtr[Tag, Cap](j)
+      } else VPtr[Tag, Cap](j)
     }
 
-    @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): MyVPtr = {
       val j = i & mask
       val status = buckets(j)
       if (status == 3) {
         if (itemsL(j) == key)
-          VPtr[Tag](j)
+          VPtr[Tag, Cap](j)
         else
           loop((i << 2) + i + perturbation + 1, perturbation >> 5)
       } else if (status == 2) ptrFind[L](key) match {
-        case VPtr(vp) => vp
+        case IsVPtr(vp) => vp
         case _ => addHere(j, status)
       } else addHere(j, status)
     }
@@ -162,20 +163,23 @@ class HashSetImpl[K](
     limit = that.limit
   }
 
-  final def ptr: Ptr[Tag] = {
+  final def ptr: MyPtr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
+    if (i < buckets.length) VPtr[Tag, Cap](i) else Ptr.`null`[Tag, Cap]
   }
 
-  final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
-    var i = ptr.v.toInt + 1
+  final def ptrNext(ptr: MyVPtr): MyPtr = {
+    var i = ptr.raw.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
+    if (i < buckets.length) VPtr[Tag, Cap](i) else Ptr.`null`[Tag, Cap]
   }
 
-  final def ptrKey[@specialized L](ptr: VPtr[Tag]): L =
-    items.asInstanceOf[Array[L]](ptr.v.toInt)
+  final def ptrKey[@specialized L](ptr: MyVPtr): L =
+    items.asInstanceOf[Array[L]](ptr.raw.toInt)
+
+  final def ptrElement[@specialized E](ptr: MyVPtr): E =
+    items.asInstanceOf[Array[E]](ptr.raw.toInt)
 
 }
 

@@ -2,9 +2,11 @@ package metal
 
 trait Updatable2[V2] extends Values2[V2] {
 
-  def ptrUpdate2[@specialized W2](ptr: VPtr[Tag], v: W2): Unit
+  type Cap <: Updatable2[V2]
 
-  def ptrUpdate2FromArray(ptr: VPtr[Tag], array: Array[_], i: Int): Unit = array match {
+  def ptrUpdate2[@specialized W2](ptr: MyVPtr, v: W2): Unit
+
+  def ptrUpdate2FromArray(ptr: MyVPtr, array: Array[_], i: Int): Unit = array match {
     case a: Array[Double] => ptrUpdate2[Double](ptr, a.asInstanceOf[Array[Double]](i))
     case a: Array[Float] => ptrUpdate2[Float](ptr, a.asInstanceOf[Array[Float]](i))
     case a: Array[Long] => ptrUpdate2[Long](ptr, a.asInstanceOf[Array[Long]](i))

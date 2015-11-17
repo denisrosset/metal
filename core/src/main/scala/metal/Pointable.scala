@@ -8,4 +8,12 @@ trait Pointable {
     */
   trait Tag
 
+  /** Capabilities of this container. */
+  type Cap <: Pointable
+
+  /** Own pointer type. */
+  type MyPtr = Ptr[Tag, Cap]
+  /** Own valid pointer type. */
+  type MyVPtr = VPtr[Tag, Cap]
+
 }

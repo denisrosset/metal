@@ -2,9 +2,11 @@ package metal
 
 trait Updatable[V] extends Values[V] {
 
-  def ptrUpdate[@specialized W](ptr: VPtr[Tag], v: W): Unit
+  type Cap <: Updatable[V]
 
-  def ptrUpdateFromArray(ptr: VPtr[Tag], array: Array[_], i: Int): Unit = array match {
+  def ptrUpdate[@specialized W](ptr: MyVPtr, v: W): Unit
+
+  def ptrUpdateFromArray(ptr: MyVPtr, array: Array[_], i: Int): Unit = array match {
     case a: Array[Double] => ptrUpdate[Double](ptr, a.asInstanceOf[Array[Double]](i))
     case a: Array[Float] => ptrUpdate[Float](ptr, a.asInstanceOf[Array[Float]](i))
     case a: Array[Long] => ptrUpdate[Long](ptr, a.asInstanceOf[Array[Long]](i))

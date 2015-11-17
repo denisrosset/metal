@@ -1,11 +1,11 @@
 package metal
 
-trait Searchable[K] extends Keys[K] {
+trait Searchable[K] extends Keys[K] { self =>
 
   /** Returns a pointer to the given item, if it exists, or null. */
-  def ptrFind[@specialized L](key: L): Ptr[Tag]
+  def ptrFind[@specialized L](key: L): MyPtr
 
-  def ptrFindFromArray(array: Array[_], i: Int): Ptr[Tag] = array match {
+  def ptrFindFromArray(array: Array[_], i: Int): MyPtr = array match {
     // the additional type cast is needed to avoid boxing
     case a: Array[Double] => ptrFind[Double](a.asInstanceOf[Array[Double]](i))
     case a: Array[Float] => ptrFind[Float](a.asInstanceOf[Array[Float]](i))

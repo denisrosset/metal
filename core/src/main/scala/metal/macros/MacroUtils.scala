@@ -6,22 +6,10 @@ import spire.macros.{SyntaxUtil, InlineUtil}
 
 object MacroUtils {
 
-  def extract[T](c: Context)(implicit tagT: c.WeakTypeTag[T]): (c.Symbol, c.Type) = {
+  def extractPath[T:c.WeakTypeTag](c: Context): c.Symbol = {
     import c.universe._
-    tagT.tpe match {
-      case TypeRef(containerType@SingleType(_, container), _, Nil) => (container, containerType)
-      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
-    }
-  }
-
-  def extractTypeOf[T, TC[_]](c: Context)(implicit tagT: c.WeakTypeTag[T], tc: c.WeakTypeTag[TC[_]]): (c.Symbol, c.Type, c.Type) = {
-    import c.universe._
-    tagT.tpe match {
-      case TypeRef(containerType@SingleType(_, container), _, Nil) =>
-        val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
-        val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
-        val aType: Type = tcTypeParam.asSeenFrom(containerType, tcClass)
-        (container, containerType, aType)
+    implicitly[c.WeakTypeTag[T]].tpe match {
+      case TypeRef(SingleType(_, container), _, Nil) => container
       case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
     }
   }
@@ -31,6 +19,29 @@ object MacroUtils {
     c.prefix.tree match {
       case Apply(TypeApply(_, _), List(lhs)) => lhs
       case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
+    }
+  }
+
+   /*
+  def extract[T](c: Context)(implicit tagT: c.WeakTypeTag[T]): (c.Symbol, c.Type) = {
+    import c.universe._
+    tagT.tpe match {
+      case TypeRef(containerType@SingleType(_, container), _, Nil) => (container, containerType)
+      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
+    }
+  }
+   */
+
+  /*
+  def extractTypeOf[T, TC[_]](c: Context)(implicit tagT: c.WeakTypeTag[T], tc: c.WeakTypeTag[TC[_]]): (c.Symbol, c.Type, c.Type) = {
+    import c.universe._
+    tagT.tpe match {
+      case TypeRef(containerType@SingleType(_, container), _, Nil) =>
+        val tcClass: ClassSymbol = tc.tpe.typeSymbol.asClass
+        val tcTypeParam: Type = tcClass.typeParams(0).asType.toType
+        val aType: Type = tcTypeParam.asSeenFrom(containerType, tcClass)
+        (container, containerType, aType)
+      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
     }
   }
 
@@ -81,6 +92,6 @@ object MacroUtils {
         (lhs, a1Type, a2Type, a3Type)
       case t => c.abort(c.enclosingPosition, "Cannot extract subject of operation (tree = %s)" format t)
     }
-  }
+  }*/
 
 }

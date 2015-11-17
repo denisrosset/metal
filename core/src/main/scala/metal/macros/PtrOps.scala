@@ -10,143 +10,94 @@ import MacroUtils._
 
 object PtrOps {
 
-  def next[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Ptr[T]] = {
+  def elementOrElse[T:c.WeakTypeTag, E:c.WeakTypeTag](c: Context)(orElse: c.Expr[E]): c.Expr[E] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, _) = extract[T](c)
-    c.Expr[Ptr[T]](q"new Ptr[$tagT]($container.ptrNext(new VPtr[$container.Tag]($lhs.v)).v)")
-  }
-
-  def remove[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Unit] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, _) = extract[T](c)
-    c.Expr[Unit](q"$container.ptrRemove(new VPtr[$container.Tag]($lhs.v))")
-  }
-
-  def removeAndAdvance[T <: Pointable#Tag](c: Context)(implicit tagT: c.WeakTypeTag[T]): c.Expr[Ptr[T]] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, _) = extract[T](c)
-    c.Expr[Ptr[T]](q"new Ptr[$tagT]($container.ptrRemoveAndAdvance(new VPtr[$container.Tag]($lhs.v)).v)")
-  }
-
-  def key[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Keys](c)
-    c.Expr[A](q"$container.ptrKey[$aType](new VPtr[$container.Tag]($lhs.v))")
-  }
-
-  def keyOrElse[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(orElse: c.Expr[A]): c.Expr[A] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Keys](c)
+    val eType = implicitly[c.WeakTypeTag[E]]
+    val container = extractPath[T](c)
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
-
-    c.Expr[A](q"""
+    c.Expr[E](q"""
 {
-  val $ptr: Ptr[$container.Tag] = new Ptr[$container.Tag]($lhs.v)
+  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
   if ($ptr.isNull) 
-    $orElse 
-  else 
-    $container.ptrKey[$aType](new VPtr[$container.Tag]($ptr.v))
+    $orElse
+  else
+    $container.ptrElement[$eType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 }
 """)
   }
 
-  def value[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
+  def keyOrElse[T:c.WeakTypeTag, K:c.WeakTypeTag](c: Context)(orElse: c.Expr[K]): c.Expr[K] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Values](c)
-    c.Expr[A](q"$container.ptrValue[$aType](new VPtr[$container.Tag]($lhs.v))")
-  }
-
-  def valueOrElse[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(orElse: c.Expr[A]): c.Expr[A] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Values](c)
+    val kType = implicitly[c.WeakTypeTag[K]]
+    val container = extractPath[T](c)
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
-    c.Expr[A](q"""
+    c.Expr[K](q"""
 {
-  val $ptr: Ptr[$container.Tag] = new Ptr[$container.Tag]($lhs.v)
+  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
   if ($ptr.isNull) 
-    $orElse 
-  else 
-    $container.ptrValue[$aType](new VPtr[$container.Tag]($ptr.v))
+    $orElse
+  else
+    $container.ptrKey[$kType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 }
 """)
   }
 
-  def value1[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
+  def valueOrElse[T:c.WeakTypeTag, V:c.WeakTypeTag](c: Context)(orElse: c.Expr[V]): c.Expr[V] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Values1](c)
-    c.Expr[A](q"$container.ptrValue1[$aType](new VPtr[$container.Tag]($lhs.v))")
-  }
-
-  def value1OrElse[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(orElse: c.Expr[A]): c.Expr[A] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Values1](c)
+    val vType = implicitly[c.WeakTypeTag[V]]
+    val container = extractPath[T](c)
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
-    c.Expr[A](q"""
+    c.Expr[V](q"""
 {
-  val $ptr: Ptr[$container.Tag] = new Ptr[$container.Tag]($lhs.v)
+  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
   if ($ptr.isNull) 
-    $orElse 
-  else 
-    $container.ptrValue1[$aType](new VPtr[$container.Tag]($ptr.v))
+    $orElse
+  else
+    $container.ptrValue[$vType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 }
 """)
   }
 
-  def value2[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
+  def value1OrElse[T:c.WeakTypeTag, V1:c.WeakTypeTag](c: Context)(orElse: c.Expr[V1]): c.Expr[V1] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Values2](c)
-    c.Expr[A](q"$container.ptrValue2[$aType](new VPtr[$container.Tag]($lhs.v))")
-  }
-
-  def value2OrElse[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(orElse: c.Expr[A]): c.Expr[A] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Values2](c)
+    val v1Type = implicitly[c.WeakTypeTag[V1]]
+    val container = extractPath[T](c)
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
-    c.Expr[A](q"""
+    c.Expr[V1](q"""
 {
-  val $ptr: Ptr[$container.Tag] = new Ptr[$container.Tag]($lhs.v)
+  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
   if ($ptr.isNull) 
-    $orElse 
-  else 
-    $container.ptrValue2[$aType](new VPtr[$container.Tag]($ptr.v))
+    $orElse
+  else
+    $container.ptrValue1[$v1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 }
 """)
   }
 
-  def update[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(newValue: c.Expr[A]): c.Expr[Unit] = {
+  def value2OrElse[T:c.WeakTypeTag, V2:c.WeakTypeTag](c: Context)(orElse: c.Expr[V2]): c.Expr[V2] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Updatable](c)
-    c.Expr[Unit](q"$container.ptrUpdate[$aType](new VPtr[$container.Tag]($lhs.v), $newValue)")
-  }
-
-  def update1[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(newValue: c.Expr[A]): c.Expr[Unit] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Updatable1](c)
-    c.Expr[Unit](q"$container.ptrUpdate1[$aType](new VPtr[$container.Tag]($lhs.v), $newValue)")
-  }
-
-  def update2[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context)(newValue: c.Expr[A]): c.Expr[Unit] = {
-    import c.universe._
-    val lhs = c.prefix.tree
-    val (container, containerType, aType) = extractTypeOf[T, Updatable2](c)
-    c.Expr[Unit](q"$container.ptrUpdate2[$aType](new VPtr[$container.Tag]($lhs.v), $newValue)")
+    val v2Type = implicitly[c.WeakTypeTag[V2]]
+    val container = extractPath[T](c)
+    val util = SyntaxUtil[c.type](c)
+    val List(ptr) = util.names("ptr")
+    c.Expr[V2](q"""
+{
+  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+  if ($ptr.isNull) 
+    $orElse
+  else
+    $container.ptrValue2[$v2Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+}
+""")
   }
 
 }
