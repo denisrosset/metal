@@ -13,7 +13,7 @@ class SetPtrOpsSuite extends FunSuite {
     val p = sI.ptr
     assert(p.nonNull)
     p match {
-      case VPtr(vp) => assert(vp.next.isNull)
+      case IsVPtr(vp) => assert(vp.next.isNull)
       case _ =>
     }
   }
@@ -21,7 +21,7 @@ class SetPtrOpsSuite extends FunSuite {
   test("remove") {
     val sI = MHashSet(1)
     sI.ptr match {
-      case VPtr(vp) =>
+      case IsVPtr(vp) =>
         vp.remove
         assert(sI.isEmpty)
     }
@@ -31,11 +31,11 @@ class SetPtrOpsSuite extends FunSuite {
     val sI = MSortedSet(1, 2)
     sI.ptr.get.key
     sI.ptr match {
-      case VPtr(vp) =>
+      case IsVPtr(vp) =>
         val k = vp.key
         assert(k == 1)
         vp.removeAndAdvance match {
-          case VPtr(vp1) =>
+          case IsVPtr(vp1) =>
             val k1 = vp1.key
             assert(k1 == 2)
           case _ => assert(false)
@@ -47,7 +47,7 @@ class SetPtrOpsSuite extends FunSuite {
   test("key") {
     val sI = MHashSet(2, 4)
     sI.ptrFind(2) match {
-      case VPtr(vp) =>
+      case IsVPtr(vp) =>
         val k = vp.key
         assert(k == 2)
       case _ => assert(false)

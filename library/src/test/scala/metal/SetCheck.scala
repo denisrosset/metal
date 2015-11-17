@@ -26,8 +26,8 @@ abstract class SetCheck[A:ClassTag:Methods, LB, Extra[_], ST[X] <: MSet[X]](fact
 
   def hybridEq(d: ST[A], s: mutable.Set[A]): Boolean =
     d.size == s.size && {
-      @tailrec def rec(p: Ptr[d.Tag]): Boolean = p match {
-        case VPtr(vp) =>
+      @tailrec def rec(p: d.MyPtr): Boolean = p match {
+        case IsVPtr(vp) =>
           if (s.contains(d.ptrKey(vp)))
             rec(d.ptrNext(vp))
           else

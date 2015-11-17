@@ -52,7 +52,7 @@ class MapPtrLoopsSuite extends FunSuite {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
     val minPtr = mII.ptr.minBy { vp => val k = vp.key; k }
     minPtr match {
-      case VPtr(vp) =>
+      case IsVPtr(vp) =>
         val k = vp.key
         assert(k == 1)
       case _ => assert(false)
@@ -63,7 +63,7 @@ class MapPtrLoopsSuite extends FunSuite {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
     val maxPtr = mII.ptr.maxBy { vp => val v = vp.value; v }
     maxPtr match {
-      case VPtr(vp) =>
+      case IsVPtr(vp) =>
         val k = vp.value
         assert(k == 8)
       case _ => assert(false)

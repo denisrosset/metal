@@ -60,7 +60,7 @@ val $cc = $lhs
 var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
 var $res: Boolean = false
 while ($ptr.nonNull && !$res) {
-  val $vp: VPtr[$cc.Tag] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $bc
   $ptr = $cc.ptrNext($vp)
 }
@@ -80,7 +80,7 @@ val $cc = $lhs
 var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
 var $res: Boolean = true
 while ($ptr.nonNull && $res) {
-  val $vp: VPtr[$cc.Tag] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $bc
   $ptr = $cc.ptrNext($vp)
 }
