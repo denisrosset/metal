@@ -13,6 +13,8 @@ final class VPtr[T <: Pointable#Tag, +C](val raw: Long) extends AnyVal {
 
 object VPtr {
 
+  @inline final def apply(c: Pointable, raw: Long): VPtr[c.Tag, c.Cap] = new VPtr[c.Tag, c.Cap](raw)
+
   @inline final def apply[T <: Pointable#Tag, C](raw: Long): VPtr[T, C] = new VPtr[T, C](raw)
 
   // implicit conversions for valid pointers to containers with differing capabilities

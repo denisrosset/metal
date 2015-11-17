@@ -31,7 +31,10 @@ object Ptr {
   /** Creates a pointer using the given raw value, according to the given container tag and the given capabilities. */
   @inline final def apply[T <: Pointable#Tag, C](raw: Long): Ptr[T, C] = new Ptr[T, C](raw)
 
+  /** Creates a null pointer for the given container. */
+  @inline final def `null`(c: Pointable): Ptr[c.Tag, c.Cap] = new Ptr[c.Tag, c.Cap](-1L)
 
+  /** Creates a null pointer for the given container tag and the given capabilities. */
   @inline final def `null`[T <: Pointable#Tag, C]: Ptr[T, C] = new Ptr[T, C](-1L)
 
   // implicit conversion from valid pointer
