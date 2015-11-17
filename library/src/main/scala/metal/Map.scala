@@ -6,10 +6,12 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 import spire.util.Opt
 
-trait FMap[K, V] extends FColl with ElementsKV[K, V] with Searchable[K] with Enumerable with Values[V] with JavaMethods[FMap[K, V]] { lhs =>
+trait FMap[K, V] extends FColl with Searchable[K] with Enumerable with Values[V] with JavaMethods[FMap[K, V]] { lhs =>
 
   implicit def K: Methods[K]
   implicit def V: Methods[V]
+
+  type Cap <: Nextable with Keys[K] with Values[V]
 
   type IType <: IMap[K, V]
   type MType <: MMap[K, V]
@@ -23,23 +25,23 @@ trait FMap[K, V] extends FColl with ElementsKV[K, V] with Searchable[K] with Enu
     case _ => Opt.empty[FMap[K, V]]
   }
 
-  def keyArray(ptr: VPtr[Tag]): Array[K]
-  def keyIndex(ptr: VPtr[Tag]): Int
-  def valueArray(ptr: VPtr[Tag]): Array[V]
-  def valueIndex(ptr: VPtr[Tag]): Int
+  def keyArray(ptr: MyVPtr): Array[K]
+  def keyIndex(ptr: MyVPtr): Int
+  def valueArray(ptr: MyVPtr): Array[V]
+  def valueIndex(ptr: MyVPtr): Int
 
-  def ptrHash(ptr: VPtr[Tag]): Int = {
+  def ptrHash(ptr: MyVPtr): Int = {
     val kh = K.hashElement(keyArray(ptr), keyIndex(ptr))
     val vh = V.hashElement(valueArray(ptr), valueIndex(ptr))
     kh ^ (vh * 41)
   }
 
-  def ptrToString(ptr: VPtr[Tag]): String =
+  def ptrToString(ptr: MyVPtr): String =
     K.toStringElement(keyArray(ptr), keyIndex(ptr)) + " -> " + V.toStringElement(valueArray(ptr), valueIndex(ptr))
 
-  final def ptrEquals(thisPtr: VPtr[Tag], that: FMap[K, V]): Boolean =
+  final def ptrEquals(thisPtr: MyVPtr, that: FMap[K, V]): Boolean =
     that.ptrFindFromArray(keyArray(thisPtr), keyIndex(thisPtr)) match {
-      case VPtr(thatPtr) =>
+      case IsVPtr(thatPtr) =>
         val thisA = valueArray(thisPtr)
         val thisI = valueIndex(thisPtr)
         val thatA = that.valueArray(thatPtr)
@@ -51,7 +53,9 @@ trait FMap[K, V] extends FColl with ElementsKV[K, V] with Searchable[K] with Enu
 
 trait IMap[K, V] extends IColl with FMap[K, V]
 
-trait MMap[K, V] extends MColl with FMap[K, V] with AddKeys[K] with Removable[K] with Updatable[V] {
+trait MMap[K, V] extends MColl with FMap[K, V] with AddKeys[K] with Removable with Updatable[V] {
+
+  type Cap <: Nextable with Removable with Keys[K] with Values[V] with Updatable[V]
 
   def result(): IMap[K, V] with IType
 

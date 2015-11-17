@@ -29,8 +29,10 @@ class HashSetImpl[K](
   /** Point at which we should grow. */
   var limit: Int)(implicit val K: Methods[K]) extends IHashSet[K] with MHashSet[K] { self =>
 
-  type Cap = Nextable with Removable with Elements[K] with Keys[K] with Searchable[K]
+
   // Set implementation
+
+  type Cap = Nextable with Removable with Elements[K] with Keys[K] with Searchable[K]
 
   @inline final def isEmpty = len == 0
 

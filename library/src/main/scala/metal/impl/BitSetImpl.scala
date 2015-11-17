@@ -5,15 +5,15 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
 
   override def priorityEquals = true
 
-  override def ptrHash(ptr: VPtr[Tag]): Int = ptr.v.toInt
+  override def ptrHash(ptr: MyVPtr): Int = ptr.raw.toInt
 
-  override def ptrToString(ptr: VPtr[Tag]): String = ptr.v.toInt.toString
+  override def ptrToString(ptr: MyVPtr): String = ptr.raw.toInt.toString
 
-  override def ptrEquals(thisPtr: VPtr[Tag], that: FSet[Int]): Boolean =
-    that.ptrFind[Int](thisPtr.v.toInt).nonNull
+  override def ptrEquals(thisPtr: MyVPtr, that: FSet[Int]): Boolean =
+    that.ptrFind[Int](thisPtr.raw.toInt).nonNull
 
-  def keyArray(ptr: VPtr[Tag]) = sys.error("Cannot call keyArray on BitSet")
-  def keyIndex(ptr: VPtr[Tag]) = sys.error("Cannot call keyArray on BitSet")
+  def keyArray(ptr: MyVPtr) = sys.error("Cannot call keyArray on BitSet")
+  def keyIndex(ptr: MyVPtr) = sys.error("Cannot call keyArray on BitSet")
 
   def order = spire.std.int.IntAlgebra
 
@@ -23,42 +23,44 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
 
   def result(): IBitSet[Int] = this
 
-  def ptr: Ptr[Tag] = {
+  def ptr: MyPtr = {
     var w = 0
     while(w < wordSize && words(w) == 0L) {
       w += 1
     }
-    if (w == wordSize) return Ptr.Null[Tag]
+    if (w == wordSize) return Ptr.`null`(this)
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
-    Ptr[Tag](index)
+    Ptr(this, index)
   }
 
-  def ptrFind[@specialized L](keyL: L): Ptr[Tag] = {
+  def ptrFind[@specialized L](keyL: L): MyPtr = {
     val key = keyL.asInstanceOf[Int]
     val w = key >>> 3
     val bit = key & 0x7
     val contained = w < wordSize && (words(w) & (1 << bit)) != 0
-    if (contained) Ptr[Tag](key) else Ptr.Null[Tag]
+    if (contained) Ptr(this, key) else Ptr.`null`(this)
   }
 
-  def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
-    var w = ptr.v.toInt >>> 3
-    var bit = (ptr.v & 0x7).toInt
+  def ptrNext(ptr: MyVPtr): MyPtr = {
+    var w = ptr.raw.toInt >>> 3
+    var bit = (ptr.raw & 0x7).toInt
     val nextBit = Util.nextBitAfter(words(w), bit)
-    if (nextBit >= 0) return VPtr[Tag](ptr.v - bit + nextBit)
+    if (nextBit >= 0) return Ptr(this, ptr.raw - bit + nextBit)
     w += 1
-    if (w == wordSize) return Ptr.Null[Tag]
+    if (w == wordSize) return Ptr.`null`(this)
     while(w < wordSize && words(w) == 0L) {
       w += 1
     }
-    if (w == wordSize) return Ptr.Null[Tag]
+    if (w == wordSize) return Ptr.`null`(this)
     val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
-    Ptr[Tag](index)
+    Ptr(this, index)
   }
 
-  def ptrKey[@specialized L](ptr: VPtr[Tag]): L = ptr.v.toInt.asInstanceOf[L]
+  def ptrKey[@specialized L](ptr: MyVPtr): L = ptr.raw.toInt.asInstanceOf[L]
 
-  def ptrAddKey[@specialized L](keyL: L): VPtr[Tag] = {
+  def ptrElement[@specialized E](ptr: MyVPtr): E = ptr.raw.toInt.asInstanceOf[E]
+
+  def ptrAddKey[@specialized L](keyL: L): MyVPtr = {
     val key = keyL.asInstanceOf[Int]
     val w = key >>> 3
     val bit = key & 0x7
@@ -69,18 +71,18 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
     }
     words(w) |= (1 << bit)
     wordSize = scala.math.max(wordSize, w + 1)
-    VPtr[Tag](key)
+    VPtr(this, key)
   }
 
-  def ptrRemove(ptr: VPtr[Tag]): Unit = {
-    val w = ptr.v.toInt >>> 3
-    val bit = ptr.v & 0x7
+  def ptrRemove(ptr: MyVPtr): Unit = {
+    val w = ptr.raw.toInt >>> 3
+    val bit = ptr.raw & 0x7
     if (w >= wordSize) return
     val masked = words(w) & (1 << bit)
     words(w) -= masked
   }
 
-  def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
+  def ptrRemoveAndAdvance(ptr: MyVPtr): MyPtr = {
     val nextPtr = ptrNext(ptr)
     ptrRemove(ptr)
     nextPtr

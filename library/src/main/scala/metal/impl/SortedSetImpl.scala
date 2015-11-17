@@ -15,8 +15,8 @@ final class SortedSetImpl[K](var items: Array[K], var size: Long)(implicit val K
   @inline final def isEmpty = size == 0
   @inline final def nonEmpty = size > 0
 
-  def keyArray(ptr: VPtr[Tag]): Array[K] = items
-  def keyIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
+  def keyArray(ptr: MyVPtr): Array[K] = items
+  def keyIndex(ptr: MyVPtr): Int = ptr.raw.toInt
 
   def result(): ISortedSet[K] with IType = this
 
@@ -54,22 +54,22 @@ final class SortedSetImpl[K](var items: Array[K], var size: Long)(implicit val K
     sys.error("Should not happen")
   }
 
-  final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
-    val pos = ptr.v.toInt
+  final def ptrRemoveAndAdvance(ptr: MyVPtr): MyPtr = {
+    val pos = ptr.raw.toInt
     java.lang.System.arraycopy(items, pos + 1, items, pos, size.toInt - pos - 1)
     size -= 1
     items(size.toInt) = null.asInstanceOf[K]
-    if (pos >= size) Ptr.Null[Tag] else ptr
+    if (pos >= size) Ptr.`null`(this) else ptr
   }
 
-  final def ptrRemove(ptr: VPtr[Tag]): Unit = ptrRemoveAndAdvance(ptr)
+  final def ptrRemove(ptr: MyVPtr): Unit = ptrRemoveAndAdvance(ptr)
 
-  @inline final def ptrFind[@specialized L](key: L): Ptr[Tag] = {
+  @inline final def ptrFind[@specialized L](key: L): MyPtr = {
     val ind = findWhere[L](key)
-    if (ind >= 0) VPtr[Tag](ind) else Ptr.Null[Tag]
+    if (ind >= 0) Ptr(this, ind) else Ptr.`null`(this)
   }
 
-  @inline final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
+  @inline final def ptrAddKey[@specialized L](key: L): MyVPtr = {
     val itemsL = items.asInstanceOf[Array[L]]
     val pos = findWhere[L](key)
     if (pos < 0) {
@@ -83,13 +83,14 @@ final class SortedSetImpl[K](var items: Array[K], var size: Long)(implicit val K
       newItemsL(ipos) = key
       items = newItemsL.asInstanceOf[Array[K]]
       size += 1
-      VPtr[Tag](ipos)
-    } else VPtr[Tag](pos)
+      VPtr(this, ipos)
+    } else VPtr(this, pos)
   }
 
-  @inline final def ptr: Ptr[Tag] = if (size == 0) Ptr.Null[Tag] else VPtr[Tag](0)
-  @inline final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = if (ptr.v == size - 1) Ptr.Null[Tag] else VPtr[Tag](ptr.v + 1)
-  @inline final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = items.asInstanceOf[Array[L]](ptr.v.toInt)
+  @inline final def ptr: MyPtr = if (size == 0) Ptr.`null`(this) else Ptr(this, 0)
+  @inline final def ptrNext(ptr: MyVPtr): MyPtr = if (ptr.raw == size - 1) Ptr.`null`(this) else Ptr(this, ptr.raw + 1)
+  @inline final def ptrKey[@specialized L](ptr: MyVPtr): L = items.asInstanceOf[Array[L]](ptr.raw.toInt)
+  @inline final def ptrElement[@specialized E](ptr: MyVPtr): E = items.asInstanceOf[Array[E]](ptr.raw.toInt)
 }
 
 object SortedSetImpl {

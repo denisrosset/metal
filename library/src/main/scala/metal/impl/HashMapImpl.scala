@@ -31,16 +31,19 @@ class HashMapImpl[K, V](
   var limit: Int
 )(implicit val K: Methods[K], val V: Methods[V]) extends IHashMap[K, V] with MHashMap[K, V] {
 
+  // Map implementation
+
+  type Cap = Nextable with Removable with Keys[K] with Searchable[K] with Values[V] with Updatable[V]
   @inline final def size: Long = len
 
   @inline final override def isEmpty: Boolean = len == 0
 
   @inline final override def nonEmpty: Boolean = len > 0
 
-  def keyArray(ptr: VPtr[Tag]): Array[K] = keys
-  def keyIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
-  def valueArray(ptr: VPtr[Tag]): Array[V] = values
-  def valueIndex(ptr: VPtr[Tag]): Int = ptr.v.toInt
+  def keyArray(ptr: MyVPtr): Array[K] = keys
+  def keyIndex(ptr: MyVPtr): Int = ptr.raw.toInt
+  def valueArray(ptr: MyVPtr): Array[V] = values
+  def valueIndex(ptr: MyVPtr): Int = ptr.raw.toInt
 
   def result(): IHashMap[K, V] = this
 
@@ -53,9 +56,9 @@ class HashMapImpl[K, V](
     mask = mask,
     limit = limit)
 
-  final def ptrAddKey[@specialized L](key: L): VPtr[Tag] = {
+  final def ptrAddKey[@specialized L](key: L): MyVPtr = {
     val keysL = keys.asInstanceOf[Array[L]]
-    @inline @tailrec def loop(i: Int, perturbation: Int): VPtr[Tag] = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): MyVPtr = {
       val j = i & mask
       val status = buckets(j)
       if (status == 0) {
@@ -65,16 +68,16 @@ class HashMapImpl[K, V](
         used += 1
         if (used > limit) {
           grow()
-          val VPtr(vp) = ptrFind[L](key)
+          val IsVPtr(vp) = ptrFind[L](key)
           vp
-        } else VPtr[Tag](j)
+        } else VPtr(this, j)
       } else if (status == 2 && ptrFind[L](key).isNull) {
         keysL(j) = key
         buckets(j) = 3
         len += 1
-        VPtr[Tag](j)
+        VPtr(this, j)
       } else if (keysL(j) == key) {
-        VPtr[Tag](j)
+        VPtr(this, j)
       } else {
         loop((i << 2) + i + perturbation + 1, perturbation >> 5)
       }
@@ -83,32 +86,32 @@ class HashMapImpl[K, V](
     loop(i, i)
   }
 
-  final def ptrUpdate[@specialized W](ptr: VPtr[Tag], v: W): Unit = {
-    values.asInstanceOf[Array[W]](ptr.v.toInt) = v
+  final def ptrUpdate[@specialized W](vp: MyVPtr, v: W): Unit = {
+    values.asInstanceOf[Array[W]](vp.raw.toInt) = v
   }
 
 
-  final def ptrRemoveAndAdvance(ptr: VPtr[Tag]): Ptr[Tag] = {
-    val next = ptrNext(ptr)
-    ptrRemove(ptr)
+  final def ptrRemoveAndAdvance(vp: MyVPtr): MyPtr = {
+    val next = ptrNext(vp)
+    ptrRemove(vp)
     next
   }
 
-  final def ptrRemove(ptr: VPtr[Tag]): Unit = {
-    val j = ptr.v.toInt
+  final def ptrRemove(vp: MyVPtr): Unit = {
+    val j = vp.raw.toInt
     buckets(j) = 2
     keys(j) = null.asInstanceOf[K]
     values(j) = null.asInstanceOf[V]
     len -= 1
   }
 
-  final def ptrFind[@specialized L](key: L): Ptr[Tag] = {
+  final def ptrFind[@specialized L](key: L): MyPtr = {
     val keysL = keys.asInstanceOf[Array[L]]
-    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[Tag] = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): MyPtr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) Ptr.Null[Tag]
-      else if (status == 3 && keysL(j) == key) VPtr[Tag](j)
+      if (status == 0) Ptr.`null`(this)
+      else if (status == 3 && keysL(j) == key) VPtr(this, j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
     val i = key.## & 0x7fffffff
@@ -164,23 +167,21 @@ class HashMapImpl[K, V](
     absorb(map)
   }
 
-  final def ptrNull: Ptr[Tag] = Ptr.Null[Tag]
-
-  final def ptr: Ptr[Tag] = {
+  final def ptr: MyPtr = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
+    if (i < buckets.length) VPtr(this, i) else Ptr.`null`(this)
   }
 
-  final def ptrNext(ptr: VPtr[Tag]): Ptr[Tag] = {
-    var i = ptr.v.toInt + 1
+  final def ptrNext(ptr: MyVPtr): MyPtr = {
+    var i = ptr.raw.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr[Tag](i) else Ptr.Null[Tag]
+    if (i < buckets.length) VPtr(this, i) else Ptr.`null`(this)
   }
 
-  final def ptrKey[@specialized L](ptr: VPtr[Tag]): L = keys.asInstanceOf[Array[L]](ptr.v.toInt)
+  final def ptrKey[@specialized L](ptr: MyVPtr): L = keys.asInstanceOf[Array[L]](ptr.raw.toInt)
 
-  final def ptrValue[@specialized W](ptr: VPtr[Tag]): W = values.asInstanceOf[Array[W]](ptr.v.toInt)
+  final def ptrValue[@specialized W](ptr: MyVPtr): W = values.asInstanceOf[Array[W]](ptr.raw.toInt)
 
 }
 
