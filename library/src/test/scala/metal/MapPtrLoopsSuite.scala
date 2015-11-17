@@ -22,35 +22,35 @@ class MapPtrLoopsSuite extends FunSuite {
 
   test("count") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    assert(mII.ptr.count { vp => val k = vp.key; k > 2 } == 2)
-    assert(mII.ptr.count { vp => val v = vp.value; v > 2 } == 3)
+    assert(mII.ptr.count { vp => vp.key > 2 } == 2)
+    assert(mII.ptr.count { vp => vp.value > 2 } == 3)
   }
 
   test("exists") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    assert(mII.ptr.exists { vp => val k = vp.key; k > 2 })
-    assert(mII.ptr.exists { vp => val v = vp.value; v > 2 })
-    assert(!mII.ptr.exists { vp => val k = vp.key; k < 1 })
-    assert(!mII.ptr.exists { vp => val v = vp.value; v < 1 })
+    assert(mII.ptr.exists { vp => vp.key > 2 })
+    assert(mII.ptr.exists { vp => vp.value > 2 })
+    assert(!mII.ptr.exists { vp => vp.key < 1 })
+    assert(!mII.ptr.exists { vp => vp.value < 1 })
   }
 
   test("forall") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    assert(mII.ptr.forall { vp => val k = vp.key; val v = vp.value; 2 * k == v })
-    assert(!mII.ptr.forall { vp => val k = vp.key; val v = vp.value; 3 * k == v + 1 })
+    assert(mII.ptr.forall { vp => 2 * vp.key == vp.value })
+    assert(!mII.ptr.forall { vp => 3 * vp.key == vp.value + 1 })
   }
 
   test("foldLeft") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    val text1 = ("" /: mII.ptr) { (str, vp) => val k = vp.key; val v = vp.value; str + k.toString + v.toString }
-    val text2 = mII.ptr.foldLeft("") { (str, vp) => val k = vp.key; val v = vp.value; str + k.toString + v.toString }
+    val text1 = ("" /: mII.ptr) { (str, vp) => str + vp.key.toString + vp.value.toString }
+    val text2 = mII.ptr.foldLeft("") { (str, vp) => str + vp.key.toString + vp.value.toString }
     assert(text1.sorted == "12234468")
     assert(text2.sorted == "12234468")
   }
 
   test("minBy") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    val minPtr = mII.ptr.minBy { vp => val k = vp.key; k }
+    val minPtr = mII.ptr.minBy(_.key)
     minPtr match {
       case IsVPtr(vp) =>
         val k = vp.key
@@ -61,7 +61,7 @@ class MapPtrLoopsSuite extends FunSuite {
 
   test("max") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    val maxPtr = mII.ptr.maxBy { vp => val v = vp.value; v }
+    val maxPtr = mII.ptr.maxBy(_.value)
     maxPtr match {
       case IsVPtr(vp) =>
         val k = vp.value
@@ -72,13 +72,13 @@ class MapPtrLoopsSuite extends FunSuite {
 
   test("sumBy") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    val res = mII.ptr.sumBy { vp => val v = vp.value; v }
+    val res = mII.ptr.sumBy(_.value)
     assert(res == 20)
   }
 
   test("product") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
-    val res = mII.ptr.productBy { vp => val k = vp.key; k }
+    val res = mII.ptr.productBy(_.key)
     assert(res == 24)
   }
 
