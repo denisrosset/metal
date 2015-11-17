@@ -4,7 +4,7 @@ import spire.util.Opt
 
 abstract class LowerPrioritySyntax {
 
-//  implicit def loopOps[E](lhs: Enumerable with Elements[E]): LoopOpsE[E] = new LoopOpsE[E](lhs)
+  implicit def loopOps[E](lhs: Enumerable with Elements[E]): LoopOpsE[E] = new LoopOpsE[E](lhs)
 
 }
 
@@ -21,20 +21,17 @@ object syntax extends LowerPrioritySyntax {
   implicit def updateOps[K, V](lhs: AddKeys[K] with Updatable[V]): UpdateOps[K, V] = new UpdateOps[K, V](lhs)
 
   implicit def searchableValuesOps[K, V](lhs: Searchable[K] with Values[V]): SearchableValuesOps[K, V] = new SearchableValuesOps[K, V](lhs)
-  /*
 
+  implicit def loopOpsK[K](lhs: Enumerable with Keys[K] with Elements[K]): LoopOpsK[K] = new LoopOpsK[K](lhs)
+
+  implicit def loopOpsKV[K, V](lhs: Enumerable with Keys[K] with Values[V]): LoopOpsKV[K, V] = new LoopOpsKV[K, V](lhs)
+
+  implicit def loopOpsKV1V2[K, V1, V2](lhs: Enumerable with Keys[K] with Values1[V1] with Values2[V2]): LoopOpsKV1V2[K, V1, V2] = new LoopOpsKV1V2[K, V1, V2](lhs)
 
   implicit def update2Ops[K, V1, V2](lhs: AddKeys[K] with Updatable1[V1] with Updatable2[V2]): Update2Ops[K, V1, V2] = new Update2Ops[K, V1, V2](lhs)
-
 
   implicit def searchableValues1Ops[K, V1](lhs: Searchable[K] with Values1[V1]): SearchableValues1Ops[K, V1] = new SearchableValues1Ops[K, V1](lhs)
 
   implicit def searchableValues2Ops[K, V2](lhs: Searchable[K] with Values2[V2]): SearchableValues2Ops[K, V2] = new SearchableValues2Ops[K, V2](lhs)
-
-  implicit def loopOpsK[K](lhs: Enumerable with ElementsK[K]): LoopOpsK[K] = new LoopOpsK[K](lhs)
-
-  implicit def loopOpsKV[K, V](lhs: Enumerable with ElementsKV[K, V]): LoopOpsKV[K, V] = new LoopOpsKV[K, V](lhs)
-
-  implicit def loopOpsKV1V2[K, V1, V2](lhs: Enumerable with ElementsKV1V2[K, V1, V2]): LoopOpsKV1V2[K, V1, V2] = new LoopOpsKV1V2[K, V1, V2](lhs)*/
 
 }

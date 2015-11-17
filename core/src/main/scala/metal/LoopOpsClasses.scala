@@ -17,17 +17,17 @@ final class LoopOpsE[E](val lhs: Enumerable with Elements[E]) {
 
   def /:[A](initialValue: A)(body: (A, E) => A): A = macro macros.Loops.foldLeftE[A, E]
 
-  def sum(implicit am: AdditiveMonoid[E]): E = macro macros.Loops.sumE[E]
-
-  def product(implicit mm: MultiplicativeMonoid[E]): E = macro macros.Loops.productE[E]
-
   def min(implicit order: Order[E]): E = macro macros.Loops.minE[E]
 
   def max(implicit order: Order[E]): E = macro macros.Loops.maxE[E]
 
+  def sum(implicit am: AdditiveMonoid[E]): E = macro macros.Loops.sumE[E]
+
+  def product(implicit mm: MultiplicativeMonoid[E]): E = macro macros.Loops.productE[E]
+
 }
 
-final class LoopOpsK[K](val lhs: Enumerable with ElementsK[K]) {
+final class LoopOpsK[K](val lhs: Enumerable with Keys[K] with Elements[K]) {
 
   def foreach(body: K => Unit): Unit = macro macros.Loops.foreachK[K]
 
@@ -43,7 +43,7 @@ final class LoopOpsK[K](val lhs: Enumerable with ElementsK[K]) {
 
 }
 
-final class LoopOpsV[V](val lhs: Enumerable with ElementsV[V]) {
+final class LoopOpsV[V](val lhs: Enumerable with Values[V] with Elements[V]) {
 
   def foreach(body: V => Unit): Unit = macro macros.Loops.foreachV[V]
 
@@ -59,7 +59,7 @@ final class LoopOpsV[V](val lhs: Enumerable with ElementsV[V]) {
 
 }
 
-final class LoopOpsKV[K, V](val lhs: Enumerable with ElementsKV[K, V]) {
+final class LoopOpsKV[K, V](val lhs: Enumerable with Keys[K] with Values[V]) {
 
   def foreach(body: (K, V) => Unit): Unit = macro macros.Loops.foreachKV[K, V]
 
@@ -75,7 +75,7 @@ final class LoopOpsKV[K, V](val lhs: Enumerable with ElementsKV[K, V]) {
 
 }
 
-final class LoopOpsKV1V2[K, V1, V2](val lhs: Enumerable with ElementsKV1V2[K, V1, V2]) {
+final class LoopOpsKV1V2[K, V1, V2](val lhs: Enumerable with Keys[K] with Values1[V1] with Values2[V2]) {
 
   def foreach(body: (K, V1, V2) => Unit): Unit = macro macros.Loops.foreachKV1V2[K, V1, V2]
 

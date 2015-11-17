@@ -6,155 +6,206 @@ import spire.macros.{SyntaxUtil, InlineUtil}
 
 import MacroUtils._
 
-trait Call {
+trait Call[C <: Context with Singleton] {
+
+  val c: C
 
   /** Instantiates a call to the function/tree `body`, using the elements pointed to by the pointer
     * named `pointerName` on container `containerName`.
     */
-  def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree
+  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree
 
   /** Instantiates a call to the function/tree `body`, using the elements pointed to by the pointer
     * named `pointerName` on container `containerName`, providing `value` as a first argument to the 
     * function (i.e. as in `foldLeft`).
     */
 
-  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree
+  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree
 
 }
 
-/** Variant for containers whose element is known. */
-object CallE extends Call {
+trait CallElements[C <: Context with Singleton, E] extends Call[C] {
 
-  def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
+  def tagE: c.WeakTypeTag[E]
+
+  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val e = util.name("e")
-    val eType = findType[Elements](c)(lhs)
+    val e = util.name("$e")
     q"""
-val $e: $eType = $containerName.ptrElement[$eType]($pointerName)
+val $e: $tagE = $containerName.ptrElement[$tagE]($pointerName)
 $body($e)
 """
   }
 
-  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
+  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val e = util.name("e")
-    val eType = findType[Elements](c)(lhs)
+    val e = util.name("$e")
     q"""
-val $e: $eType = $containerName.ptrElement[$eType]($pointerName)
+val $e: $tagE = $containerName.ptrElement[$tagE]($pointerName)
 $body($value, $e)
 """
   }
 
 }
 
-/** Variant for containers who contain keys only. */
-object CallK extends Call {
+object CallElements {
+  def apply[C <: Context with Singleton, E:_c.WeakTypeTag](_c: C): CallElements[C, E] =
+    new CallElements[C, E] {
+      val c: C = _c
+      def tagE = implicitly[c.WeakTypeTag[E]]
+    }
+}
 
-  def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
+/** Variant for containers who contain keys only. */
+trait CallKeys[C <: Context with Singleton, K] extends Call[C] {
+
+  def tagK: c.WeakTypeTag[K]
+
+  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val k = util.name("k")
-    val kType = findType[Keys](c)(lhs)
+    val k = util.name("$k")
     q"""
-val $k: $kType = $containerName.ptrKey[$kType]($pointerName)
+val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
 $body($k)
 """
   }
 
-  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
+  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val k = util.name("k")
-    val kType = findType[Keys](c)(lhs)
+    val k = util.name("$k")
     q"""
-val $k: $kType = $containerName.ptrKey[$kType]($pointerName)
+val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
 $body($value, $k)
 """
   }
 
 }
 
-/** Variant for containers who contain values only. */
-object CallV extends Call {
+object CallKeys {
+  def apply[C <: Context with Singleton, K:_c.WeakTypeTag](_c: C): CallKeys[C, K] =
+    new CallKeys[C, K] {
+      val c: C = _c
+      def tagK = implicitly[c.WeakTypeTag[K]]
+    }
 
-  def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
+}
+
+/** Variant for containers who contain values only. */
+trait CallValues[C <: Context with Singleton, V] extends Call[C] {
+
+  def tagV: c.WeakTypeTag[V]
+
+  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val v = util.name("v")
-    val vType = findType[Values](c)(lhs)
+    val v = util.name("$v")
     q"""
-val $v: $vType = $containerName.ptrValue[$vType]($pointerName)
+val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
 $body($v)
 """
   }
 
-  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
+  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val v = util.name("v")
-    val vType = findType[Values](c)(lhs)
+    val v = util.name("$v")
     q"""
-val $v: $vType = $containerName.ptrValue[$vType]($pointerName)
+val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
 $body($value, $v)
 """
   }
 
 }
 
-/** Variant for containers who contain key-value pairs only. */
-object CallKV extends Call {
+object CallValues {
 
-  def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
+  def apply[C <: Context with Singleton, V:_c.WeakTypeTag](_c: C): CallValues[C, V] =
+    new CallValues[C, V] {
+      val c: C = _c
+      def tagV = implicitly[c.WeakTypeTag[V]]
+    }
+
+}
+
+/** Variant for containers who contain key-value pairs. */
+trait CallKeysValues[C <: Context with Singleton, K, V] extends Call[C] {
+
+  def tagK: c.WeakTypeTag[K]
+
+  def tagV: c.WeakTypeTag[V]
+
+  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val List(k, v) = util.names("k", "v")
-    val kType = findType[Keys](c)(lhs)
-    val vType = findType[Values](c)(lhs)
+    val List(k, v) = util.names("$k", "$v")
     q"""
-val $k: $kType = $containerName.ptrKey[$kType]($pointerName)
-val $v: $vType = $containerName.ptrValue[$vType]($pointerName)
+val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
+val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
 $body($k, $v)
 """
   }
 
-  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
+  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val List(k, v) = util.names("k", "v")
-    val kType = findType[Keys](c)(lhs)
-    val vType = findType[Values](c)(lhs)
+    val List(k, v) = util.names("$k", "$v")
     q"""
-val $k: $kType = $containerName.ptrKey[$kType]($pointerName)
-val $v: $vType = $containerName.ptrValue[$vType]($pointerName)
+val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
+val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
 $body($value, $k, $v)
 """
   }
 
 }
 
-/** Variant for containers who contain key-value1-value2 triples only. */
-object CallKV1V2 extends Call {
+object CallKeysValues {
 
-  def apply(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
+  def apply[C <: Context with Singleton, K:_c.WeakTypeTag, V:_c.WeakTypeTag](_c: C): CallKeysValues[C, K, V] =
+    new CallKeysValues[C, K, V] {
+      val c: C = _c
+      def tagK = implicitly[c.WeakTypeTag[K]]
+      def tagV = implicitly[c.WeakTypeTag[V]]
+    }
+
+}
+
+/** Variant for containers who contain key-value1-value2 triples. */
+trait CallKeysValues1Values2[C <: Context with Singleton, K, V1, V2] extends Call[C] {
+
+  def tagK: c.WeakTypeTag[K]
+
+  def tagV1: c.WeakTypeTag[V1]
+
+  def tagV2: c.WeakTypeTag[V2]
+
+  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val List(k, v1, v2) = util.names("k", "v1", "v2")
-    val kType = findType[Keys](c)(lhs)
-    val v1Type = findType[Values1](c)(lhs)
-    val v2Type = findType[Values2](c)(lhs)
+    val List(k, v1, v2) = util.names("$k", "$v1", "$v2")
     q"""
-val $k: $kType = $containerName.ptrKey[$kType]($pointerName)
-val $v1: $v1Type = $containerName.ptrValue1[$v1Type]($pointerName)
-val $v2: $v2Type = $containerName.ptrValue2[$v2Type]($pointerName)
+val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
+val $v1: $tagV1 = $containerName.ptrValue1[$tagV1]($pointerName)
+val $v2: $tagV2 = $containerName.ptrValue2[$tagV2]($pointerName)
 $body($k, $v1, $v2)
 """
   }
 
-  def withValue(c: Context)(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
+  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val List(k, v1, v2) = util.names("k", "v1", "v2")
-    val kType = findType[Keys](c)(lhs)
-    val v1Type = findType[Values1](c)(lhs)
-    val v2Type = findType[Values2](c)(lhs)
+    val List(k, v1, v2) = util.names("$k", "$v1", "$v2")
     q"""
-val $k: $kType = $containerName.ptrKey[$kType]($pointerName)
-val $v1: $v1Type = $containerName.ptrValue1[$v1Type]($pointerName)
-val $v2: $v2Type = $containerName.ptrValue2[$v2Type]($pointerName)
+val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
+val $v1: $tagV1 = $containerName.ptrValue1[$tagV1]($pointerName)
+val $v2: $tagV2 = $containerName.ptrValue2[$tagV2]($pointerName)
 $body($value, $k, $v1, $v2)
 """
   }
+
+}
+
+object CallKeysValues1Values2 {
+
+  def apply[C <: Context with Singleton, K:_c.WeakTypeTag, V1:_c.WeakTypeTag, V2:_c.WeakTypeTag](_c: C): CallKeysValues1Values2[C, K, V1, V2] =
+    new CallKeysValues1Values2[C, K, V1, V2] {
+      val c: C = _c
+      def tagK = implicitly[c.WeakTypeTag[K]]
+      def tagV1 = implicitly[c.WeakTypeTag[V1]]
+      def tagV2 = implicitly[c.WeakTypeTag[V2]]
+    }
 
 }

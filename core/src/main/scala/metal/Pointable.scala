@@ -13,6 +13,7 @@ trait Pointable {
 
   /** Own pointer type. */
   type MyPtr = Ptr[Tag, Cap]
+  
   /** Own valid pointer type. */
   type MyVPtr = VPtr[Tag, Cap]
 

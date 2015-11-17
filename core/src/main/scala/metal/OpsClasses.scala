@@ -65,7 +65,7 @@ final class UpdateOps[K, V](val lhs: AddKeys[K] with Updatable[V]) {
   def update(key: K, value: V): Unit = macro macros.Ops.update[K, V]
 
 }
-/*
+
 final class Update2Ops[K, V1, V2](val lhs: AddKeys[K] with Updatable1[V1] with Updatable2[V2]) {
 
   /** Stores the values `value1`, `value2` for the key `key`.
@@ -76,7 +76,7 @@ final class Update2Ops[K, V1, V2](val lhs: AddKeys[K] with Updatable1[V1] with U
   def update(key: K, value: (V1, V2)): Unit = macro macros.Ops.update2[K, V1, V2]
 
 }
- */
+
 final class SearchableValuesOps[K, V](val lhs: Searchable[K] with Values[V]) {
 
   /** Returns whether the key is present in the Map with the given value
@@ -101,7 +101,6 @@ final class SearchableValuesOps[K, V](val lhs: Searchable[K] with Values[V]) {
 
 }
 
-/*
 final class SearchableValues1Ops[K, V1](val lhs: Searchable[K] with Values1[V1]) {
 
   /** Returns the key's current value in the map, throwing an exception
@@ -139,4 +138,3 @@ final class SearchableValues2Ops[K, V2](val lhs: Searchable[K] with Values2[V2])
   def get2(key: K): Opt[V2] = macro macros.Ops.get2[K, V2]
 
 }
- */

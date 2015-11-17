@@ -35,14 +35,14 @@ object VPtrOps {
     c.Expr[Ptr[T, C]](q"new Ptr[$tagT, $tagC]($container.ptrNext(new VPtr[$container.Tag, $container.Cap]($lhs.raw)).raw)")
   }
 
-  def remove[T <: Pointable#Tag](c: Context): c.Expr[Unit] = {
+  def remove[T <: Pointable#Tag:c.WeakTypeTag](c: Context): c.Expr[Unit] = {
     import c.universe._
     val lhs = c.prefix.tree
     val container = extractPath[T](c)
     c.Expr[Unit](q"$container.ptrRemove(new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
   }
 
-  def removeAndAdvance[T <: Pointable#Tag, C](c: Context): c.Expr[Ptr[T, C]] = {
+  def removeAndAdvance[T <: Pointable#Tag:c.WeakTypeTag, C:c.WeakTypeTag](c: Context): c.Expr[Ptr[T, C]] = {
     import c.universe._
     val lhs = c.prefix.tree
     val container = extractPath[T](c)
