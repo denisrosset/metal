@@ -55,7 +55,7 @@ trait FSeq[@specialized V] extends FColl with Elements[V] with Enumerable with V
 
   def nonEmpty = length > 0
 
-  @inline final def size: Long = length
+  @inline final def longSize: Long = length
 
   override def equals(that: Any): Boolean = that match {
     case s: FSeq[_] =>

@@ -88,7 +88,7 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
     nextPtr
   }
 
-  def size: Long = {
+  def longSize: Long = {
     var count = 0L
     var w = 0
     while(w < wordSize) {

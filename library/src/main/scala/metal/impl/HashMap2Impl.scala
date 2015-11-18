@@ -34,7 +34,7 @@ class HashMap2Impl[K, V1, V2](
   /** Point at which we should grow. */
   var limit: Int)(implicit val K: Methods[K], val V1: Methods[V1], val V2: Methods[V2]) extends IHashMap2[K, V1, V2] with MHashMap2[K, V1, V2] {
 
-  final def size: Long = len
+  final def longSize: Long = len
 
   final override def isEmpty: Boolean = len == 0
 

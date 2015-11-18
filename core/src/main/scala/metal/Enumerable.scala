@@ -16,6 +16,6 @@ trait Enumerable extends Nextable { self =>
 
   /** Return the size of this container; we use `Long` so that big containers
     * can be manipulated. */
-  def size: Long
+  def longSize: Long
 
 }

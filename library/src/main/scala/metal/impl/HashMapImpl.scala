@@ -34,7 +34,7 @@ class HashMapImpl[K, V](
   // Map implementation
 
   type Cap = Nextable with Removable with Keys[K] with Searchable[K] with Values[V] with Updatable[V]
-  @inline final def size: Long = len
+  @inline final def longSize: Long = len
 
   @inline final override def isEmpty: Boolean = len == 0
 

@@ -51,7 +51,7 @@ class HashSetImpl[K](
     mask = mask,
     limit = limit)
 
-  @inline final def size = len
+  @inline final def longSize = len
 
   /**
     * Return whether the item is found in the HashSet or not.
