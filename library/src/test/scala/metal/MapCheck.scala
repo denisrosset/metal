@@ -14,19 +14,17 @@ import scala.annotation.tailrec
 
 import spire.util.Opt
 
-import metal.{Map => MetalMap, Set => MetalSet}
-
 import syntax._
 
-abstract class MapCheck[@specialized K: Arbitrary: ClassTag, KLB, KExtra[_], @specialized V: Arbitrary: ClassTag, VLB](factory: MMapFactory[KLB, KExtra, VLB])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
+abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrary:ClassTag:Methods, VLB, MP[KK, VV] <: MMap[KK, VV]](factory: MMapFactory[KLB, KExtra, VLB, MP])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
   import scala.collection.immutable.Map
-  def hybridEq(d: MetalMap[K, V], s: mutable.Map[K, V]): Boolean =
+
+  def hybridEq(d: MP[K, V], s: mutable.Map[K, V]): Boolean =
     d.size == s.size && s.forall { case (k, v) => d.get(k) == Opt(v) }
 
-  /*
   property("fromArrays") {
     forAll { (pairs: List[(K, V)]) =>
       val (ks, vs) = pairs.unzip
@@ -34,7 +32,7 @@ abstract class MapCheck[@specialized K: Arbitrary: ClassTag, KLB, KExtra[_], @sp
       val control = mutable.Map(pairs: _*)
       hybridEq(map, control) shouldBe true
     }
-  }*/
+  }
 
   property("Companion.fromMap") {
     forAll { pairs: List[(K, V)] =>
@@ -137,24 +135,6 @@ abstract class MapCheck[@specialized K: Arbitrary: ClassTag, KLB, KExtra[_], @sp
           rec(map1.ptrNext(vp))
         case _ =>
       }
-      rec(map1.ptrStart)
-      map1.size shouldBe kvs.size
-      map2.size shouldBe kvs.size
-      map1 shouldBe map2
-    }
-  }
-
-  property("foreach") {
-    forAll { (kvs: Map[A, B]) =>
-      val map1 = DMap.fromIterable(kvs)
-      val map2 = DMap.empty[A, B]
-      map1.foreach { (k, v) =>
-        map2.contains(k) shouldBe false
-        map2(k) = v
-      }
-      map1 shouldBe map2
-    }
-  }
 
   property("iterator") {
     forAll { (kvs: Map[A, B]) =>
@@ -235,14 +215,14 @@ abstract class MapCheck[@specialized K: Arbitrary: ClassTag, KLB, KExtra[_], @sp
    */
 }
 
-class IntIntMapCheck extends MapCheck[Int, Any, Dummy, Int, Any](HashMap)
-class IntBooleanMapCheck extends MapCheck[Int, Any, Dummy, Boolean, Any](HashMap)
-class IntStringMapCheck extends MapCheck[Int, Any, Dummy, String, Any](HashMap)
+class IntIntMapCheck extends MapCheck[Int, Any, Dummy, Int, Any, MHashMap](MHashMap)
+class IntBooleanMapCheck extends MapCheck[Int, Any, Dummy, Boolean, Any, MHashMap](MHashMap)
+class IntStringMapCheck extends MapCheck[Int, Any, Dummy, String, Any, MHashMap](MHashMap)
 
-class LongIntMapCheck extends MapCheck[Long, Any, Dummy, Int, Any](HashMap)
-class LongBooleanMapCheck extends MapCheck[Long, Any, Dummy, Boolean, Any](HashMap)
-class LongStringMapCheck extends MapCheck[Long, Any, Dummy, String, Any](HashMap)
+class LongIntMapCheck extends MapCheck[Long, Any, Dummy, Int, Any, MHashMap](MHashMap)
+class LongBooleanMapCheck extends MapCheck[Long, Any, Dummy, Boolean, Any, MHashMap](MHashMap)
+class LongStringMapCheck extends MapCheck[Long, Any, Dummy, String, Any, MHashMap](MHashMap)
 
-class StringIntMapCheck extends MapCheck[String, Any, Dummy, Int, Any](HashMap)
-class StringBooleanMapCheck extends MapCheck[String, Any, Dummy, Boolean, Any](HashMap)
-class StringStringMapCheck extends MapCheck[String, Any, Dummy, String, Any](HashMap)
+class StringIntMapCheck extends MapCheck[String, Any, Dummy, Int, Any, MHashMap](MHashMap)
+class StringBooleanMapCheck extends MapCheck[String, Any, Dummy, Boolean, Any, MHashMap](MHashMap)
+class StringStringMapCheck extends MapCheck[String, Any, Dummy, String, Any, MHashMap](MHashMap)
