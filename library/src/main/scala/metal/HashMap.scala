@@ -32,7 +32,7 @@ trait MHashMap[K, V] extends FHashMap[K, V] with MMap[K, V] {
 
 }
 
-object MHashMap extends MapFactory[Any, Dummy, Any, MHashMap] {
+object MHashMap extends MMapFactory[Any, Dummy, Any, MHashMap] {
 
   import impl.HashMapImpl
 

@@ -6,7 +6,7 @@ import spire.syntax.cfor._
 
 import syntax._
 
-trait MapFactory[KLB, KExtra[_], VLB, MP[_, _] <: MMap[_, _]] {
+trait MMapFactory[KLB, KExtra[_], VLB, MP[K, V] <: MMap[K, V]] {
 
   type KLBEv[K] = K <:< KLB
 

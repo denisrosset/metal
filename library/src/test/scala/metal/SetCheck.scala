@@ -17,7 +17,7 @@ import scala.annotation.tailrec
 
 import syntax._
 
-abstract class SetCheck[A:ClassTag:Methods, LB, Extra[_], ST[X] <: MSet[X]](factory: MSetFactory[LB, Extra, ST])(implicit extra: Extra[A], lbev: A <:< LB)
+abstract class SetCheck[A:ClassTag:Methods, LB, Extra[_], ST[AA] <: MSet[AA]](factory: MSetFactory[LB, Extra, ST])(implicit extra: Extra[A], lbev: A <:< LB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   implicit def A: Arbitrary[A]
