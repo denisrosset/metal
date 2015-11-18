@@ -2,31 +2,25 @@ package metal
 
 import spire.util.Opt
 
-abstract class LowerPrioritySyntax {
-
-  implicit def loopOps[E](lhs: Enumerable with Elements[E]): LoopOpsE[E] = new LoopOpsE[E](lhs)
-
-}
-
-object syntax extends LowerPrioritySyntax {
+object syntax {
 
   implicit def searchableOps[K](lhs: Searchable[K]): SearchableOps[K] = new SearchableOps(lhs)
 
   implicit def removableSearchableOps[K](lhs: Searchable[K] with Removable): RemovableSearchableOps[K, lhs.type] = new RemovableSearchableOps[K, lhs.type](lhs)
 
-  implicit def addOps[K](lhs: AddKeys[K] with Elements[K]): AddOps[K, lhs.type] = new AddOps[K, lhs.type](lhs)
+  implicit def addOps[K](lhs: AddKeys[K] with Elements1[K]): AddOps[K, lhs.type] = new AddOps[K, lhs.type](lhs)
 
-  implicit def searchableAddOps[K](lhs: AddKeys[K] with Searchable[K] with Elements[K]): SearchableAddOps[K] = new SearchableAddOps(lhs)
+  implicit def searchableAddOps[K](lhs: AddKeys[K] with Searchable[K] with Elements1[K]): SearchableAddOps[K] = new SearchableAddOps(lhs)
 
   implicit def updateOps[K, V](lhs: AddKeys[K] with Updatable[V]): UpdateOps[K, V] = new UpdateOps[K, V](lhs)
 
   implicit def searchableValuesOps[K, V](lhs: Searchable[K] with Values[V]): SearchableValuesOps[K, V] = new SearchableValuesOps[K, V](lhs)
 
-  implicit def loopOpsK[K](lhs: Enumerable with Keys[K] with Elements[K]): LoopOpsK[K] = new LoopOpsK[K](lhs)
+  implicit def loopOps1[E1](lhs: Enumerable with Elements1[E1]): LoopOps1[E1] = new LoopOps1[E1](lhs)
 
-  implicit def loopOpsKV[K, V](lhs: Enumerable with Keys[K] with Values[V]): LoopOpsKV[K, V] = new LoopOpsKV[K, V](lhs)
+  implicit def loopOps2[E1, E2](lhs: Enumerable with Elements2[E1, E2]): LoopOps2[E1, E2] = new LoopOps2[E1, E2](lhs)
 
-  implicit def loopOpsKV1V2[K, V1, V2](lhs: Enumerable with Keys[K] with Values1[V1] with Values2[V2]): LoopOpsKV1V2[K, V1, V2] = new LoopOpsKV1V2[K, V1, V2](lhs)
+  implicit def loopOps3[E1, E2, E3](lhs: Enumerable with Elements3[E1, E2, E3]): LoopOps3[E1, E2, E3] = new LoopOps3[E1, E2, E3](lhs)
 
   implicit def update2Ops[K, V1, V2](lhs: AddKeys[K] with Updatable1[V1] with Updatable2[V2]): Update2Ops[K, V1, V2] = new Update2Ops[K, V1, V2](lhs)
 

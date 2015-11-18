@@ -23,7 +23,7 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
   import scala.collection.immutable.Map
 
   def hybridEq(d: MP[K, V], s: mutable.Map[K, V]): Boolean =
-    d.size == s.size && s.forall { case (k, v) => d.get(k) == Opt(v) }
+    d.longSize == s.size && s.forall { case (k, v) => d.get(k) == Opt(v) }
 
   property("fromArrays") {
     forAll { (pairs: List[(K, V)]) =>

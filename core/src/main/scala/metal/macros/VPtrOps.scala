@@ -10,20 +10,20 @@ import MacroUtils._
 
 object VPtrOps {
 
-  def element[T:c.WeakTypeTag, E:c.WeakTypeTag](c: Context): c.Expr[E] = {
+  def element1[T:c.WeakTypeTag, E1:c.WeakTypeTag](c: Context): c.Expr[E1] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val eType = implicitly[c.WeakTypeTag[E]]
+    val tagE1 = implicitly[c.WeakTypeTag[E1]]
     val container = extractPath[T](c)
-    c.Expr[E](q"$container.ptrElement[$eType](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
+    c.Expr[E1](q"$container.ptrElement1[$tagE1](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
   }
 
   def key[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val aType = implicitly[c.WeakTypeTag[A]]
+    val tagA = implicitly[c.WeakTypeTag[A]]
     val container = extractPath[T](c)
-    c.Expr[A](q"$container.ptrKey[$aType](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
+    c.Expr[A](q"$container.ptrKey[$tagA](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
   }
 
   def next[T <: Pointable#Tag:c.WeakTypeTag, C <: Nextable:c.WeakTypeTag](c: Context): c.Expr[Ptr[T, C]] = {

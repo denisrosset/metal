@@ -25,7 +25,7 @@ abstract class SetCheck[A:ClassTag:Methods, LB, Extra[_], ST[AA] <: MSet[AA]](fa
   import scala.collection.immutable.Set
 
   def hybridEq(d: ST[A], s: mutable.Set[A]): Boolean =
-    d.size == s.size && {
+    d.longSize == s.size && {
       @tailrec def rec(p: d.MyPtr): Boolean = p match {
         case IsVPtr(vp) =>
           if (s.contains(d.ptrKey(vp)))

@@ -42,7 +42,7 @@ object Ptr {
 
   // implicit conversions for pointers to containers with differing capabilities
 
-  implicit def elements[T <: Pointable#Tag, E](ptr: Ptr[T, Elements[E]]): ElementsPtr[T, E] = new ElementsPtr[T, E](ptr.raw)
+  implicit def elements1[T <: Pointable#Tag, E1](ptr: Ptr[T, Elements1[E1]]): Elements1Ptr[T, E1] = new Elements1Ptr[T, E1](ptr.raw)
 
   implicit def keys[T <: Pointable#Tag, K](ptr: Ptr[T, Keys[K]]): KeysPtr[T, K] = new KeysPtr[T, K](ptr.raw)
 
@@ -56,9 +56,9 @@ object Ptr {
 
 }
 
-final class ElementsPtr[T <: Pointable#Tag, E](val raw: Long) extends AnyVal {
+final class Elements1Ptr[T <: Pointable#Tag, E1](val raw: Long) extends AnyVal {
 
-  final def elementOrElse(orElse: E): E = macro macros.PtrOps.elementOrElse[T, E]
+  final def elementOrElse(orElse: E1): E1 = macro macros.PtrOps.element1OrElse[T, E1]
 
 }
 

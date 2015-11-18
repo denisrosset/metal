@@ -90,7 +90,7 @@ final class SortedSetImpl[K](var items: Array[K], var longSize: Long)(implicit v
   @inline final def ptr: MyPtr = if (longSize == 0) Ptr.`null`(this) else Ptr(this, 0)
   @inline final def ptrNext(ptr: MyVPtr): MyPtr = if (ptr.raw == longSize - 1) Ptr.`null`(this) else Ptr(this, ptr.raw + 1)
   @inline final def ptrKey[@specialized L](ptr: MyVPtr): L = items.asInstanceOf[Array[L]](ptr.raw.toInt)
-  @inline final def ptrElement[@specialized E](ptr: MyVPtr): E = items.asInstanceOf[Array[E]](ptr.raw.toInt)
+  @inline final def ptrElement1[@specialized E1](ptr: MyVPtr): E1 = items.asInstanceOf[Array[E1]](ptr.raw.toInt)
 }
 
 object SortedSetImpl {

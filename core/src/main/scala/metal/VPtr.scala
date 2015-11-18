@@ -19,7 +19,7 @@ object VPtr {
 
   // implicit conversions for valid pointers to containers with differing capabilities
 
-  implicit def elements[T <: Pointable#Tag, E](vPtr: VPtr[T, Elements[E]]): ElementsVPtr[T, E] = new ElementsVPtr[T, E](vPtr.raw)
+  implicit def elements1[T <: Pointable#Tag, E1](vPtr: VPtr[T, Elements1[E1]]): Elements1VPtr[T, E1] = new Elements1VPtr[T, E1](vPtr.raw)
 
   implicit def keys[T <: Pointable#Tag, A](vPtr: VPtr[T, Keys[A]]): KeysVPtr[T, A] = new KeysVPtr[T, A](vPtr.raw)
 
@@ -50,9 +50,9 @@ object IsVPtr {
 
 // capability-based valid pointer types
 
-final class ElementsVPtr[T <: Pointable#Tag, E](val raw: Long) extends AnyVal {
+final class Elements1VPtr[T <: Pointable#Tag, E1](val raw: Long) extends AnyVal {
 
-  final def element: E = macro macros.VPtrOps.element[T, E]
+  final def element: E1 = macro macros.VPtrOps.element1[T, E1]
 
 }
 

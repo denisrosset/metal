@@ -32,7 +32,7 @@ class HashSetImpl[K](
 
   // Set implementation
 
-  type Cap = Nextable with Removable with Elements[K] with Keys[K] with Searchable[K]
+  type Cap = Nextable with Removable with Elements1[K] with Keys[K] with Searchable[K]
 
   @inline final def isEmpty = len == 0
 
@@ -180,8 +180,8 @@ class HashSetImpl[K](
   final def ptrKey[@specialized L](ptr: MyVPtr): L =
     items.asInstanceOf[Array[L]](ptr.raw.toInt)
 
-  final def ptrElement[@specialized E](ptr: MyVPtr): E =
-    items.asInstanceOf[Array[E]](ptr.raw.toInt)
+  final def ptrElement1[@specialized E1](ptr: MyVPtr): E1 =
+    items.asInstanceOf[Array[E1]](ptr.raw.toInt)
 
 }
 

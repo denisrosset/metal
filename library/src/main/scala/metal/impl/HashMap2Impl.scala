@@ -34,6 +34,8 @@ class HashMap2Impl[K, V1, V2](
   /** Point at which we should grow. */
   var limit: Int)(implicit val K: Methods[K], val V1: Methods[V1], val V2: Methods[V2]) extends IHashMap2[K, V1, V2] with MHashMap2[K, V1, V2] {
 
+  type Cap = Nextable with Removable with Keys[K] with Values1[V1] with Values2[V2] with Updatable1[V1] with Updatable2[V2] with Elements3[K, V1, V2]
+
   final def longSize: Long = len
 
   final override def isEmpty: Boolean = len == 0
@@ -186,6 +188,12 @@ class HashMap2Impl[K, V1, V2](
   final def ptrValue1[@specialized W1](ptr: MyVPtr): W1 = values1.asInstanceOf[Array[W1]](ptr.raw.toInt)
 
   final def ptrValue2[@specialized W2](ptr: MyVPtr): W2 = values2.asInstanceOf[Array[W2]](ptr.raw.toInt)
+
+  final def ptrElement1[@specialized E1](ptr: MyVPtr): E1 = keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
+
+  final def ptrElement2[@specialized E2](ptr: MyVPtr): E2 = values1.asInstanceOf[Array[E2]](ptr.raw.toInt)
+
+  final def ptrElement3[@specialized E3](ptr: MyVPtr): E3 = values2.asInstanceOf[Array[E3]](ptr.raw.toInt)
 
   final def ptrUpdate1[@specialized W1](ptr: MyVPtr, v: W1): Unit = {
     values1.asInstanceOf[Array[W1]](ptr.raw.toInt) = v

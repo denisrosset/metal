@@ -33,14 +33,14 @@ final class RemovableSearchableOps[K, T <: Searchable[K] with Removable](val lhs
 
 }
 
-final class AddOps[K, T <: AddKeys[K] with Elements[K]](val lhs: T) {
+final class AddOps[K, T <: AddKeys[K] with Elements1[K]](val lhs: T) {
 
   /** Adds item to the set, and returns the set. */
   def +=(key: K): T =  macro macros.Ops.+=[K, T]
 
 }
 
-final class SearchableAddOps[K](val lhs: AddKeys[K] with Searchable[K] with Elements[K]) {
+final class SearchableAddOps[K](val lhs: AddKeys[K] with Searchable[K] with Elements1[K]) {
 
   /**
     * Adds item to the set.

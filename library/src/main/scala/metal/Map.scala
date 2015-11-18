@@ -6,12 +6,12 @@ import scala.annotation.tailrec
 import spire.algebra.Order
 import spire.util.Opt
 
-trait FMap[K, V] extends FColl with Searchable[K] with Enumerable with Values[V] with JavaMethods[FMap[K, V]] { lhs =>
+trait FMap[K, V] extends FColl with Searchable[K] with Enumerable with Values[V] with Elements2[K, V] with JavaMethods[FMap[K, V]] { lhs =>
 
   implicit def K: Methods[K]
   implicit def V: Methods[V]
 
-  type Cap <: Nextable with Keys[K] with Values[V]
+  type Cap <: Nextable with Keys[K] with Values[V] with Elements2[K, V]
 
   type IType <: IMap[K, V]
   type MType <: MMap[K, V]
@@ -55,7 +55,7 @@ trait IMap[K, V] extends IColl with FMap[K, V]
 
 trait MMap[K, V] extends MColl with FMap[K, V] with AddKeys[K] with Removable with Updatable[V] {
 
-  type Cap <: Nextable with Removable with Keys[K] with Values[V] with Updatable[V]
+  type Cap <: Nextable with Removable with Keys[K] with Values[V] with Updatable[V] with Elements2[K, V]
 
   def result(): IMap[K, V] with IType
 

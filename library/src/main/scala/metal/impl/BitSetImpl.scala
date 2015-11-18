@@ -58,7 +58,7 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
 
   def ptrKey[@specialized L](ptr: MyVPtr): L = ptr.raw.toInt.asInstanceOf[L]
 
-  def ptrElement[@specialized E](ptr: MyVPtr): E = ptr.raw.toInt.asInstanceOf[E]
+  def ptrElement1[@specialized E1](ptr: MyVPtr): E1 = ptr.raw.toInt.asInstanceOf[E1]
 
   def ptrAddKey[@specialized L](keyL: L): MyVPtr = {
     val key = keyL.asInstanceOf[Int]

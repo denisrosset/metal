@@ -10,20 +10,20 @@ import MacroUtils._
 
 object PtrOps {
 
-  def elementOrElse[T:c.WeakTypeTag, E:c.WeakTypeTag](c: Context)(orElse: c.Expr[E]): c.Expr[E] = {
+  def element1OrElse[T:c.WeakTypeTag, E1:c.WeakTypeTag](c: Context)(orElse: c.Expr[E1]): c.Expr[E1] = {
     import c.universe._
     val lhs = c.prefix.tree
-    val eType = implicitly[c.WeakTypeTag[E]]
+    val e1Type = implicitly[c.WeakTypeTag[E1]]
     val container = extractPath[T](c)
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
-    c.Expr[E](q"""
+    c.Expr[E1](q"""
 {
   val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
   if ($ptr.isNull) 
     $orElse
   else
-    $container.ptrElement[$eType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+    $container.ptrElement1[$e1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 }
 """)
   }

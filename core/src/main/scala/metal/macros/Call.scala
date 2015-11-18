@@ -24,188 +24,117 @@ trait Call[C <: Context with Singleton] {
 
 }
 
-trait CallElements[C <: Context with Singleton, E] extends Call[C] {
+trait CallElements1[C <: Context with Singleton, E1] extends Call[C] {
 
-  def tagE: c.WeakTypeTag[E]
+  def tagE1: c.WeakTypeTag[E1]
 
   def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val e = util.name("$e")
+    val e1 = util.name("$e1")
     q"""
-val $e: $tagE = $containerName.ptrElement[$tagE]($pointerName)
-$body($e)
+val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
+$body($e1)
 """
   }
 
   def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val e = util.name("$e")
+    val e1 = util.name("$e1")
     q"""
-val $e: $tagE = $containerName.ptrElement[$tagE]($pointerName)
-$body($value, $e)
+val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
+$body($value, $e1)
 """
   }
 
 }
 
-object CallElements {
-  def apply[C <: Context with Singleton, E:_c.WeakTypeTag](_c: C): CallElements[C, E] =
-    new CallElements[C, E] {
+object CallElements1 {
+  def apply[C <: Context with Singleton, E1:_c.WeakTypeTag](_c: C): CallElements1[C, E1] =
+    new CallElements1[C, E1] {
       val c: C = _c
-      def tagE = implicitly[c.WeakTypeTag[E]]
+      def tagE1 = implicitly[c.WeakTypeTag[E1]]
     }
 }
 
-/** Variant for containers who contain keys only. */
-trait CallKeys[C <: Context with Singleton, K] extends Call[C] {
+trait CallElements2[C <: Context with Singleton, E1, E2] extends Call[C] {
 
-  def tagK: c.WeakTypeTag[K]
+  def tagE1: c.WeakTypeTag[E1]
+
+  def tagE2: c.WeakTypeTag[E2]
 
   def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val k = util.name("$k")
+    val List(e1, e2) = util.names("$e1", "$e2")
     q"""
-val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
-$body($k)
+val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
+val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
+$body($e1, $e2)
 """
   }
 
   def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val k = util.name("$k")
+    val List(e1, e2) = util.names("$e1", "$e2")
     q"""
-val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
-$body($value, $k)
+val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
+val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
+$body($value, $e1, $e2)
 """
   }
 
 }
 
-object CallKeys {
-  def apply[C <: Context with Singleton, K:_c.WeakTypeTag](_c: C): CallKeys[C, K] =
-    new CallKeys[C, K] {
+object CallElements2 {
+
+  def apply[C <: Context with Singleton, E1:_c.WeakTypeTag, E2:_c.WeakTypeTag](_c: C): CallElements2[C, E1, E2] =
+    new CallElements2[C, E1, E2] {
       val c: C = _c
-      def tagK = implicitly[c.WeakTypeTag[K]]
-    }
-
-}
-
-/** Variant for containers who contain values only. */
-trait CallValues[C <: Context with Singleton, V] extends Call[C] {
-
-  def tagV: c.WeakTypeTag[V]
-
-  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
-    import c.universe._
-    val v = util.name("$v")
-    q"""
-val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
-$body($v)
-"""
-  }
-
-  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
-    import c.universe._
-    val v = util.name("$v")
-    q"""
-val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
-$body($value, $v)
-"""
-  }
-
-}
-
-object CallValues {
-
-  def apply[C <: Context with Singleton, V:_c.WeakTypeTag](_c: C): CallValues[C, V] =
-    new CallValues[C, V] {
-      val c: C = _c
-      def tagV = implicitly[c.WeakTypeTag[V]]
+      def tagE1 = implicitly[c.WeakTypeTag[E1]]
+      def tagE2 = implicitly[c.WeakTypeTag[E2]]
     }
 
 }
 
-/** Variant for containers who contain key-value pairs. */
-trait CallKeysValues[C <: Context with Singleton, K, V] extends Call[C] {
+trait CallElements3[C <: Context with Singleton, E1, E2, E3] extends Call[C] {
 
-  def tagK: c.WeakTypeTag[K]
+  def tagE1: c.WeakTypeTag[E1]
 
-  def tagV: c.WeakTypeTag[V]
+  def tagE2: c.WeakTypeTag[E2]
+
+  def tagE3: c.WeakTypeTag[E3]
 
   def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val List(k, v) = util.names("$k", "$v")
+    val List(e1, e2, e3) = util.names("$e1", "$e2", "$e3")
     q"""
-val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
-val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
-$body($k, $v)
+val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
+val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
+val $e3: $tagE3 = $containerName.ptrElement3[$tagE3]($pointerName)
+$body($e1, $e2, $e3)
 """
   }
 
   def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val List(k, v) = util.names("$k", "$v")
+    val List(e1, e2, e3) = util.names("$e1", "$e2", "$e3")
     q"""
-val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
-val $v: $tagV = $containerName.ptrValue[$tagV]($pointerName)
-$body($value, $k, $v)
+val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
+val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
+val $e3: $tagE3 = $containerName.ptrElement3[$tagE3]($pointerName)
+$body($value, $e1, $e2, $e3)
 """
   }
 
 }
 
-object CallKeysValues {
+object CallElements3 {
 
-  def apply[C <: Context with Singleton, K:_c.WeakTypeTag, V:_c.WeakTypeTag](_c: C): CallKeysValues[C, K, V] =
-    new CallKeysValues[C, K, V] {
+  def apply[C <: Context with Singleton, E1:_c.WeakTypeTag, E2:_c.WeakTypeTag, E3:_c.WeakTypeTag](_c: C): CallElements3[C, E1, E2, E3] =
+    new CallElements3[C, E1, E2, E3] {
       val c: C = _c
-      def tagK = implicitly[c.WeakTypeTag[K]]
-      def tagV = implicitly[c.WeakTypeTag[V]]
-    }
-
-}
-
-/** Variant for containers who contain key-value1-value2 triples. */
-trait CallKeysValues1Values2[C <: Context with Singleton, K, V1, V2] extends Call[C] {
-
-  def tagK: c.WeakTypeTag[K]
-
-  def tagV1: c.WeakTypeTag[V1]
-
-  def tagV2: c.WeakTypeTag[V2]
-
-  def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
-    import c.universe._
-    val List(k, v1, v2) = util.names("$k", "$v1", "$v2")
-    q"""
-val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
-val $v1: $tagV1 = $containerName.ptrValue1[$tagV1]($pointerName)
-val $v2: $tagV2 = $containerName.ptrValue2[$tagV2]($pointerName)
-$body($k, $v1, $v2)
-"""
-  }
-
-  def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
-    import c.universe._
-    val List(k, v1, v2) = util.names("$k", "$v1", "$v2")
-    q"""
-val $k: $tagK = $containerName.ptrKey[$tagK]($pointerName)
-val $v1: $tagV1 = $containerName.ptrValue1[$tagV1]($pointerName)
-val $v2: $tagV2 = $containerName.ptrValue2[$tagV2]($pointerName)
-$body($value, $k, $v1, $v2)
-"""
-  }
-
-}
-
-object CallKeysValues1Values2 {
-
-  def apply[C <: Context with Singleton, K:_c.WeakTypeTag, V1:_c.WeakTypeTag, V2:_c.WeakTypeTag](_c: C): CallKeysValues1Values2[C, K, V1, V2] =
-    new CallKeysValues1Values2[C, K, V1, V2] {
-      val c: C = _c
-      def tagK = implicitly[c.WeakTypeTag[K]]
-      def tagV1 = implicitly[c.WeakTypeTag[V1]]
-      def tagV2 = implicitly[c.WeakTypeTag[V2]]
+      def tagE1 = implicitly[c.WeakTypeTag[E1]]
+      def tagE2 = implicitly[c.WeakTypeTag[E2]]
+      def tagE3 = implicitly[c.WeakTypeTag[E3]]
     }
 
 }

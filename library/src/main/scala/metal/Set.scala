@@ -2,11 +2,11 @@ package metal
 
 import spire.util.Opt
 
-trait FSet[K] extends FColl with Elements[K] with Enumerable with Searchable[K] with JavaMethods[FSet[K]] { lhs =>
+trait FSet[K] extends FColl with Elements1[K] with Enumerable with Searchable[K] with JavaMethods[FSet[K]] { lhs =>
 
   implicit def K: Methods[K]
 
-  type Cap <: Nextable with Keys[K] with Elements[K]
+  type Cap <: Nextable with Keys[K] with Elements1[K]
 
   type IType <: ISet[K]
   type MType <: MSet[K]
@@ -37,7 +37,7 @@ trait ISet[K] extends IColl with FSet[K]
 
 trait MSet[K] extends MColl with FSet[K] with Removable with AddKeys[K] {
 
-  type Cap <: Nextable with Removable with Keys[K] with Elements[K]
+  type Cap <: Nextable with Removable with Keys[K] with Elements1[K]
 
   def result(): ISet[K] with IType
 

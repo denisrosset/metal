@@ -33,7 +33,7 @@ class HashMapImpl[K, V](
 
   // Map implementation
 
-  type Cap = Nextable with Removable with Keys[K] with Searchable[K] with Values[V] with Updatable[V]
+  type Cap = Nextable with Removable with Keys[K] with Searchable[K] with Values[V] with Updatable[V]  with Elements2[K, V]
   @inline final def longSize: Long = len
 
   @inline final override def isEmpty: Boolean = len == 0
@@ -182,6 +182,10 @@ class HashMapImpl[K, V](
   final def ptrKey[@specialized L](ptr: MyVPtr): L = keys.asInstanceOf[Array[L]](ptr.raw.toInt)
 
   final def ptrValue[@specialized W](ptr: MyVPtr): W = values.asInstanceOf[Array[W]](ptr.raw.toInt)
+
+  final def ptrElement1[@specialized E1](ptr: MyVPtr): E1 = keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
+
+  final def ptrElement2[@specialized E2](ptr: MyVPtr): E2 = values.asInstanceOf[Array[E2]](ptr.raw.toInt)
 
 }
 

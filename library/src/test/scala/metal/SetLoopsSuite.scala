@@ -9,7 +9,7 @@ import spire.std.int._
 class SetLoopsSuite extends FunSuite with BeforeAndAfter {
 
   var sI: MHashSet[Int] = _
-  def eI: Enumerable with Elements[Int] = sI
+  def eI: Enumerable with Elements1[Int] = sI
 
   before {
     sI = MHashSet(1, 2, 3, 4, 5)
