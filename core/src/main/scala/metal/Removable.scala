@@ -3,7 +3,7 @@ package metal
 import scala.{specialized => sp}
 import scala.annotation.tailrec
 
-trait Removable extends Pointable { self =>
+trait Removable extends Nextable { self =>
 
   type Cap <: Removable
 
