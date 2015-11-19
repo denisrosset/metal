@@ -108,14 +108,14 @@ object Methods extends Methods0 {
   }
 
   implicit val Boolean: Methods[Boolean] = new SpecMethods[Boolean](false) {
-    private[this] val trueMethods =  true.hashCode
-    private[this] val falseMethods = false.hashCode
-    final def hash(a: Boolean): Int = if (a) trueMethods else falseMethods
+    private[this] val trueHash =  true.hashCode
+    private[this] val falseHash = false.hashCode
+    final def hash(a: Boolean): Int = if (a) trueHash else falseHash
   }
 
   implicit val Unit: Methods[Unit] = new SpecMethods[Unit]( () ) {
-    private[this] val unitMethods =  ().hashCode
-    final def hash(a: Unit): Int = unitMethods
+    private[this] val unitHash =  ().hashCode
+    final def hash(a: Unit): Int = unitHash
   }
 
   implicit val Char: Methods[Char] = new SpecMethods[Char](0) {
