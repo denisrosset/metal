@@ -29,7 +29,11 @@ trait JavaMethods[T <: JavaMethods[T]] extends Enumerable { lhs: T =>
       if (!lhs.priorityEquals && rhs.priorityEquals) (rhs == lhs)
       else if (lhs.longSize == rhs.longSize) {
         @tailrec def rec(ptr: MyPtr): Boolean = ptr match {
-          case IsVPtr(vp) if ptrEquals(vp, rhs) => rec(ptrNext(vp))
+          case IsVPtr(vp) =>
+            if (ptrEquals(vp, rhs))
+              rec(ptrNext(vp))
+            else
+              false
           case _ => true
         }
         rec(ptr)
