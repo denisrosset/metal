@@ -1,5 +1,4 @@
-package net.alasc.ptrcoll
-package maps
+package metal
 
 import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
@@ -11,12 +10,13 @@ import Arbitrary.arbitrary
 
 import scala.collection.mutable
 import scala.reflect._
-import scala.{specialized => sp}
 import scala.annotation.tailrec
 
 import spire.util.Opt
 
-abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary: ClassTag, VLB1, V2: Arbitrary: ClassTag, VLB2](factory: MutMMap2Factory[KLB, KExtra, VLB1, VLB2])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
+import syntax._
+
+abstract class MMap2Check[K: Arbitrary: ClassTag:Methods, KLB, KExtra[_], V1:Arbitrary:ClassTag:Methods, VLB1, V2:Arbitrary:ClassTag:Methods, VLB2, MP2[KK, VV1, VV2] <: MMap2[KK, VV1, VV2]](factory: MMap2Factory[KLB, KExtra, VLB1, VLB2, MP2])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
     extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
 
   import scala.collection.immutable.Set
@@ -30,7 +30,7 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
   }
 
   def hybridEq(d: MMap2[K, V1, V2], s: mutable.Map[K, (V1, V2)]): Boolean =
-    d.size == s.size && s.forall { case (k, (v1, v2)) => d.get1(k) == Opt(v1) && d.get2(k) == Opt(v2) }
+    d.longSize == s.size && s.forall { case (k, (v1, v2)) => d.contains(k) && d.apply1(k) == v1 && d.apply2(k) == v2 }
 
   property("fromArrays") {
     forAll { (pairs: List[(K, (V1, V2))]) =>
@@ -71,10 +71,10 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
     }
   }
 
-  property("copy") {
+  property("mutableCopy") {
     forAll { kvs: List[(K, (V1, V2))] =>
       val a = factory.fromMap(kvs.toMap)
-      val b = a.copy
+      val b = a.mutableCopy
       a shouldBe b
       kvs.foreach { case (k, _) =>
         a.remove(k)
@@ -89,19 +89,19 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
     forAll { (kvs: Map[K, (V1, V2)]) =>
       val map1 = factory.fromMap(kvs)
       val map2 = factory.empty[K, V1, V2]
-      @tailrec def rec(p: map1.Ptr): Unit = p match {
-        case Valid(vp) =>
-          val k = map1.ptrKey(vp)
-          val v1 = map1.ptrVal1(vp)
-          val v2 = map1.ptrVal2(vp)
+      @tailrec def rec(p: map1.MyPtr): Unit = p match {
+        case IsVPtr(vp) =>
+          val k = vp.key
+          val v1 = vp.value1
+          val v2 = vp.value2
           map2.contains(k) shouldBe false
-          map2.update(k, v1, v2)
+          map2(k) = (v1, v2)
           rec(map1.ptrNext(vp))
         case _ =>
       }
-      rec(map1.ptrStart)
-      map1.size shouldBe kvs.size
-      map2.size shouldBe kvs.size
+      rec(map1.ptr)
+      map1.longSize shouldBe kvs.size
+      map2.longSize shouldBe kvs.size
       map1 shouldBe map2
     }
   }
@@ -136,7 +136,7 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
       val map = factory.empty[K, V1, V2]
       val control = mutable.Map.empty[K, (V1, V2)]
       kvs.foreach { case (k, (v1, v2)) =>
-        map.update(k, v1, v2)
+        map(k) = (v1, v2)
         control(k) = (v1, v2)
         map.contains(k) shouldBe true
         map.get1(k) shouldBe Opt(v1)
@@ -164,26 +164,36 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
       val map = factory.empty[K, V1, V2]
       val control = mutable.Map.empty[K, (V1, V2)]
       pairs.foreach {
-        case (k, v1, v2, true) => map.update(k, v1, v2); control(k) = (v1, v2)
+        case (k, v1, v2, true) => map(k) = (v1, v2); control(k) = (v1, v2)
         case (k, _, _, false) => map.remove(k); control -= k
       }
       hybridEq(map, control) shouldBe true
     }
   }
 
-  /*
   property("foreach") {
-    forAll { (kvs: Map[A, B]) =>
-      val map1 = DMap.fromIterable(kvs)
-      val map2 = DMap.empty[A, B]
-      map1.foreach { (k, v) =>
+    forAll { (kvs: Map[K, (V1, V2)]) =>
+      val map1 = factory.fromMap(kvs)
+      val map2 = factory.empty[K, V1, V2]
+      map1.foreach { (k, v1, v2) =>
         map2.contains(k) shouldBe false
-        map2(k) = v
+        map2(k) = (v1, v2)
       }
       map1 shouldBe map2
     }
   }
 
+  property("forall / exists / findAll") {
+    forAll { (kvs: Map[K, (V1, V2)], f: (K, V1, V2) => Boolean) =>
+      val m = factory.fromMap(kvs)
+      m.forall(f) shouldBe kvs.forall { case (k, (v1, v2)) => f(k, v1, v2) }
+      m.exists(f) shouldBe kvs.exists { case (k, (v1, v2)) => f(k, v1, v2) }
+//      val kvs2 = kvs.filter { case (k, v) => f(k, v) }
+//      m.findAll(f) shouldBe factory.fromMap(kvs2)
+    }
+  }
+
+/*
   property("iterator") {
     forAll { (kvs: Map[A, B]) =>
       val map1 = DMap.fromIterable(kvs)
@@ -249,7 +259,6 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
       })
     }
   }
-
   property("forall / exists / findAll") {
     forAll { (kvs: Map[A, B], f: (A, B) => Boolean) =>
       val m = DMap.fromIterable(kvs)
@@ -260,17 +269,18 @@ abstract class MMap2Check[K: Arbitrary: ClassTag, KLB, KExtra[_], V1: Arbitrary:
       m.findAll(f) shouldBe DMap.fromIterable(kvs2)
     }
   }
+
    */
 }
 
-class IntIntIntMMap2Check extends MMap2Check[Int, Any, Dummy, Int, Any, Int, Any](HashMMap2)
-class IntIntBooleanMap2Check extends MMap2Check[Int, Any, Dummy, Int, Any, Boolean, Any](HashMMap2)
-class IntStringIntMap2Check extends MMap2Check[Int, Any, Dummy, String, Any, Int, Any](HashMMap2)
+class IntIntIntMMap2Check extends MMap2Check[Int, Any, Dummy, Int, Any, Int, Any, MHashMap2](MHashMap2)
+class IntIntBooleanMap2Check extends MMap2Check[Int, Any, Dummy, Int, Any, Boolean, Any, MHashMap2](MHashMap2)
+class IntStringIntMap2Check extends MMap2Check[Int, Any, Dummy, String, Any, Int, Any, MHashMap2](MHashMap2)
 
-class LongIntIntMMap2Check extends MMap2Check[Long, Any, Dummy, Int, Any, Int, Any](HashMMap2)
-class LongIntBooleanMap2Check extends MMap2Check[Long, Any, Dummy, Int, Any, Boolean, Any](HashMMap2)
-class LongStringIntMap2Check extends MMap2Check[Long, Any, Dummy, String, Any, Int, Any](HashMMap2)
+class LongIntIntMMap2Check extends MMap2Check[Long, Any, Dummy, Int, Any, Int, Any, MHashMap2](MHashMap2)
+class LongIntBooleanMap2Check extends MMap2Check[Long, Any, Dummy, Int, Any, Boolean, Any, MHashMap2](MHashMap2)
+class LongStringIntMap2Check extends MMap2Check[Long, Any, Dummy, String, Any, Int, Any, MHashMap2](MHashMap2)
 
-class StringIntIntMMap2Check extends MMap2Check[String, Any, Dummy, Int, Any, Int, Any](HashMMap2)
-class StringIntBooleanMap2Check extends MMap2Check[String, Any, Dummy, Int, Any, Boolean, Any](HashMMap2)
-class StringStringIntMap2Check extends MMap2Check[String, Any, Dummy, String, Any, Int, Any](HashMMap2)
+class StringIntIntMMap2Check extends MMap2Check[String, Any, Dummy, Int, Any, Int, Any, MHashMap2](MHashMap2)
+class StringIntBooleanMap2Check extends MMap2Check[String, Any, Dummy, Int, Any, Boolean, Any, MHashMap2](MHashMap2)
+class StringStringIntMap2Check extends MMap2Check[String, Any, Dummy, String, Any, Int, Any, MHashMap2](MHashMap2)

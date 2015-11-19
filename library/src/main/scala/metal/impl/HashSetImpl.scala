@@ -10,12 +10,12 @@ import spire.syntax.cfor._
 import syntax._
 
 class HashSetImpl[K](
-  /** Slots for items. */
-  var items: Array[K],
+  /** Slots for keys. */
+  var keys: Array[K],
   /** Status of the slots in the hash table.
     * 
     * 0 = unused
-    * 2 = once used, now empty but not yet overwritten
+    * 2 = once used, has been deleted but not yet overwritten
     * 3 = used
     */ 
   var buckets: Array[Byte],
@@ -29,6 +29,9 @@ class HashSetImpl[K](
   /** Point at which we should grow. */
   var limit: Int)(implicit val K: Methods[K]) extends IHashSet[K] with MHashSet[K] { self =>
 
+  @inline final def STATUS_UNUSED: Int = 0
+  @inline final def STATUS_DELETED: Int = 2
+  @inline final def STATUS_USED: Int = 3
 
   // Set implementation
 
@@ -38,13 +41,13 @@ class HashSetImpl[K](
 
   @inline final def nonEmpty = !isEmpty
 
-  def keyArray(ptr: MyVPtr): Array[K] = items
+  def keyArray(ptr: MyVPtr): Array[K] = keys
   def keyIndex(ptr: MyVPtr): Int = ptr.raw.toInt
 
   def result(): IHashSet[K] = this
 
   def mutableCopy: MHashSet[K] = new HashSetImpl[K](
-    items = items.clone,
+    keys = keys.clone,
     buckets = buckets.clone,
     len = len,
     used = len,
@@ -60,15 +63,15 @@ class HashSetImpl[K](
     * is O(n).
     */
   final def ptrFind[@specialized L](key: L): MyPtr = {
-    val itemsL = items.asInstanceOf[Array[L]]
+    val keysL = keys.asInstanceOf[Array[L]]
     @inline @tailrec def loop(i: Int, perturbation: Int): MyPtr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) Ptr.`null`[Tag, Cap]
-      else if (status == 3 && itemsL(j) == key) VPtr[Tag, Cap](j)
+      if (status == STATUS_UNUSED) Ptr.`null`(this)
+      else if (status == STATUS_USED && keysL(j) == key) VPtr(this, j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
-    val i = key.## & 0x7fffffff
+    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
     loop(i, i)
   }
 
@@ -81,40 +84,44 @@ class HashSetImpl[K](
   final def ptrRemove(ptr: MyVPtr): Unit = {
     val j = ptr.raw.toInt
     buckets(j) = 2
-    items(j) = null.asInstanceOf[K]
+    keys(j) = null.asInstanceOf[K]
     len -= 1
   }
 
   final def ptrAddKey[@specialized L](key: L): MyVPtr = {
-    val itemsL = items.asInstanceOf[Array[L]]
-    @inline def addHere(j: Int, oldStatus: Int): MyVPtr = {
-      itemsL(j) = key
-      buckets(j) = 3
-      len += 1
-      if (oldStatus == 0) {
-        used += 1
-        if (used > limit) {
-          grow()
-          ptrFind[L](key).get
-        } else VPtr[Tag, Cap](j)
-      } else VPtr[Tag, Cap](j)
-    }
-
-    @inline @tailrec def loop(i: Int, perturbation: Int): MyVPtr = {
+    val keysL = keys.asInstanceOf[Array[L]]
+    // iteration loop, `i` is the current probe, `perturbation` is used to compute the
+    // next probe, and `freeBlock` is the first STATUS_DELETED bucket in the sequence
+    @inline @tailrec def loop(i: Int, perturbation: Int, freeBlock: Int): MyVPtr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 3) {
-        if (itemsL(j) == key)
-          VPtr[Tag, Cap](j)
-        else
-          loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-      } else if (status == 2) ptrFind[L](key) match {
-        case IsVPtr(vp) => vp
-        case _ => addHere(j, status)
-      } else addHere(j, status)
+      if (status == STATUS_UNUSED) {
+        val writeTo = if (freeBlock == -1) j else freeBlock
+        keysL(writeTo) = key
+        val oldStatus = buckets(writeTo)
+        buckets(writeTo) = 3
+        len += 1
+        if (oldStatus == STATUS_DELETED) // we reuse a bucket
+          VPtr(this, writeTo)
+        else { // new bucket occupied
+          used += 1
+          if (used > limit) {
+            grow()
+            val IsVPtr(vp) = ptrFind[L](key)
+            vp
+          } else VPtr(this, writeTo)
+        }
+      } else if (status == STATUS_DELETED) {
+        val newFreeBlock = if (freeBlock == -1) j else freeBlock
+        loop((i << 2) + i + perturbation + 1, perturbation >> 5, newFreeBlock)
+      } else if (status == STATUS_USED && keysL(j) == key) {
+        VPtr(this, j)
+      } else {
+        loop((i << 2) + i + perturbation + 1, perturbation >> 5, freeBlock)
+      }
     }
-    val i = key.## & 0x7fffffff
-    loop(i, i)
+    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
+    loop(i, i, -1)
   }
 
   /**
@@ -139,7 +146,7 @@ class HashSetImpl[K](
     val set = HashSetImpl.ofAllocatedSize[K](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
-        set.ptrAddKeyFromArray(items, i)
+        set.ptrAddKeyFromArray(keys, i)
       }
     }
     absorb(set)
@@ -157,7 +164,7 @@ class HashSetImpl[K](
     * lot of garbage (if the set was previously large).
     */
   private[this] def absorb(that: MHashSet[K]): Unit = {
-    items = that.items
+    keys = that.keys
     buckets = that.buckets
     len = that.len
     used = that.used
@@ -178,10 +185,10 @@ class HashSetImpl[K](
   }
 
   final def ptrKey[@specialized L](ptr: MyVPtr): L =
-    items.asInstanceOf[Array[L]](ptr.raw.toInt)
+    keys.asInstanceOf[Array[L]](ptr.raw.toInt)
 
   final def ptrElement1[@specialized E1](ptr: MyVPtr): E1 =
-    items.asInstanceOf[Array[E1]](ptr.raw.toInt)
+    keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
 
 }
 
@@ -202,7 +209,7 @@ object HashSetImpl {
       case n => n
     }
     new HashSetImpl[K](
-      items = K.newArray(sz),
+      keys = K.newArray(sz),
       buckets = new Array[Byte](sz),
       len = 0,
       used = 0,

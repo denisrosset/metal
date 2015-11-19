@@ -6,20 +6,20 @@ import spire.syntax.cfor._
 
 import syntax._
 
-trait Map2Factory[KLB, KExtra[_], VLB1, VLB2, MP2[_, _, _] <: MMap2[_, _, _]] {
+trait MMap2Factory[KLB, KExtra[_], VLB1, VLB2, MP2[_, _, _] <: MMap2[_, _, _]] {
 
   type KLBEv[K] = K <:< KLB
 
   def empty[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods]: MP2[K, V1, V2] = ofSize[K, V1, V2](0)
 
-  def apply[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](kv1v2Triples: (K, V1, V2)*): MP2[K, V1, V2] = {
+  def apply[K:Methods:KExtra:KLBEv, V1:Methods, V2:Methods](kv1v2s: (K, (V1, V2))*): MP2[K, V1, V2] = {
     val mmap2 = empty[K, V1, V2]
-    val tripleIt = kv1v2Triples.iterator
-    while (tripleIt.hasNext) {
-      val triple = tripleIt.next
-      val vp = mmap2.ptrAddKey(triple._1)
-      mmap2.ptrUpdate1(vp, triple._2)
-      mmap2.ptrUpdate2(vp, triple._3)
+    val it = kv1v2s.iterator
+    while (it.hasNext) {
+      val pair = it.next
+      val vp = mmap2.ptrAddKey(pair._1)
+      mmap2.ptrUpdate1(vp, pair._2._1)
+      mmap2.ptrUpdate2(vp, pair._2._2)
     }
     mmap2
   }

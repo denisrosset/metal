@@ -23,7 +23,7 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
   import scala.collection.immutable.Map
 
   def hybridEq(d: MP[K, V], s: mutable.Map[K, V]): Boolean =
-    d.longSize == s.size && s.forall { case (k, v) => d.get(k) == Opt(v) }
+    d.longSize == s.size && s.forall { case (k, v) => d.contains(k) && d(k) == v }
 
   property("fromArrays") {
     forAll { (pairs: List[(K, V)]) =>
@@ -41,7 +41,7 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
       hybridEq(mmap, control) shouldBe true
     }
   }
-/*
+
   property("equals (==), hashCode (##)") {
     forAll { (xs: Map[K, V], ys: Map[K, V]) =>
       val a = factory.fromMap(xs)
@@ -60,10 +60,10 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  property("copy") {
+  property("mutableCopy") {
     forAll { kvs: List[(K, V)] =>
       val a = factory.fromMap(kvs.toMap)
-      val b = a.copy
+      val b = a.mutableCopy
       a shouldBe b
       kvs.foreach { case (k, _) =>
         a.remove(k)
@@ -73,8 +73,8 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
       }
     }
   }
- */
-/*
+
+  /*
   property("clear") {
     forAll { kvs: List[(A, B)] =>
       val a = DMap.fromIterable(kvs)
@@ -83,7 +83,7 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
  */
-  /*
+
   property("adding elements (update)") {
     forAll { kvs: Map[K, V] =>
       val map = factory.empty[K, V]
@@ -110,13 +110,21 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-   property("random += and -=") {
+  property("random update and remove") {
    forAll { (pairs: List[(K, V, Boolean)]) =>
       val map = factory.empty[K, V]
       val control = mutable.Map.empty[K, V]
       pairs.foreach {
-        case (k, v, true) => map(k) = v; control(k) = v
-        case (k, _, false) => map.remove(k); control -= k
+        case (k, v, true) =>
+          map(k) = v
+          control(k) = v
+          assert(map(k) == v)
+          assert(control(k) == v)
+        case (k, _, false) =>
+          map.remove(k)
+          control.remove(k)
+          assert(!map.contains(k))
+          assert(!control.contains(k))
       }
       hybridEq(map, control) shouldBe true
     }
@@ -126,16 +134,29 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     forAll { (kvs: Map[K, V]) =>
       val map1 = factory.fromMap(kvs)
       val map2 = factory.empty[K, V]
-      @tailrec def rec(p: map1.Ptr): Unit = p match {
-        case Valid(vp) =>
-          val k = map1.ptrKey(vp)
-          val v = map1.ptrVal(vp)
+      @tailrec def rec(p: map1.MyPtr): Unit = p match {
+        case IsVPtr(vp) =>
+          val k = vp.key
+          val v = vp.value
           map2.contains(k) shouldBe false
           map2(k) = v
-          rec(map1.ptrNext(vp))
+          rec(vp.next)
         case _ =>
       }
+    }
+  }
 
+  property("forall / exists / findAll") {
+    forAll { (kvs: Map[K, V], f: (K, V) => Boolean) =>
+      val m = factory.fromMap(kvs)
+      m.forall(f) shouldBe kvs.forall { case (k, v) => f(k, v) }
+      m.exists(f) shouldBe kvs.exists { case (k, v) => f(k, v) }
+//      val kvs2 = kvs.filter { case (k, v) => f(k, v) }
+//      m.findAll(f) shouldBe factory.fromMap(kvs2)
+    }
+  }
+
+/*
   property("iterator") {
     forAll { (kvs: Map[A, B]) =>
       val map1 = DMap.fromIterable(kvs)
@@ -199,17 +220,6 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
       m.mapValues(f) shouldBe DMap.fromIterable(kvs.map {
         case (k, v) => (k, f(v))
       })
-    }
-  }
-
-  property("forall / exists / findAll") {
-    forAll { (kvs: Map[A, B], f: (A, B) => Boolean) =>
-      val m = DMap.fromIterable(kvs)
-      m.forall(f) shouldBe kvs.forall { case (a, b) => f(a, b) }
-      m.exists(f) shouldBe kvs.exists { case (a, b) => f(a, b) }
-
-      val kvs2 = kvs.filter { case (a, b) => f(a, b) }
-      m.findAll(f) shouldBe DMap.fromIterable(kvs2)
     }
   }
    */

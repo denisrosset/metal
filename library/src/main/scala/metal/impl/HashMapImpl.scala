@@ -20,7 +20,7 @@ class HashMapImpl[K, V](
     * 3 = used
     */ 
   var buckets: Array[Byte],
-  /** Number of defined slots. */
+  /** Number of defined slots = buckets.count(_ > 1). */
   var len: Int,
   /** Number of used slots (used >= len). */
   var used: Int,
@@ -30,6 +30,10 @@ class HashMapImpl[K, V](
   /** Point at which we should grow. */
   var limit: Int
 )(implicit val K: Methods[K], val V: Methods[V]) extends IHashMap[K, V] with MHashMap[K, V] {
+
+  @inline final def STATUS_UNUSED: Int = 0
+  @inline final def STATUS_DELETED: Int = 2
+  @inline final def STATUS_USED: Int = 3
 
   // Map implementation
 
@@ -58,32 +62,38 @@ class HashMapImpl[K, V](
 
   final def ptrAddKey[@specialized L](key: L): MyVPtr = {
     val keysL = keys.asInstanceOf[Array[L]]
-    @inline @tailrec def loop(i: Int, perturbation: Int): MyVPtr = {
+    // iteration loop, `i` is the current probe, `perturbation` is used to compute the
+    // next probe, and `freeBlock` is the first STATUS_DELETED bucket in the sequence
+    @inline @tailrec def loop(i: Int, perturbation: Int, freeBlock: Int): MyVPtr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) {
-        keysL(j) = key
-        buckets(j) = 3
+      if (status == STATUS_UNUSED) {
+        val writeTo = if (freeBlock == -1) j else freeBlock
+        keysL(writeTo) = key
+        val oldStatus = buckets(writeTo)
+        buckets(writeTo) = 3
         len += 1
-        used += 1
-        if (used > limit) {
-          grow()
-          val IsVPtr(vp) = ptrFind[L](key)
-          vp
-        } else VPtr(this, j)
-      } else if (status == 2 && ptrFind[L](key).isNull) {
-        keysL(j) = key
-        buckets(j) = 3
-        len += 1
-        VPtr(this, j)
-      } else if (keysL(j) == key) {
+        if (oldStatus == STATUS_DELETED) // we reuse a bucket
+          VPtr(this, writeTo)
+        else { // new bucket occupied
+          used += 1
+          if (used > limit) {
+            grow()
+            val IsVPtr(vp) = ptrFind[L](key)
+            vp
+          } else VPtr(this, writeTo)
+        }
+      } else if (status == STATUS_DELETED) {
+        val newFreeBlock = if (freeBlock == -1) j else freeBlock
+        loop((i << 2) + i + perturbation + 1, perturbation >> 5, newFreeBlock)
+      } else if (status == STATUS_USED && keysL(j) == key) {
         VPtr(this, j)
       } else {
-        loop((i << 2) + i + perturbation + 1, perturbation >> 5)
+        loop((i << 2) + i + perturbation + 1, perturbation >> 5, freeBlock)
       }
     }
-    val i = key.## & 0x7fffffff
-    loop(i, i)
+    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
+    loop(i, i, -1)
   }
 
   final def ptrUpdate[@specialized W](vp: MyVPtr, v: W): Unit = {
@@ -110,11 +120,11 @@ class HashMapImpl[K, V](
     @inline @tailrec def loop(i: Int, perturbation: Int): MyPtr = {
       val j = i & mask
       val status = buckets(j)
-      if (status == 0) Ptr.`null`(this)
-      else if (status == 3 && keysL(j) == key) VPtr(this, j)
+      if (status == STATUS_UNUSED) Ptr.`null`(this)
+      else if (status == STATUS_USED && keysL(j) == key) VPtr(this, j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
-    val i = key.## & 0x7fffffff
+    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
     loop(i, i)
   }
 

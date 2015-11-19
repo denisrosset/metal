@@ -62,4 +62,22 @@ class SetPtrOpsSuite extends FunSuite {
     assert(k2 == -1)
   }
 
+    test("element") {
+    val sI = MHashSet(2, 4)
+    sI.ptrFind(2) match {
+      case IsVPtr(vp) =>
+        val e = vp.element
+        assert(e == 2)
+      case _ => assert(false)
+    }
+  }
+
+  test("elementOrElse") {
+    val sI = MHashSet(2, 4)
+    val e1 = sI.ptrFind(2).elementOrElse(-1)
+    assert(e1 == 2)
+    val e2 = sI.ptrFind(3).elementOrElse(-1)
+    assert(e2 == -1)
+  }
+
 }

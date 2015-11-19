@@ -26,7 +26,7 @@ trait MHashSet[K] extends FHashSet[K] with MSet[K] {
   def used: Int
   def mask: Int
   def limit: Int
-  def items: Array[K]
+  def keys: Array[K]
   def buckets: Array[Byte]
 
   def result(): IHashSet[K]
