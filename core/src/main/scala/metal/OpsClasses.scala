@@ -101,6 +101,15 @@ final class SearchableValuesOps[K, V](val lhs: Searchable[K] with Values[V]) {
 
 }
 
+final class SearchableValues12Ops[K, V1, V2](val lhs: Searchable[K] with Values1[V1] with Values2[V2]) {
+
+  /** Returns whether the key is present in the Map2 with the given value
+    * or not.
+    */
+  def containsItem2(key: K, value1: V1, value2: V2): Boolean = macro macros.Ops.containsItem2[K, V1, V2]
+
+}
+
 final class SearchableValues1Ops[K, V1](val lhs: Searchable[K] with Values1[V1]) {
 
   /** Returns the key's current value in the map, throwing an exception

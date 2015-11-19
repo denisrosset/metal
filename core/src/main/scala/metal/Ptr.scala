@@ -44,6 +44,10 @@ object Ptr {
 
   implicit def elements1[T <: Pointable#Tag, E1](ptr: Ptr[T, Elements1[E1]]): Elements1Ptr[T, E1] = new Elements1Ptr[T, E1](ptr.raw)
 
+  implicit def elements2[T <: Pointable#Tag, E1, E2](ptr: Ptr[T, Elements2[E1, E2]]): Elements2Ptr[T, E1, E2] = new Elements2Ptr[T, E1, E2](ptr.raw)
+
+  implicit def elements3[T <: Pointable#Tag, E1, E2, E3](ptr: Ptr[T, Elements3[E1, E2, E3]]): Elements3Ptr[T, E1, E2, E3] = new Elements3Ptr[T, E1, E2, E3](ptr.raw)
+
   implicit def keys[T <: Pointable#Tag, K](ptr: Ptr[T, Keys[K]]): KeysPtr[T, K] = new KeysPtr[T, K](ptr.raw)
 
   implicit def nextable[T <: Pointable#Tag, C <: Nextable](ptr: Ptr[T, C]): NextablePtr[T, C] = new NextablePtr[T, C](ptr.raw)
@@ -59,6 +63,24 @@ object Ptr {
 final class Elements1Ptr[T <: Pointable#Tag, E1](val raw: Long) extends AnyVal {
 
   final def elementOrElse(orElse: E1): E1 = macro macros.PtrOps.element1OrElse[T, E1]
+
+}
+
+final class Elements2Ptr[T <: Pointable#Tag, E1, E2](val raw: Long) extends AnyVal {
+
+  final def element1OrElse(orElse: E1): E1 = macro macros.PtrOps.element1OrElse[T, E1]
+
+  final def element2OrElse(orElse: E2): E2 = macro macros.PtrOps.element2OrElse[T, E2]
+
+}
+
+final class Elements3Ptr[T <: Pointable#Tag, E1, E2, E3](val raw: Long) extends AnyVal {
+
+  final def element1OrElse(orElse: E1): E1 = macro macros.PtrOps.element1OrElse[T, E1]
+
+  final def element2OrElse(orElse: E2): E2 = macro macros.PtrOps.element2OrElse[T, E2]
+
+  final def element3OrElse(orElse: E3): E3 = macro macros.PtrOps.element3OrElse[T, E3]
 
 }
 
@@ -101,12 +123,12 @@ final class ValuesPtr[T <: Pointable#Tag, V](val raw: Long) extends AnyVal {
 
 final class Values1Ptr[T <: Pointable#Tag, V1](val raw: Long) extends AnyVal {
 
-  final def valueOrElse(orElse: V1): V1 = macro macros.PtrOps.value1OrElse[T, V1]
+  final def value1OrElse(orElse: V1): V1 = macro macros.PtrOps.value1OrElse[T, V1]
 
 }
 
 final class Values2Ptr[T <: Pointable#Tag, V2](val raw: Long) extends AnyVal {
 
-  final def valueOrElse(orElse: V2): V2 = macro macros.PtrOps.value2OrElse[T, V2]
+  final def value2OrElse(orElse: V2): V2 = macro macros.PtrOps.value2OrElse[T, V2]
 
 }

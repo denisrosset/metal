@@ -21,6 +21,10 @@ object VPtr {
 
   implicit def elements1[T <: Pointable#Tag, E1](vPtr: VPtr[T, Elements1[E1]]): Elements1VPtr[T, E1] = new Elements1VPtr[T, E1](vPtr.raw)
 
+  implicit def elements2[T <: Pointable#Tag, E1, E2](vPtr: VPtr[T, Elements2[E1, E2]]): Elements2VPtr[T, E1, E2] = new Elements2VPtr[T, E1, E2](vPtr.raw)
+
+  implicit def elements3[T <: Pointable#Tag, E1, E2, E3](vPtr: VPtr[T, Elements3[E1, E2, E3]]): Elements3VPtr[T, E1, E2, E3] = new Elements3VPtr[T, E1, E2, E3](vPtr.raw)
+
   implicit def keys[T <: Pointable#Tag, A](vPtr: VPtr[T, Keys[A]]): KeysVPtr[T, A] = new KeysVPtr[T, A](vPtr.raw)
 
   implicit def nextable[T <: Pointable#Tag, C <: Nextable](vPtr: VPtr[T, C]): NextableVPtr[T, C] = new NextableVPtr[T, C](vPtr.raw)
@@ -53,6 +57,24 @@ object IsVPtr {
 final class Elements1VPtr[T <: Pointable#Tag, E1](val raw: Long) extends AnyVal {
 
   final def element: E1 = macro macros.VPtrOps.element1[T, E1]
+
+}
+
+final class Elements2VPtr[T <: Pointable#Tag, E1, E2](val raw: Long) extends AnyVal {
+
+  final def element1: E1 = macro macros.VPtrOps.element1[T, E1]
+
+  final def element2: E2 = macro macros.VPtrOps.element2[T, E2]
+
+}
+
+final class Elements3VPtr[T <: Pointable#Tag, E1, E2, E3](val raw: Long) extends AnyVal {
+
+  final def element1: E1 = macro macros.VPtrOps.element1[T, E1]
+
+  final def element2: E2 = macro macros.VPtrOps.element2[T, E2]
+
+  final def element3: E3 = macro macros.VPtrOps.element3[T, E3]
 
 }
 

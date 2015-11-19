@@ -25,13 +25,11 @@ object Ops {
     val keyCache = util.name("keyCache")
     val contained = util.name("contained")
     c.Expr[Boolean](q"""
-{
-  val $lhsCache = $lhs
-  val $keyCache = $key
-  val $contained = $lhsCache.ptrFind[$tagK]($keyCache).nonNull
-  $lhsCache.ptrAddKey[$tagK]($keyCache)
-  $contained
-}
+val $lhsCache = $lhs
+val $keyCache = $key
+val $contained = $lhsCache.ptrFind[$tagK]($keyCache).nonNull
+$lhsCache.ptrAddKey[$tagK]($keyCache)
+$contained
 """)
     }
 
@@ -42,11 +40,10 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val lhsCache = util.name("$lhsCache")
     c.Expr[T](q"""
-{
-  val $lhsCache = $lhs
-  $lhsCache.ptrAddKey[$tagK]($key)
-  $lhsCache
-}""")
+val $lhsCache = $lhs
+$lhsCache.ptrAddKey[$tagK]($key)
+$lhsCache
+""")
   }
 
   def remove[K:c.WeakTypeTag](c: Context)(key: c.Expr[K]): c.Expr[Boolean] = {
@@ -56,14 +53,13 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[Boolean](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
-  if ($ptr.nonNull) {
-    $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-    true
-  } else false
-}""")
+val $lhsCache = $lhs
+val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
+if ($ptr.nonNull) {
+  $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  true
+} else false
+""")
   }
 
   def -=[K:c.WeakTypeTag, T](c: Context)(key: c.Expr[K]): c.Expr[T] = {
@@ -73,13 +69,11 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[T](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
-  if ($ptr.nonNull)
-    $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  $lhsCache
-}
+val $lhsCache = $lhs
+val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
+if ($ptr.nonNull)
+  $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+$lhsCache
 """)
   }
 
@@ -91,10 +85,8 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val lhsCache = util.name("$lhsCache")
     c.Expr[Unit](q"""
-{
-  val $lhsCache = $lhs
-  $lhsCache.ptrUpdate[$tagV]($lhsCache.ptrAddKey[$tagK]($key), $value)
-}
+val $lhsCache = $lhs
+$lhsCache.ptrUpdate[$tagV]($lhsCache.ptrAddKey[$tagK]($key), $value)
 """)
   }
 
@@ -106,14 +98,31 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[Boolean](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    ($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)) == $value)
-  else
-    false
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  ($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)) == $value)
+else
+  false
+""")
+  }
+
+  def containsItem2[K:c.WeakTypeTag, V1:c.WeakTypeTag, V2:c.WeakTypeTag](c: Context)(key: c.Expr[K], value1: c.Expr[V1], value2: c.Expr[V2]): c.Expr[Boolean] = {
+    import c.universe._
+    val lhs = findLhs(c)
+    val tagK = implicitly[c.WeakTypeTag[K]]
+    val tagV1 = implicitly[c.WeakTypeTag[V1]]
+    val tagV2 = implicitly[c.WeakTypeTag[V2]]
+    val util = SyntaxUtil[c.type](c)
+    val List(lhsCache, ptr, vp) = util.names("$lhsCache", "$ptr", "$vp")
+    c.Expr[Boolean](q"""
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) {
+  val $vp = new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)
+  ($lhsCache.ptrValue1[$tagV1]($vp) == $value1) &&
+  ($lhsCache.ptrValue2[$tagV2]($vp) == $value2)
+} else false
 """)
   }
 
@@ -125,14 +134,12 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  else
-    throw new NoSuchElementException("key not found: " + $key)
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+else
+  throw new NoSuchElementException("key not found: " + $key)
 """)
   }
 
@@ -144,14 +151,12 @@ object Ops {
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  else
-    $fallback
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+else
+  $fallback
 """)
   }
 
@@ -168,7 +173,7 @@ val $ptr = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
   _root_.spire.util.Opt[$tagV]($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
 else
-  _root_. spire.util.Opt.empty[$tagV]
+  _root_.spire.util.Opt.empty[$tagV]
 """)
   }
 
@@ -207,14 +212,12 @@ $lhsCache.ptrUpdate2[$tagV2]($ptr, $value._2)
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V1](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    $lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  else
-    throw new NoSuchElementException("key not found: " + $key)
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  $lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+else
+  throw new NoSuchElementException("key not found: " + $key)
 """)
   }
 
@@ -226,14 +229,12 @@ $lhsCache.ptrUpdate2[$tagV2]($ptr, $value._2)
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V1](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    $lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  else
-    $fallback
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  $lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+else
+  $fallback
 """)
   }
 
@@ -250,7 +251,7 @@ val $ptr = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
   _root_.spire.util.Opt[$tagV1]($lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
 else
-  _root_. spire.util.Opt.empty[$tagV1]
+  _root_.spire.util.Opt.empty[$tagV1]
 """)
   }
 
@@ -262,14 +263,12 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V2](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    $lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  else
-    throw new NoSuchElementException("key not found: " + $key)
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  $lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+else
+  throw new NoSuchElementException("key not found: " + $key)
 """)
   }
 
@@ -281,14 +280,12 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
     c.Expr[V2](q"""
-{
-  val $lhsCache = $lhs
-  val $ptr = $lhsCache.ptrFind[$tagK]($key) 
-  if ($ptr.nonNull) 
-    $lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
-  else
-    $fallback
-}
+val $lhsCache = $lhs
+val $ptr = $lhsCache.ptrFind[$tagK]($key) 
+if ($ptr.nonNull) 
+  $lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+else
+  $fallback
 """)
   }
 
@@ -305,7 +302,7 @@ val $ptr = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
   _root_.spire.util.Opt[$tagV2]($lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
 else
-  _root_. spire.util.Opt.empty[$tagV2]
+  _root_.spire.util.Opt.empty[$tagV2]
 """)
   }
 

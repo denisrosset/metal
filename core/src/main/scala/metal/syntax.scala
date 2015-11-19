@@ -24,8 +24,11 @@ object syntax {
 
   implicit def update2Ops[K, V1, V2](lhs: AddKeys[K] with Updatable1[V1] with Updatable2[V2]): Update2Ops[K, V1, V2] = new Update2Ops[K, V1, V2](lhs)
 
+  implicit def searchableValues12Ops[K, V1, V2](lhs: Searchable[K] with Values1[V1] with Values2[V2]): SearchableValues12Ops[K, V1, V2] = new SearchableValues12Ops[K, V1, V2](lhs)
+
   implicit def searchableValues1Ops[K, V1](lhs: Searchable[K] with Values1[V1]): SearchableValues1Ops[K, V1] = new SearchableValues1Ops[K, V1](lhs)
 
   implicit def searchableValues2Ops[K, V2](lhs: Searchable[K] with Values2[V2]): SearchableValues2Ops[K, V2] = new SearchableValues2Ops[K, V2](lhs)
+
 
 }

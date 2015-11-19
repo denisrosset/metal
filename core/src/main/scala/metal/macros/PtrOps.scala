@@ -18,13 +18,43 @@ object PtrOps {
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[E1](q"""
-{
-  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
-  if ($ptr.isNull) 
-    $orElse
-  else
-    $container.ptrElement1[$e1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
-}
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrElement1[$e1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+""")
+  }
+
+  def element2OrElse[T:c.WeakTypeTag, E2:c.WeakTypeTag](c: Context)(orElse: c.Expr[E2]): c.Expr[E2] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val e2Type = implicitly[c.WeakTypeTag[E2]]
+    val container = extractPath[T](c)
+    val util = SyntaxUtil[c.type](c)
+    val List(ptr) = util.names("ptr")
+    c.Expr[E2](q"""
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrElement2[$e2Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+""")
+  }
+
+  def element3OrElse[T:c.WeakTypeTag, E3:c.WeakTypeTag](c: Context)(orElse: c.Expr[E3]): c.Expr[E3] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val e3Type = implicitly[c.WeakTypeTag[E3]]
+    val container = extractPath[T](c)
+    val util = SyntaxUtil[c.type](c)
+    val List(ptr) = util.names("ptr")
+    c.Expr[E3](q"""
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrElement3[$e3Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -36,13 +66,11 @@ object PtrOps {
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[K](q"""
-{
-  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
-  if ($ptr.isNull) 
-    $orElse
-  else
-    $container.ptrKey[$kType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
-}
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrKey[$kType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -54,13 +82,11 @@ object PtrOps {
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[V](q"""
-{
-  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
-  if ($ptr.isNull) 
-    $orElse
-  else
-    $container.ptrValue[$vType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
-}
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrValue[$vType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -72,13 +98,11 @@ object PtrOps {
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[V1](q"""
-{
-  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
-  if ($ptr.isNull) 
-    $orElse
-  else
-    $container.ptrValue1[$v1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
-}
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrValue1[$v1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -90,13 +114,11 @@ object PtrOps {
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[V2](q"""
-{
-  val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
-  if ($ptr.isNull) 
-    $orElse
-  else
-    $container.ptrValue2[$v2Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
-}
+val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+if ($ptr.isNull) 
+  $orElse
+else
+  $container.ptrValue2[$v2Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 

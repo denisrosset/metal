@@ -18,6 +18,22 @@ object VPtrOps {
     c.Expr[E1](q"$container.ptrElement1[$tagE1](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
   }
 
+  def element2[T:c.WeakTypeTag, E2:c.WeakTypeTag](c: Context): c.Expr[E2] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val tagE2 = implicitly[c.WeakTypeTag[E2]]
+    val container = extractPath[T](c)
+    c.Expr[E2](q"$container.ptrElement2[$tagE2](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
+  }
+
+  def element3[T:c.WeakTypeTag, E3:c.WeakTypeTag](c: Context): c.Expr[E3] = {
+    import c.universe._
+    val lhs = c.prefix.tree
+    val tagE3 = implicitly[c.WeakTypeTag[E3]]
+    val container = extractPath[T](c)
+    c.Expr[E3](q"$container.ptrElement3[$tagE3](new VPtr[$container.Tag, $container.Cap]($lhs.raw))")
+  }
+
   def key[T:c.WeakTypeTag, A:c.WeakTypeTag](c: Context): c.Expr[A] = {
     import c.universe._
     val lhs = c.prefix.tree
