@@ -47,6 +47,7 @@ trait FMap[K, V] extends FColl with Searchable[K] with Enumerable with Values[V]
         val thatA = that.valueArray(thatPtr)
         val thatI = that.valueIndex(thatPtr)
         V.equalsElement(thisA, thisI, thatA, thatI)
+      case _ => false
     }
 
 }

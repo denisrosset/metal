@@ -60,6 +60,7 @@ trait FMap2[K, V1, V2] extends FColl with Searchable[K] with Enumerable with Val
         val thatI2 = that.value2Index(thatPtr)
         V1.equalsElement(thisA1, thisI1, thatA1, thatI1) &&
         V2.equalsElement(thisA2, thisI2, thatA2, thatI2)
+      case _ => false
     }
 }
 
