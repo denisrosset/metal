@@ -67,7 +67,11 @@ class HashMap2Impl[K, V1, V2](
     mask = mask,
     limit = limit)
 
-    final def ptrAddKey[@specialized L](key: L): MyVPtr = {
+  def clear(): Unit = {
+    absorb(MHashMap2.empty[K, V1, V2])
+  }
+
+  final def ptrAddKey[@specialized L](key: L): MyVPtr = {
     val keysL = keys.asInstanceOf[Array[L]]
     // iteration loop, `i` is the current probe, `perturbation` is used to compute the
     // next probe, and `freeBlock` is the first STATUS_DELETED bucket in the sequence

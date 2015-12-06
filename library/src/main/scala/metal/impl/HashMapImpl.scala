@@ -60,6 +60,10 @@ class HashMapImpl[K, V](
     mask = mask,
     limit = limit)
 
+  def clear(): Unit = {
+    absorb(MHashMap.empty[K, V])
+  }
+
   final def ptrAddKey[@specialized L](key: L): MyVPtr = {
     val keysL = keys.asInstanceOf[Array[L]]
     // iteration loop, `i` is the current probe, `perturbation` is used to compute the

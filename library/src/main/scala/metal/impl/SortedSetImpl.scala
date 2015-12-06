@@ -22,7 +22,6 @@ final class SortedSetImpl[K](var items: Array[K], var longSize: Long)(implicit v
 
   def absorb(newItems: Array[K], newSize: Long): Unit = {
     items = newItems
-
     longSize = newSize
   }
 
@@ -30,6 +29,10 @@ final class SortedSetImpl[K](var items: Array[K], var longSize: Long)(implicit v
     val res = new SortedSetImpl[K](null, 0)
     res.absorb(items.clone, longSize)
     res
+  }
+
+  def clear(): Unit = {
+    absorb(K.newArray(0), 0)
   }
 
   protected def findWhere[@specialized L](item: L): Int = {

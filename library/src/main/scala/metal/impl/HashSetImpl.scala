@@ -54,6 +54,10 @@ class HashSetImpl[K](
     mask = mask,
     limit = limit)
 
+  def clear(): Unit = {
+    absorb(MHashSet.empty[K])
+  }
+
   @inline final def longSize = len
 
   /**

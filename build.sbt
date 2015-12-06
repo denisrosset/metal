@@ -38,7 +38,7 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
 
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.7",
-  organization := "com.faacets",
+  organization := "org.scala-metal",
   libraryDependencies ++= Seq(
     "org.spire-math" %% "spire" % "0.10.1",
     "org.scalatest" %% "scalatest" % "2.2.1" % "test",
@@ -62,7 +62,7 @@ lazy val scalaReflect = Def.setting { "org.scala-lang" % "scala-reflect" % scala
 lazy val library = (project in file("library")).
   dependsOn(core).
   settings(commonSettings: _*).
-  settings(
+  settings( //scalacOptions ++= Seq("-Ymacro-debug-lite")
     // other settings here
   )
 

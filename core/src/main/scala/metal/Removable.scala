@@ -15,4 +15,6 @@ trait Removable extends Nextable { self =>
     */
   def ptrRemoveAndAdvance(ptr: MyVPtr): MyPtr
 
+  def clear(): Unit
+
 }

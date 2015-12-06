@@ -23,6 +23,11 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
 
   def result(): IBitSet[Int] = this
 
+  def clear(): Unit = {
+    words = new Array[Long](MBitSet.startSize)
+    wordSize = 0
+  }
+
   def ptr: MyPtr = {
     var w = 0
     while(w < wordSize && words(w) == 0L) {
