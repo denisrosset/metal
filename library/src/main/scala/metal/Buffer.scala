@@ -19,12 +19,12 @@ final class Buffer[@specialized V](var array: Array[V], var length: Long)(implic
 
   def result(): IArraySeq[V] = new IArraySeq[V](array, length)
 
-  def sort()(implicit order: Order[V]): Unit = {
-    QuickSort.qsort(array, 0, length.toInt - 1)(order, V.classTag)
+  def sort()(implicit order: Order[V], ct: ClassTag[V]): Unit = {
+    QuickSort.qsort(array, 0, length.toInt - 1)(order, ct)
   }
 
-  def toArray: Array[V] = {
-    val res = V.newArray(length.toInt)
+  def toArray(implicit ct: ClassTag[V]): Array[V] = {
+    val res = ct.newArray(length.toInt)
     Array.copy(array, 0, res, 0, length.toInt)
     res
   }

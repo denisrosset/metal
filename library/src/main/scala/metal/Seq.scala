@@ -116,7 +116,7 @@ trait FSeq[@specialized V] extends FColl with Elements1[V] with Enumerable with 
     sb.toString
   }
 
-  def toArray: Array[V]
+  def toArray(implicit ct: ClassTag[V]): Array[V]
 
   final def ptr: MyPtr = if (isEmpty) Ptr.`null`(this) else VPtr(this, 0)
 
@@ -143,6 +143,6 @@ trait MSeq[V] extends MColl with FSeq[V] { self =>
 
   def clear(): Unit
 
-  def sort()(implicit order: Order[V]): Unit
+  def sort()(implicit order: Order[V], ct: ClassTag[V]): Unit
 
 }
