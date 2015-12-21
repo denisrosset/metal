@@ -37,7 +37,7 @@ trait FSeq[@specialized V] extends FColl with Elements1[V] with Enumerable with 
   type IType <: ISeq[V]
   type MType <: MSeq[V]
 
-  def mutableCopy(): MSeq[V] with MType
+  def mutableCopy: MSeq[V] with MType
 
   def stringPrefix = "FSeq"
 

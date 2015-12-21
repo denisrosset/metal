@@ -15,7 +15,7 @@ final class Buffer[@specialized V](var array: Array[V], var length: Long)(implic
 
   @inline final def apply(idx: Long): V = array(idx.toInt)
 
-  def mutableCopy(): Buffer[V] = new Buffer(array.clone, length)
+  def mutableCopy: Buffer[V] = new Buffer(array.clone, length)
 
   def result(): IArraySeq[V] = new IArraySeq[V](array, length)
 

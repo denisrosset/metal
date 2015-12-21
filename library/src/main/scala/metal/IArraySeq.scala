@@ -19,6 +19,6 @@ final class IArraySeq[@specialized V](val array: Array[V], val length: Long)(imp
 
   def apply(idx: Long): V = array(idx.toInt)
 
-  def mutableCopy() = new Buffer[V](array.clone, array.length)
+  def mutableCopy = new Buffer[V](array.clone, array.length)
 
 }

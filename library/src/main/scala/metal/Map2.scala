@@ -17,7 +17,7 @@ trait FMap2[K, V1, V2] extends FColl with Searchable[K] with Enumerable with Val
   type IType <: IMap2[K, V1, V2]
   type MType <: MMap2[K, V1, V2]
 
-  def mutableCopy(): MMap2[K, V1, V2] with MType
+  def mutableCopy: MMap2[K, V1, V2] with MType
 
   override def stringPrefix = "FMap2"
 

@@ -9,7 +9,7 @@ trait FSortedSet[K] extends FSet[K] {
   type IType <: ISortedSet[K]
   type MType <: MSortedSet[K]
 
-  def mutableCopy(): MSortedSet[K] with MType
+  def mutableCopy: MSortedSet[K] with MType
 
 }
 

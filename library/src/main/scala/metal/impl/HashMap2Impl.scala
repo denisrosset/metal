@@ -57,7 +57,7 @@ class HashMap2Impl[K, V1, V2](
 
   def result(): IHashMap2[K, V1, V2] = this
 
-  def mutableCopy(): MHashMap2[K, V1, V2] = new HashMap2Impl[K, V1, V2](
+  def mutableCopy: MHashMap2[K, V1, V2] = new HashMap2Impl[K, V1, V2](
     keys = keys.clone,
     values1 = values1.clone,
     values2 = values2.clone,

@@ -19,7 +19,7 @@ final class BitSetImpl(var words: Array[Long], var wordSize: Int) extends IBitSe
 
   def K = Methods.Int
 
-  def mutableCopy(): MBitSet[Int] = new BitSetImpl(words.clone, wordSize)
+  def mutableCopy: MBitSet[Int] = new BitSetImpl(words.clone, wordSize)
 
   def result(): IBitSet[Int] = this
 

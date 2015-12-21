@@ -14,7 +14,7 @@ trait FHashSet[K] extends FSet[K] {
   type IType = IHashSet[K]
   type MType = MHashSet[K]
 
-  def mutableCopy(): MHashSet[K]
+  def mutableCopy: MHashSet[K]
 
 }
 

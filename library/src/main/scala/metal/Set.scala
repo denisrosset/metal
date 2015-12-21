@@ -11,7 +11,7 @@ trait FSet[K] extends FColl with Elements1[K] with Enumerable with Searchable[K]
   type IType <: ISet[K]
   type MType <: MSet[K]
 
-  def mutableCopy(): MSet[K] with MType
+  def mutableCopy: MSet[K] with MType
 
   override def stringPrefix = "FSet"
 

@@ -11,7 +11,7 @@ trait FBitSet[K] extends FSortedSet[K] {
   type IType = IBitSet[K]
   type MType = MBitSet[K]
 
-  def mutableCopy(): MBitSet[K]
+  def mutableCopy: MBitSet[K]
 
 }
 

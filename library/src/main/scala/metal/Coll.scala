@@ -6,7 +6,7 @@ trait FColl {
 
   type MType <: MColl
 
-  def mutableCopy(): MType
+  def mutableCopy: MType
 
 }
 

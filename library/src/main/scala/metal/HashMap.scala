@@ -12,7 +12,7 @@ trait FHashMap[K, V] extends FMap[K, V] {
   type IType = IHashMap[K, V]
   type MType = MHashMap[K, V]
 
-  def mutableCopy(): MHashMap[K, V]
+  def mutableCopy: MHashMap[K, V]
 
 }
 
