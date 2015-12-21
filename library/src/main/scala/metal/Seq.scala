@@ -2,6 +2,8 @@ package metal
 
 import scala.reflect.ClassTag
 
+import spire.algebra.Order
+import spire.math.QuickSort
 import spire.syntax.cfor._
 
 object FSeq {
@@ -114,6 +116,8 @@ trait FSeq[@specialized V] extends FColl with Elements1[V] with Enumerable with 
     sb.toString
   }
 
+  def toArray: Array[V]
+
   final def ptr: MyPtr = if (isEmpty) Ptr.`null`(this) else VPtr(this, 0)
 
   final def ptrNext(ptr: MyVPtr): MyPtr = if (ptr.raw == length - 1) Ptr.`null`(this) else VPtr(this, ptr.raw + 1)
@@ -136,5 +140,9 @@ trait MSeq[V] extends MColl with FSeq[V] { self =>
   def update(idx: Long, v: V): Unit
 
   def remove(idx: Long): V
+
+  def clear(): Unit
+
+  def sort()(implicit order: Order[V]): Unit
 
 }

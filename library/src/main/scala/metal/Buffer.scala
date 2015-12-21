@@ -2,7 +2,7 @@ package metal
 
 import scala.reflect.ClassTag
 
-import spire.algebra._
+import spire.algebra.Order
 import spire.math.QuickSort
 import spire.syntax.all._
 
@@ -18,6 +18,21 @@ final class Buffer[@specialized V](var array: Array[V], var length: Long)(implic
   def mutableCopy: Buffer[V] = new Buffer(array.clone, length)
 
   def result(): IArraySeq[V] = new IArraySeq[V](array, length)
+
+  def sort()(implicit order: Order[V]): Unit = {
+    QuickSort.qsort(array, 0, length.toInt - 1)(order, V.classTag)
+  }
+
+  def toArray: Array[V] = {
+    val res = V.newArray(length.toInt)
+    Array.copy(array, 0, res, 0, length.toInt)
+    res
+  }
+
+  def clear(): Unit = {
+    array = V.newArray(16)
+    length = 0
+  }
 
   override def stringPrefix = "Buffer"
 
