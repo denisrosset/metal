@@ -67,13 +67,18 @@ abstract class SpecMethods[@specialized A](val fillValue: A)(implicit val classT
 
 abstract class Methods0 {
 
-  implicit def anyVal[A <: AnyVal: ClassTag]: Methods[A] = new Methods[A] {
+  implicit def fromClassTag[A](implicit A: ClassTag[A]): Methods[A] = new Methods[A] {
 
-    protected def classTag: ClassTag[A] = implicitly[ClassTag[A]]
+    protected def classTag: ClassTag[A] = A
     def fillValue: A = classTag.newArray(0)(0)
     final def hash(a: A): Int = a.hashCode
 
   }
+
+}
+
+abstract class Methods1 extends Methods0 {
+
 
   object AnyRefMethods extends Methods[AnyRef] {
 
@@ -87,7 +92,7 @@ abstract class Methods0 {
 
 }
 
-object Methods extends Methods0 {
+object Methods extends Methods1 {
 
   def apply[@specialized A](implicit A: Methods[A]): Methods[A] = A
 
