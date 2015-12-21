@@ -93,7 +93,17 @@ object Buffer {
       i += 1
     }
     new Buffer[V](array, array.length)
+  }
 
+  def fromIterable[@specialized V:Methods](iterable: Iterable[V]): Buffer[V] = {
+    val array = Methods[V].newArray(iterable.size)
+    val it = iterable.iterator
+    var i = 0
+    while (it.hasNext) {
+      array(i) = it.next
+      i += 1
+    }
+    new Buffer[V](array, array.length)
   }
 
 }
