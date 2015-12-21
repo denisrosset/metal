@@ -19,9 +19,9 @@ object Loops {
     val bc = call(util, lhs, cc, vp, body)
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 while ($ptr.nonNull) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $bc
   $ptr = $cc.ptrNext($vp)
 }
@@ -37,10 +37,10 @@ while ($ptr.nonNull) {
     val bc = call(util, lhs, cc, vp, body)
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 var $res: Long = 0L
 while ($ptr.nonNull) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   if ($bc) $res += 1
   $ptr = $cc.ptrNext($vp)
 }
@@ -57,10 +57,10 @@ $res
     val bc = call(util, lhs, cc, vp, body)
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 var $res: Boolean = false
 while ($ptr.nonNull && !$res) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $bc
   $ptr = $cc.ptrNext($vp)
 }
@@ -77,10 +77,10 @@ $res
     val bc = call(util, lhs, cc, vp, body)
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 var $res: Boolean = true
 while ($ptr.nonNull && $res) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $bc
   $ptr = $cc.ptrNext($vp)
 }
@@ -97,10 +97,10 @@ $res
     val bc = call.withValue(util, lhs, cc, vp, body, res)
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 var $res: $tagA = $initialValue
 while ($ptr.nonNull) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $bc
   $ptr = $cc.ptrNext($vp)
 }
@@ -117,13 +117,13 @@ $res
     val List(cc, ptr, vp, el, res) = util.names("$cc", "$ptr", "$vp", "$el", "$res")
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 if ($ptr.isNull) throw new UnsupportedOperationException("empty.min")
-var $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+var $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
 var $res: $tagE1 = $cc.ptrElement1[$tagE1]($vp)
 $ptr = $cc.ptrNext($vp)
 while ($ptr.nonNull) {
-  $vp = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   val $el = $cc.ptrElement1[$tagE1]($vp)
   if ($order.lt($el, $res)) $res = $el
   $ptr = $cc.ptrNext($vp)
@@ -141,13 +141,13 @@ $res
     val List(cc, ptr, vp, el, res) = util.names("$cc", "$ptr", "$vp", "$el", "$res")
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 if ($ptr.isNull) throw new UnsupportedOperationException("empty.min")
-var $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+var $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
 var $res: $tagE1 = $cc.ptrElement1[$tagE1]($vp)
 $ptr = $cc.ptrNext($vp)
 while ($ptr.nonNull) {
-  $vp = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   val $el = $cc.ptrElement1[$tagE1]($vp)
   if ($order.gt($el, $res)) $res = $el
   $ptr = $cc.ptrNext($vp)
@@ -165,10 +165,10 @@ $res
     val List(cc, ptr, vp, res) = util.names("$cc", "$ptr", "$vp", "$res")
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 var $res: $tagE1 = $am.zero
 while ($ptr.nonNull) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $am.plus($res, $cc.ptrElement1[$tagE1]($vp))
   $ptr = $cc.ptrNext($vp)
 }
@@ -185,10 +185,10 @@ $res
     val List(cc, ptr, vp, res) = util.names("cc", "ptr", "vp", "res")
     val tree = q"""
 val $cc = $lhs
-var $ptr: Ptr[$cc.Tag, $cc.Cap]  = $cc.ptr
+var $ptr = $cc.ptr
 var $res: $tagE1 = $mm.one
 while ($ptr.nonNull) {
-  val $vp: VPtr[$cc.Tag, $cc.Cap] = new VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$cc.Tag, $cc.Cap]($ptr.raw)
   $res = $mm.times($res, $cc.ptrElement1[$tagE1]($vp))
   $ptr = $cc.ptrNext($vp)
 }

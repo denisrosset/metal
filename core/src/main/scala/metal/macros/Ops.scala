@@ -56,7 +56,7 @@ $lhsCache
 val $lhsCache = $lhs
 val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull) {
-  $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrRemove(new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
   true
 } else false
 """)
@@ -72,7 +72,7 @@ if ($ptr.nonNull) {
 val $lhsCache = $lhs
 val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
-  $lhsCache.ptrRemove(new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrRemove(new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 $lhsCache
 """)
   }
@@ -101,7 +101,7 @@ $lhsCache.ptrUpdate[$tagV]($lhsCache.ptrAddKey[$tagK]($key), $value)
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  ($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)) == $value)
+  ($lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)) == $value)
 else
   false
 """)
@@ -119,7 +119,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) {
-  val $vp = new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)
+  val $vp = new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)
   ($lhsCache.ptrValue1[$tagV1]($vp) == $value1) &&
   ($lhsCache.ptrValue2[$tagV2]($vp) == $value2)
 } else false
@@ -137,7 +137,7 @@ if ($ptr.nonNull) {
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 else
   throw new NoSuchElementException("key not found: " + $key)
 """)
@@ -154,7 +154,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 else
   $fallback
 """)
@@ -171,7 +171,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull)
-  _root_.spire.util.Opt[$tagV]($lhsCache.ptrValue[$tagV](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  _root_.spire.util.Opt[$tagV]($lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
 else
   _root_.spire.util.Opt.empty[$tagV]
 """)
@@ -215,7 +215,7 @@ $lhsCache.ptrUpdate2[$tagV2]($ptr, $value._2)
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue1[$tagV1](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 else
   throw new NoSuchElementException("key not found: " + $key)
 """)
@@ -232,7 +232,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue1[$tagV1](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 else
   $fallback
 """)
@@ -249,7 +249,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull)
-  _root_.spire.util.Opt[$tagV1]($lhsCache.ptrValue1[$tagV1](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  _root_.spire.util.Opt[$tagV1]($lhsCache.ptrValue1[$tagV1](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
 else
   _root_.spire.util.Opt.empty[$tagV1]
 """)
@@ -266,7 +266,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue2[$tagV2](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 else
   throw new NoSuchElementException("key not found: " + $key)
 """)
@@ -283,7 +283,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue2[$tagV2](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
 else
   $fallback
 """)
@@ -300,7 +300,7 @@ else
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull)
-  _root_.spire.util.Opt[$tagV2]($lhsCache.ptrValue2[$tagV2](new VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  _root_.spire.util.Opt[$tagV2]($lhsCache.ptrValue2[$tagV2](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
 else
   _root_.spire.util.Opt.empty[$tagV2]
 """)

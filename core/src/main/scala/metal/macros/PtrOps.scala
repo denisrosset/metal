@@ -18,11 +18,11 @@ object PtrOps {
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[E1](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrElement1[$e1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrElement1[$e1Type](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -34,11 +34,11 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[E2](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrElement2[$e2Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrElement2[$e2Type](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -50,11 +50,11 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[E3](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrElement3[$e3Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrElement3[$e3Type](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -66,11 +66,11 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[K](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrKey[$kType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrKey[$kType](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -82,11 +82,11 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[V](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrValue[$vType](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrValue[$vType](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -98,11 +98,11 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[V1](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrValue1[$v1Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrValue1[$v1Type](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
@@ -114,11 +114,11 @@ else
     val util = SyntaxUtil[c.type](c)
     val List(ptr) = util.names("ptr")
     c.Expr[V2](q"""
-val $ptr: Ptr[$container.Tag, $container.Cap] = new Ptr[$container.Tag, $container.Cap]($lhs.raw)
+val $ptr = new _root_.metal.Ptr[$container.Tag, $container.Cap]($lhs.raw)
 if ($ptr.isNull) 
   $orElse
 else
-  $container.ptrValue2[$v2Type](new VPtr[$container.Tag, $container.Cap]($ptr.raw))
+  $container.ptrValue2[$v2Type](new _root_.metal.VPtr[$container.Tag, $container.Cap]($ptr.raw))
 """)
   }
 
