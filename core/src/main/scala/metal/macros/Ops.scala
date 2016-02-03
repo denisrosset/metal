@@ -73,7 +73,7 @@ val $lhsCache = $lhs
 val $ptr: Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
   $lhsCache.ptrRemove(_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
-$lhsCache
+$lhs
 """)
   }
 
@@ -186,8 +186,9 @@ else
     val util = SyntaxUtil[c.type](c)
     val lhsCache = util.name("lhsCache")
     val ptr = util.name("ptr")
+    val ApplyName = termName(c)("apply")
     value.tree match {
-      case Apply(TypeApply(Select(Select(Ident(_), tuple2Name), TermName("apply")), Seq(_, _)), Seq(value1, value2)) =>
+      case Apply(TypeApply(Select(Select(Ident(_), tuple2Name), ApplyName), Seq(_, _)), Seq(value1, value2)) =>
         c.Expr[Unit](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrAddKey[$tagK]($key)
