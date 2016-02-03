@@ -66,7 +66,7 @@ abstract class SetCheck[A:ClassTag:Methods, LB, Extra[_], ST[AA] <: MSet[AA]](fa
       whenever(xs.nonEmpty) {
         val a: ST[A] = factory(xs: _*)
         val b: ST[A] = factory(xs.reverse: _*)
-        removableSearchableOps(b: MSet[A]) -= xs.head
+        b -= xs.head
         a should not be b
       }
     }
