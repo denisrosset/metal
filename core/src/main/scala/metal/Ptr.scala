@@ -8,7 +8,7 @@ import spire.algebra._
   * This class is a value class only in Scala 2.11, due to bugs in the generation
   * of bridge methods when overloading methods that take/return a value class. 
   */
-final class Ptr[C <: Pointable with Singleton] protected[Ptr] (val raw: Long) extends PtrVersions.Base {
+final class Ptr[C <: Pointable with Singleton](val raw: Long) extends PtrVersions.Base {
 
   override def toString = s"Ptr($raw)"
 

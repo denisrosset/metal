@@ -5,7 +5,7 @@ package metal
   * This class is a value class only in Scala 2.11, due to bugs in the generation
   * of bridge methods when overloading methods that take/return a value class. 
   */
-final class VPtr[C <: Pointable with Singleton] protected[VPtr] (val raw: Long) extends PtrVersions.Base {
+final class VPtr[C <: Pointable with Singleton](val raw: Long) extends PtrVersions.Base {
 
   override def toString = s"VPtr($raw)"
   @inline final def isNull: Boolean = false
