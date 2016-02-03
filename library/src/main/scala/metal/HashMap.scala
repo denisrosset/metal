@@ -4,7 +4,6 @@ import scala.annotation.{switch, tailrec}
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
-import spire.syntax.cfor._
 import spire.util.Opt
 
 trait FHashMap[K, V] extends FMap[K, V] {

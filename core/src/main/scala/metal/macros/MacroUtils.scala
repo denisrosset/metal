@@ -6,11 +6,11 @@ import spire.macros.{SyntaxUtil, InlineUtil}
 
 object MacroUtils {
 
-  def extractPath[T:c.WeakTypeTag](c: Context): c.Symbol = {
+  def extractSingleton[C <: Singleton:c.WeakTypeTag](c: Context): c.Symbol = {
     import c.universe._
-    implicitly[c.WeakTypeTag[T]].tpe match {
-      case TypeRef(SingleType(_, container), _, Nil) => container
-      case t => c.abort(c.enclosingPosition, "Cannot extract container value from path dependent type (type = %s)" format t)
+    implicitly[c.WeakTypeTag[C]].tpe match {
+      case SingleType(_, container) => container
+      case t => c.abort(c.enclosingPosition, "Cannot extract container value from singleton type (type = %s)" format t)
     }
   }
 

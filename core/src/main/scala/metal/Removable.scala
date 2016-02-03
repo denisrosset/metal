@@ -1,19 +1,14 @@
 package metal
 
-import scala.{specialized => sp}
-import scala.annotation.tailrec
-
-trait Removable extends Nextable { self =>
-
-  type Cap <: Removable
+trait Removable extends Nextable {
 
   /** Removes the pointed element. */
-  def ptrRemove(ptr: MyVPtr): Unit
+  def ptrRemove(ptr: VPtr[Removable.this.type]): Unit
 
   /** Removes the pointed element, and returns the pointer
     * to the next element, or null if at the end.
     */
-  def ptrRemoveAndAdvance(ptr: MyVPtr): MyPtr
+  def ptrRemoveAndAdvance(ptr: VPtr[Removable.this.type]): Ptr[Removable.this.type]
 
   def clear(): Unit
 

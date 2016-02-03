@@ -5,7 +5,6 @@ import scala.{specialized => sp}
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
-import spire.syntax.cfor._
 import spire.util.Opt
 
 trait FHashMap2[K, V1, V2] extends FMap2[K, V1, V2] {

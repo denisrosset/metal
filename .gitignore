@@ -2,3 +2,12 @@
 target
 .ensime
 .idea
+
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*

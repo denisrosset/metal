@@ -3,10 +3,10 @@ package metal
 /* Trait for containers whose elements can be enumerated. 
  * Equivalent to scala.container.Iterable, but for pointers.
  */
-trait Enumerable extends Nextable { self =>
+trait Enumerable extends Nextable {
 
   /** Returns a pointer to the start of this container instance. */
-  def ptr: Ptr[Tag, Cap]
+  def ptr: Ptr[Enumerable.this.type]
 
   /** Returns true if the container is empty, false otherwise. */
   def isEmpty: Boolean

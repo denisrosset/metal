@@ -8,7 +8,7 @@ import spire.std.int._
 
 class Map2PtrOpsSuite extends FunSuite {
 
-  def testMap2 = MHashMap2(1 -> (2, 3))
+  def testMap2 = MHashMap2(1 -> ((2, 3)))
 
   test("remove") {
     val m2 = testMap2

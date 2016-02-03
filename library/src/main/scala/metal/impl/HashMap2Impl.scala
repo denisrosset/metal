@@ -40,20 +40,18 @@ class HashMap2Impl[K, V1, V2](
 
   // Map2 implementation
 
-  type Cap = Nextable with Removable with Keys[K] with Values1[V1] with Values2[V2] with Updatable1[V1] with Updatable2[V2] with Elements3[K, V1, V2]
-
   final def longSize: Long = len
 
   final override def isEmpty: Boolean = len == 0
 
   final override def nonEmpty: Boolean = len > 0
 
-  def keyArray(ptr: MyVPtr): Array[K] = keys
-  def keyIndex(ptr: MyVPtr): Int = ptr.raw.toInt
-  def value1Array(ptr: MyVPtr): Array[V1] = values1
-  def value1Index(ptr: MyVPtr): Int = ptr.raw.toInt
-  def value2Array(ptr: MyVPtr): Array[V2] = values2
-  def value2Index(ptr: MyVPtr): Int = ptr.raw.toInt
+  def keyArray(ptr: VPtr[this.type]): Array[K] = keys
+  def keyIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
+  def value1Array(ptr: VPtr[this.type]): Array[V1] = values1
+  def value1Index(ptr: VPtr[this.type]): Int = ptr.raw.toInt
+  def value2Array(ptr: VPtr[this.type]): Array[V2] = values2
+  def value2Index(ptr: VPtr[this.type]): Int = ptr.raw.toInt
 
   def result(): IHashMap2[K, V1, V2] = this
 
@@ -71,11 +69,11 @@ class HashMap2Impl[K, V1, V2](
     absorb(MHashMap2.empty[K, V1, V2])
   }
 
-  final def ptrAddKey[@specialized L](key: L): MyVPtr = {
+  final def ptrAddKey[@specialized L](key: L): VPtr[this.type] = {
     val keysL = keys.asInstanceOf[Array[L]]
     // iteration loop, `i` is the current probe, `perturbation` is used to compute the
     // next probe, and `freeBlock` is the first STATUS_DELETED bucket in the sequence
-    @inline @tailrec def loop(i: Int, perturbation: Int, freeBlock: Int): MyVPtr = {
+    @inline @tailrec def loop(i: Int, perturbation: Int, freeBlock: Int): VPtr[this.type] = {
       val j = i & mask
       val status = buckets(j)
       if (status == STATUS_UNUSED) {
@@ -107,13 +105,13 @@ class HashMap2Impl[K, V1, V2](
     loop(i, i, -1)
   }
 
-  final def ptrRemoveAndAdvance(ptr: MyVPtr): MyPtr = {
+  final def ptrRemoveAndAdvance(ptr: VPtr[this.type]): Ptr[this.type] = {
     val next = ptrNext(ptr)
     ptrRemove(ptr)
     next
   }
 
-  final def ptrRemove(ptr: MyVPtr): Unit = {
+  final def ptrRemove(ptr: VPtr[this.type]): Unit = {
     val j = ptr.raw.toInt
     buckets(j) = 2
     keys(j) = null.asInstanceOf[K]
@@ -122,12 +120,12 @@ class HashMap2Impl[K, V1, V2](
     len -= 1
   }
 
-  final def ptrFind[@specialized L](key: L): MyPtr = {
+  final def ptrFind[@specialized L](key: L): Ptr[this.type] = {
     val keysL = keys.asInstanceOf[Array[L]]
-    @inline @tailrec def loop(i: Int, perturbation: Int): MyPtr = {
+    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[this.type] = {
       val j = i & mask
       val status = buckets(j)
-      if (status == STATUS_UNUSED) Ptr.`null`(this)
+      if (status == STATUS_UNUSED) Ptr.Null(this)
       else if (status == STATUS_USED && keysL(j) == key) VPtr(this, j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
@@ -186,35 +184,35 @@ class HashMap2Impl[K, V1, V2](
     absorb(map)
   }
 
-  final def ptr: MyPtr = {
+  final def ptr: Ptr[this.type] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr(this, i) else Ptr.`null`(this)
+    if (i < buckets.length) VPtr(this, i) else Ptr.Null(this)
   }
 
-  final def ptrNext(ptr: MyVPtr): MyPtr = {
+  final def ptrNext(ptr: VPtr[this.type]): Ptr[this.type] = {
     var i = ptr.raw.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr(this, i) else Ptr.`null`(this)
+    if (i < buckets.length) VPtr(this, i) else Ptr.Null(this)
   }
 
-  final def ptrKey[@specialized L](ptr: MyVPtr): L = keys.asInstanceOf[Array[L]](ptr.raw.toInt)
+  final def ptrKey[@specialized L](ptr: VPtr[this.type]): L = keys.asInstanceOf[Array[L]](ptr.raw.toInt)
 
-  final def ptrValue1[@specialized W1](ptr: MyVPtr): W1 = values1.asInstanceOf[Array[W1]](ptr.raw.toInt)
+  final def ptrValue1[@specialized W1](ptr: VPtr[this.type]): W1 = values1.asInstanceOf[Array[W1]](ptr.raw.toInt)
 
-  final def ptrValue2[@specialized W2](ptr: MyVPtr): W2 = values2.asInstanceOf[Array[W2]](ptr.raw.toInt)
+  final def ptrValue2[@specialized W2](ptr: VPtr[this.type]): W2 = values2.asInstanceOf[Array[W2]](ptr.raw.toInt)
 
-  final def ptrElement1[@specialized E1](ptr: MyVPtr): E1 = keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
+  final def ptrElement1[@specialized E1](ptr: VPtr[this.type]): E1 = keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
 
-  final def ptrElement2[@specialized E2](ptr: MyVPtr): E2 = values1.asInstanceOf[Array[E2]](ptr.raw.toInt)
+  final def ptrElement2[@specialized E2](ptr: VPtr[this.type]): E2 = values1.asInstanceOf[Array[E2]](ptr.raw.toInt)
 
-  final def ptrElement3[@specialized E3](ptr: MyVPtr): E3 = values2.asInstanceOf[Array[E3]](ptr.raw.toInt)
+  final def ptrElement3[@specialized E3](ptr: VPtr[this.type]): E3 = values2.asInstanceOf[Array[E3]](ptr.raw.toInt)
 
-  final def ptrUpdate1[@specialized W1](ptr: MyVPtr, v: W1): Unit = {
+  final def ptrUpdate1[@specialized W1](ptr: VPtr[this.type], v: W1): Unit = {
     values1.asInstanceOf[Array[W1]](ptr.raw.toInt) = v
   }
 
-  final def ptrUpdate2[@specialized W2](ptr: MyVPtr, v: W2): Unit = {
+  final def ptrUpdate2[@specialized W2](ptr: VPtr[this.type], v: W2): Unit = {
     values2.asInstanceOf[Array[W2]](ptr.raw.toInt) = v
   }
 

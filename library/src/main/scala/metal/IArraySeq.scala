@@ -2,11 +2,7 @@ package metal
 
 import scala.reflect.ClassTag
 
-import spire.algebra._
 import spire.math.QuickSort
-import spire.syntax.all._
-
-import impl._
 
 final class IArraySeq[@specialized V](val array: Array[V], val length: Long)(implicit val V: Methods[V]) extends ISeq[V] {
 

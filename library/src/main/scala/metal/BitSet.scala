@@ -4,8 +4,6 @@ import scala.math.max
 import scala.reflect.{ClassTag, classTag}
 import spire.algebra.Order
 
-import syntax._
-
 trait FBitSet[K] extends FSortedSet[K] {
 
   type IType = IBitSet[K]

@@ -1,9 +1,8 @@
 package metal
 
-import spire.algebra._
-import spire.util.Opt
+import spire.algebra.{AdditiveMonoid, MultiplicativeMonoid, Order}
 
-final class LoopOps1[E1](val lhs: Enumerable with Elements1[E1]) {
+final class LoopOps1[E1](val lhs: Enumerable with NElements1[E1]) {
 
   def foreach(body: E1 => Unit): Unit = macro macros.Loops.foreach1[E1]
 

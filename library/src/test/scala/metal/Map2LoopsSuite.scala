@@ -8,7 +8,7 @@ import spire.std.int._
 
 class Map2LoopsSuite extends FunSuite {
 
-  def testMap2: MHashMap2[Int, Int, Int] = MHashMap2(1 -> (2, 3), 4 -> (5, 6), 7 -> (8, 9))
+  def testMap2: MHashMap2[Int, Int, Int] = MHashMap2(1 -> ((2, 3)), 4 -> ((5, 6)), 7 -> ((8, 9)))
 
   test("foreach") {
     val m = testMap2

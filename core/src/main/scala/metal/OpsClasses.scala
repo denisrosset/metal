@@ -19,18 +19,6 @@ final class RemovableSearchableOps[K, T <: Searchable[K] with Removable](val lhs
   /** Removes key from container. */
   def -=(key: K): T = macro macros.Ops.-=[K, T]
 
-  /*
-   final def --=(coll: Nextable with Countable with PointableKey[K]): lhs.type = {
-   @tailrec def rec(p: Ptr[coll.Tag]): Unit = p.asInstanceOf[Ptr[coll.Tag]] match {
-   case VPtr(vp) =>
-   lhs.remove(vp.key)
-   rec(vp.next)
-   case _ =>
-   }
-   rec(coll.ptr)
-   lhs
-   }*/
-
 }
 
 final class AddOps[K, T <: AddKeys[K] with Elements1[K]](val lhs: T) {

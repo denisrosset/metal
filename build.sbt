@@ -1,3 +1,157 @@
+// inspired by Spire build.sbt file
+
+lazy val metal = (project in file("."))
+  .settings(moduleName := "metal")
+  .settings(metalSettings: _*)
+  .settings(noPublishSettings)
+  .aggregate(core, laws, tests)
+  .dependsOn(core, laws, tests)
+
+lazy val core = (project in file("core"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(moduleName := "metal-core")
+  .settings(metalSettings: _*)
+  .settings(coreSettings: _*)
+  .settings(crossVersionSharedSources:_*)
+  .settings(commonJvmSettings:_*)
+
+lazy val library = (project in file("library"))
+  .enablePlugins(BuildInfoPlugin)
+  .settings(moduleName := "metal-library")
+  .settings(metalSettings: _*)
+  .settings(coreSettings: _*)
+  .settings(scalaTestSettings:_*)
+  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.4")
+  .settings(crossVersionSharedSources:_*)
+  .settings(commonJvmSettings:_*)
+  .dependsOn(core)
+
+lazy val laws = (project in file("laws"))
+  .settings(moduleName := "metal-laws")
+  .settings(metalSettings: _*)
+  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.4")
+  .settings(commonJvmSettings:_*)
+  .dependsOn(core)
+
+lazy val tests = (project in file("tests"))
+  .settings(moduleName := "metal-tests")
+  .settings(metalSettings:_*)
+  .settings(scalaTestSettings:_*)
+  .settings(noPublishSettings:_*)
+  .settings(commonJvmSettings:_*)
+  .dependsOn(core, laws)
+
+lazy val metalSettings = buildSettings ++ commonSettings ++ publishSettings
+
+lazy val buildSettings = Seq(
+  organization := "org.scala-metal",
+  scalaVersion := "2.11.7",
+  crossScalaVersions := Seq("2.10.6", "2.11.7")
+)
+
+lazy val commonSettings = Seq(
+  scalacOptions ++= commonScalacOptions.diff(Seq(
+    "-Xfatal-warnings", 
+    "-language:existentials",
+    "-Ywarn-dead-code",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard"
+  )),
+  resolvers ++= Seq(
+    "bintray/non" at "http://dl.bintray.com/non/maven",
+    Resolver.sonatypeRepo("snapshots")
+  ),
+  libraryDependencies += "org.spire-math" %% "spire" % "0.11.0",
+  libraryDependencies += "com.chuusai" %% "shapeless" % "2.2.5"
+) ++ scalaMacroDependencies ++ warnUnusedImport
+
+lazy val coreSettings = Seq(
+  buildInfoKeys := Seq[BuildInfoKey](version),
+  buildInfoPackage := "metal"
+)
+
+lazy val crossVersionSharedSources: Seq[Setting[_]] =
+  Seq(Compile, Test).map { sc =>
+    (unmanagedSourceDirectories in sc) ++= {
+      (unmanagedSourceDirectories in sc ).value.map {
+        dir:File => new File(dir.getPath + "_" + scalaBinaryVersion.value)
+      }
+    }
+  }
+
+lazy val publishSettings = Seq(
+  homepage := None, // Some(url("http://scala-metal.org")),
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+)
+
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+
+lazy val commonScalacOptions = Seq(
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-language:experimental.macros",
+  "-unchecked",
+  "-Xfatal-warnings",
+  "-Xlint",
+  "-Yinline-warnings",
+  "-Yno-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard",
+  "-Xfuture"
+)
+
+  lazy val commonJvmSettings = Seq(
+    // -optimize has no effect in scala-js other than slowing down the build
+    scalacOptions += "-optimize",
+    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+  )
+
+lazy val warnUnusedImport = Seq(
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 10)) =>
+        Seq()
+      case Some((2, n)) if n >= 11 =>
+        Seq("-Ywarn-unused-import")
+    }
+  },
+  scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
+  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
+)
+
+lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
+  libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+  libraryDependencies ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
+      case Some((2, scalaMajor)) if scalaMajor >= 11 => Seq()
+      // in Scala 2.10, quasiquotes are provided by macro paradise
+      case Some((2, 10)) =>
+        Seq(
+          compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
+              "org.scalamacros" %% "quasiquotes" % "2.0.1" cross CrossVersion.binary
+        )
+    }
+  }
+)
+
+lazy val scalaTestSettings = Seq(
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0-M15" % "test",
+  libraryDependencies += "com.chuusai" %% "shapeless" % "2.2.5" % "test"
+)
+
+/*
+licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
   libraryDependencies ++= {
@@ -27,25 +181,15 @@ lazy val warnUnusedImport = Seq(
   scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
 )
 
-lazy val crossVersionSharedSources: Seq[Setting[_]] =
-  Seq(Compile, Test).map { sc =>
-    (unmanagedSourceDirectories in sc) ++= {
-      (unmanagedSourceDirectories in sc ).value.map {
-        dir:File => new File(dir.getPath + "_" + scalaBinaryVersion.value)
-      }
-    }
-  }
-
 lazy val commonSettings = Seq(
   scalaVersion := "2.11.7",
   organization := "org.scala-metal",
   libraryDependencies ++= Seq(
-    "org.spire-math" %% "spire" % "0.10.1",
-    "org.scalatest" %% "scalatest" % "2.2.1" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.12.1" % "test"
+    "org.spire-math" %% "spire" % "0.11.0",
+    "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
   ),
   scalacOptions ++= Seq(
-//    "-Ymacro-debug-lite",
     "-Yinline-warnings",
     "-deprecation",
     "-unchecked",
@@ -59,17 +203,4 @@ lazy val commonSettings = Seq(
 
 lazy val scalaReflect = Def.setting { "org.scala-lang" % "scala-reflect" % scalaVersion.value }
 
-lazy val library = (project in file("library")).
-  dependsOn(core).
-  settings(commonSettings: _*).
-  settings( //scalacOptions ++= Seq("-Ymacro-debug-lite")
-    // other settings here
-  )
-
-lazy val core = (project in file("core")).
-  settings(commonSettings: _*).
-  settings(crossVersionSharedSources:_*).
-  settings(
-    libraryDependencies += scalaReflect.value
-    // other settings here
-  )
+ */

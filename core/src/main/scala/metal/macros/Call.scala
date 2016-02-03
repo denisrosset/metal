@@ -4,8 +4,6 @@ package macros
 import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
 import spire.macros.{SyntaxUtil, InlineUtil}
 
-import MacroUtils._
-
 trait Call[C <: Context with Singleton] {
 
   val c: C
@@ -30,7 +28,7 @@ trait CallElements1[C <: Context with Singleton, E1] extends Call[C] {
 
   def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val e1 = util.name("$e1")
+    val e1 = util.name("e1")
     q"""
 val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
 $body($e1)
@@ -39,7 +37,7 @@ $body($e1)
 
   def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val e1 = util.name("$e1")
+    val e1 = util.name("e1")
     q"""
 val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
 $body($value, $e1)
@@ -64,7 +62,7 @@ trait CallElements2[C <: Context with Singleton, E1, E2] extends Call[C] {
 
   def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val List(e1, e2) = util.names("$e1", "$e2")
+    val List(e1, e2) = util.names("e1", "e2")
     q"""
 val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
 val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
@@ -74,7 +72,7 @@ $body($e1, $e2)
 
   def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val List(e1, e2) = util.names("$e1", "$e2")
+    val List(e1, e2) = util.names("e1", "e2")
     q"""
 val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
 val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
@@ -105,7 +103,7 @@ trait CallElements3[C <: Context with Singleton, E1, E2, E3] extends Call[C] {
 
   def apply(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree): c.Tree = {
     import c.universe._
-    val List(e1, e2, e3) = util.names("$e1", "$e2", "$e3")
+    val List(e1, e2, e3) = util.names("e1", "e2", "e3")
     q"""
 val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
 val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)
@@ -116,7 +114,7 @@ $body($e1, $e2, $e3)
 
   def withValue(util: SyntaxUtil[c.type], lhs: c.Tree, containerName: c.TermName, pointerName: c.TermName, body: c.Tree, value: c.TermName): c.Tree = {
     import c.universe._
-    val List(e1, e2, e3) = util.names("$e1", "$e2", "$e3")
+    val List(e1, e2, e3) = util.names("e1", "e2", "e3")
     q"""
 val $e1: $tagE1 = $containerName.ptrElement1[$tagE1]($pointerName)
 val $e2: $tagE2 = $containerName.ptrElement2[$tagE2]($pointerName)

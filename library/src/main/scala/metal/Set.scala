@@ -2,11 +2,9 @@ package metal
 
 import spire.util.Opt
 
-trait FSet[K] extends FColl with Elements1[K] with Enumerable with Searchable[K] with JavaMethods[FSet[K]] { lhs =>
+trait FSet[K] extends FColl with NElements1[K] with Enumerable with Searchable[K] with JavaMethods[FSet[K]] { lhs =>
 
   implicit def K: Methods[K]
-
-  type Cap <: Nextable with Keys[K] with Elements1[K]
 
   type IType <: ISet[K]
   type MType <: MSet[K]
@@ -20,15 +18,15 @@ trait FSet[K] extends FColl with Elements1[K] with Enumerable with Searchable[K]
     case _ => Opt.empty[FSet[K]]
   }
 
-  def keyArray(ptr: MyVPtr): Array[K]
-  def keyIndex(ptr: MyVPtr): Int
+  def keyArray(ptr: VPtr[FSet.this.type]): Array[K]
+  def keyIndex(ptr: VPtr[FSet.this.type]): Int
 
-  def ptrHash(ptr: MyVPtr): Int =
+  def ptrHash(ptr: VPtr[FSet.this.type]): Int =
     K.hashElement(keyArray(ptr), keyIndex(ptr))
 
-  def ptrToString(ptr: MyVPtr): String = K.toStringElement(keyArray(ptr), keyIndex(ptr))
+  def ptrToString(ptr: VPtr[FSet.this.type]): String = K.toStringElement(keyArray(ptr), keyIndex(ptr))
 
-  def ptrEquals(thisPtr: MyVPtr, that: FSet[K]): Boolean =
+  def ptrEquals(thisPtr: VPtr[FSet.this.type], that: FSet[K]): Boolean =
     that.ptrFindFromArray(keyArray(thisPtr), keyIndex(thisPtr)).nonNull
 
 }
@@ -36,8 +34,6 @@ trait FSet[K] extends FColl with Elements1[K] with Enumerable with Searchable[K]
 trait ISet[K] extends IColl with FSet[K]
 
 trait MSet[K] extends MColl with FSet[K] with Removable with AddKeys[K] {
-
-  type Cap <: Nextable with Removable with Keys[K] with Elements1[K]
 
   def result(): ISet[K] with IType
 

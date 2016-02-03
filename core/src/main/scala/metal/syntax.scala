@@ -16,11 +16,11 @@ object syntax {
 
   implicit def searchableValuesOps[K, V](lhs: Searchable[K] with Values[V]): SearchableValuesOps[K, V] = new SearchableValuesOps[K, V](lhs)
 
-  implicit def loopOps1[E1](lhs: Enumerable with Elements1[E1]): LoopOps1[E1] = new LoopOps1[E1](lhs)
+  implicit def loopOps1[E1](lhs: Enumerable with NElements1[E1]): LoopOps1[E1] = new LoopOps1[E1](lhs)
 
-  implicit def loopOps2[E1, E2](lhs: Enumerable with Elements2[E1, E2]): LoopOps2[E1, E2] = new LoopOps2[E1, E2](lhs)
+  implicit def loopOps2[E1, E2](lhs: Enumerable with NElements2[E1, E2]): LoopOps2[E1, E2] = new LoopOps2[E1, E2](lhs)
 
-  implicit def loopOps3[E1, E2, E3](lhs: Enumerable with Elements3[E1, E2, E3]): LoopOps3[E1, E2, E3] = new LoopOps3[E1, E2, E3](lhs)
+  implicit def loopOps3[E1, E2, E3](lhs: Enumerable with NElements3[E1, E2, E3]): LoopOps3[E1, E2, E3] = new LoopOps3[E1, E2, E3](lhs)
 
   implicit def update2Ops[K, V1, V2](lhs: AddKeys[K] with Updatable1[V1] with Updatable2[V2]): Update2Ops[K, V1, V2] = new Update2Ops[K, V1, V2](lhs)
 

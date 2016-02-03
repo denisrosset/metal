@@ -1,10 +1,8 @@
 package metal
 
 /** Trait defining a container's enumeration element. */
-trait Elements1[E] extends Pointable { self =>
+trait Elements1[E1] extends Pointable {
 
-  type Cap <: Elements1[E]
-  
-  def ptrElement1[@specialized F](ptr: MyVPtr): F
+  def ptrElement1[@specialized F](ptr: VPtr[Elements1.this.type]): F
 
 }

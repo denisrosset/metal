@@ -6,8 +6,6 @@ import spire.algebra.Order
 import spire.math.QuickSort
 import spire.syntax.all._
 
-import impl._
-
 final class Buffer[@specialized V](var array: Array[V], var length: Long)(implicit val V: Methods[V]) extends MSeq[V] {
 
   type MType = Buffer[V]

@@ -1,6 +1,5 @@
 package metal
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
 import prop._
 import org.scalacheck.Arbitrary._
@@ -89,7 +88,7 @@ abstract class MMap2Check[K: Arbitrary: ClassTag:Methods, KLB, KExtra[_], V1:Arb
     forAll { (kvs: Map[K, (V1, V2)]) =>
       val map1 = factory.fromMap(kvs)
       val map2 = factory.empty[K, V1, V2]
-      @tailrec def rec(p: map1.MyPtr): Unit = p match {
+      @tailrec def rec(p: Ptr[map1.type]): Unit = p match {
         case IsVPtr(vp) =>
           val k = vp.key
           val v1 = vp.value1

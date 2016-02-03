@@ -4,10 +4,7 @@ import scala.annotation.{switch, tailrec}
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
-import spire.syntax.cfor._
 import spire.util.Opt
-
-import impl._
 
 trait FHashSet[K] extends FSet[K] {
 

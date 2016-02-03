@@ -1,6 +1,5 @@
 package metal
 
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest._
 import prop._
 import org.scalacheck.Arbitrary._
@@ -26,7 +25,7 @@ abstract class SetCheck[A:ClassTag:Methods, LB, Extra[_], ST[AA] <: MSet[AA]](fa
 
   def hybridEq(d: ST[A], s: mutable.Set[A]): Boolean =
     d.longSize == s.size && {
-      @tailrec def rec(p: d.MyPtr): Boolean = p match {
+      @tailrec def rec(p: Ptr[d.type]): Boolean = p match {
         case IsVPtr(vp) =>
           if (s.contains(d.ptrKey(vp)))
             rec(d.ptrNext(vp))

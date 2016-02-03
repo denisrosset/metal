@@ -38,7 +38,7 @@ $contained
     val lhs = findLhs(c)
     val tagK = implicitly[c.WeakTypeTag[K]]
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val lhsCache = util.name("lhsCache")
     c.Expr[T](q"""
 val $lhsCache = $lhs
 $lhsCache.ptrAddKey[$tagK]($key)
@@ -51,12 +51,12 @@ $lhsCache
     val lhs = findLhs(c)
     val tagK = implicitly[c.WeakTypeTag[K]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[Boolean](q"""
 val $lhsCache = $lhs
-val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
+val $ptr: Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull) {
-  $lhsCache.ptrRemove(new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrRemove(_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
   true
 } else false
 """)
@@ -67,12 +67,12 @@ if ($ptr.nonNull) {
     val lhs = findLhs(c)
     val tagK = implicitly[c.WeakTypeTag[K]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[T](q"""
 val $lhsCache = $lhs
-val $ptr: Ptr[$lhsCache.Tag, $lhsCache.Cap] = $lhsCache.ptrFind[$tagK]($key)
+val $ptr: Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
-  $lhsCache.ptrRemove(new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrRemove(_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 $lhsCache
 """)
   }
@@ -83,7 +83,7 @@ $lhsCache
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
+    val lhsCache = util.name("lhsCache")
     c.Expr[Unit](q"""
 val $lhsCache = $lhs
 $lhsCache.ptrUpdate[$tagV]($lhsCache.ptrAddKey[$tagK]($key), $value)
@@ -96,12 +96,12 @@ $lhsCache.ptrUpdate[$tagV]($lhsCache.ptrAddKey[$tagK]($key), $value)
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[Boolean](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  ($lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)) == $value)
+  ($lhsCache.ptrValue[$tagV](_root_.metal.VPtr[$lhsCache.type]($ptr.raw)) == $value)
 else
   false
 """)
@@ -114,12 +114,12 @@ else
     val tagV1 = implicitly[c.WeakTypeTag[V1]]
     val tagV2 = implicitly[c.WeakTypeTag[V2]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr, vp) = util.names("$lhsCache", "$ptr", "$vp")
+    val List(lhsCache, ptr, vp) = util.names("lhsCache", "ptr", "vp")
     c.Expr[Boolean](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) {
-  val $vp = new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)
+  val $vp = _root_.metal.VPtr[$lhsCache.type]($ptr.raw)
   ($lhsCache.ptrValue1[$tagV1]($vp) == $value1) &&
   ($lhsCache.ptrValue2[$tagV2]($vp) == $value2)
 } else false
@@ -132,12 +132,12 @@ if ($ptr.nonNull) {
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[V](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue[$tagV](_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 else
   throw new NoSuchElementException("key not found: " + $key)
 """)
@@ -149,12 +149,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[V](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue[$tagV](_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 else
   $fallback
 """)
@@ -166,12 +166,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV = implicitly[c.WeakTypeTag[V]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[Opt[V]](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull)
-  _root_.spire.util.Opt[$tagV]($lhsCache.ptrValue[$tagV](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  _root_.spire.util.Opt[$tagV]($lhsCache.ptrValue[$tagV](_root_.metal.VPtr[$lhsCache.type]($ptr.raw)))
 else
   _root_.spire.util.Opt.empty[$tagV]
 """)
@@ -184,8 +184,8 @@ else
     val tagV1 = implicitly[c.WeakTypeTag[V1]]
     val tagV2 = implicitly[c.WeakTypeTag[V2]]
     val util = SyntaxUtil[c.type](c)
-    val lhsCache = util.name("$lhsCache")
-    val ptr = util.name("$ptr")
+    val lhsCache = util.name("lhsCache")
+    val ptr = util.name("ptr")
     value.tree match {
       case Apply(TypeApply(Select(Select(Ident(_), tuple2Name), TermName("apply")), Seq(_, _)), Seq(value1, value2)) =>
         c.Expr[Unit](q"""
@@ -210,12 +210,12 @@ $lhsCache.ptrUpdate2[$tagV2]($ptr, $value._2)
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV1 = implicitly[c.WeakTypeTag[V1]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[V1](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue1[$tagV1](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue1[$tagV1](_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 else
   throw new NoSuchElementException("key not found: " + $key)
 """)
@@ -227,12 +227,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV1 = implicitly[c.WeakTypeTag[V1]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[V1](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue1[$tagV1](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue1[$tagV1](_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 else
   $fallback
 """)
@@ -244,12 +244,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV1 = implicitly[c.WeakTypeTag[V1]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[Opt[V1]](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull)
-  _root_.spire.util.Opt[$tagV1]($lhsCache.ptrValue1[$tagV1](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  _root_.spire.util.Opt[$tagV1]($lhsCache.ptrValue1[$tagV1](_root_.metal.VPtr[$lhsCache.type]($ptr.raw)))
 else
   _root_.spire.util.Opt.empty[$tagV1]
 """)
@@ -261,12 +261,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV2 = implicitly[c.WeakTypeTag[V2]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[V2](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue2[$tagV2](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue2[$tagV2](_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 else
   throw new NoSuchElementException("key not found: " + $key)
 """)
@@ -278,12 +278,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV2 = implicitly[c.WeakTypeTag[V2]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[V2](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull) 
-  $lhsCache.ptrValue2[$tagV2](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw))
+  $lhsCache.ptrValue2[$tagV2](_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 else
   $fallback
 """)
@@ -295,12 +295,12 @@ else
     val tagK = implicitly[c.WeakTypeTag[K]]
     val tagV2 = implicitly[c.WeakTypeTag[V2]]
     val util = SyntaxUtil[c.type](c)
-    val List(lhsCache, ptr) = util.names("$lhsCache", "$ptr")
+    val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[Opt[V2]](q"""
 val $lhsCache = $lhs
 val $ptr = $lhsCache.ptrFind[$tagK]($key) 
 if ($ptr.nonNull)
-  _root_.spire.util.Opt[$tagV2]($lhsCache.ptrValue2[$tagV2](new _root_.metal.VPtr[$lhsCache.Tag, $lhsCache.Cap]($ptr.raw)))
+  _root_.spire.util.Opt[$tagV2]($lhsCache.ptrValue2[$tagV2](_root_.metal.VPtr[$lhsCache.type]($ptr.raw)))
 else
   _root_.spire.util.Opt.empty[$tagV2]
 """)

@@ -34,8 +34,6 @@ trait FSeq[@specialized V] extends FColl with Elements1[V] with Enumerable with 
 
   implicit def V: Methods[V]
 
-  type Cap <: Nextable with Values[V] with Elements1[V]
-
   type IType <: ISeq[V]
   type MType <: MSeq[V]
 
@@ -118,14 +116,14 @@ trait FSeq[@specialized V] extends FColl with Elements1[V] with Enumerable with 
 
   def toArray(implicit ct: ClassTag[V]): Array[V]
 
-  final def ptr: MyPtr = if (isEmpty) Ptr.`null`(this) else VPtr(this, 0)
+  final def ptr: Ptr[FSeq.this.type] = if (isEmpty) Ptr.Null(this) else VPtr(this, 0)
 
-  final def ptrNext(ptr: MyVPtr): MyPtr = if (ptr.raw == length - 1) Ptr.`null`(this) else VPtr(this, ptr.raw + 1)
+  final def ptrNext(ptr: VPtr[FSeq.this.type]): Ptr[FSeq.this.type] = if (ptr.raw == length - 1) Ptr.Null(this) else VPtr(this, ptr.raw + 1)
 
 
-  final def ptrElement1[@specialized E](ptr: MyVPtr): E = this.asInstanceOf[FSeq[E]].apply(ptr.raw)
+  final def ptrElement1[@specialized E](ptr: VPtr[FSeq.this.type]): E = this.asInstanceOf[FSeq[E]].apply(ptr.raw)
 
-  final def ptrValue[@specialized W](ptr: MyVPtr): W = this.asInstanceOf[FSeq[W]].apply(ptr.raw)
+  final def ptrValue[@specialized W](ptr: VPtr[FSeq.this.type]): W = this.asInstanceOf[FSeq[W]].apply(ptr.raw)
 
 }
 
