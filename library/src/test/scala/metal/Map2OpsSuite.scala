@@ -4,8 +4,6 @@ import org.scalatest._
 
 import syntax._
 
-import spire.std.int._
-
 class Map2OpsSuite extends FunSuite {
 
   def testMap2 = MHashMap2(1 -> ((2, 3)), 4 -> ((5, 6)))

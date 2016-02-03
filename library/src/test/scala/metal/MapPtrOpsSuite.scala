@@ -2,10 +2,6 @@ package metal
 
 import org.scalatest._
 
-import syntax._
-
-import spire.std.int._
-
 class MapPtrOpsSuite extends FunSuite {
 
   test("remove") {

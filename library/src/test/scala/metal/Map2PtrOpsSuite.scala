@@ -2,10 +2,6 @@ package metal
 
 import org.scalatest._
 
-import syntax._
-
-import spire.std.int._
-
 class Map2PtrOpsSuite extends FunSuite {
 
   def testMap2 = MHashMap2(1 -> ((2, 3)))

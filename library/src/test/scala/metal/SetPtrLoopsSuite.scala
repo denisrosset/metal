@@ -2,8 +2,6 @@ package metal
 
 import org.scalatest._
 
-import syntax._
-
 import spire.std.int._
 
 class SetPtrLoopsSuite extends FunSuite {

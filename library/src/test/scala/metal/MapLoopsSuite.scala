@@ -4,8 +4,6 @@ import org.scalatest._
 
 import syntax._
 
-import spire.std.int._
-
 class MapLoopsSuite extends FunSuite with BeforeAndAfter {
 
   var mII: MHashMap[Int, Int] = _
