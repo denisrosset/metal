@@ -4,11 +4,10 @@ lazy val metal = (project in file("."))
   .settings(moduleName := "metal")
   .settings(metalSettings: _*)
   .settings(noPublishSettings)
-  .aggregate(core, laws, tests)
-  .dependsOn(core, laws, tests)
+  .aggregate(core, library)
+  .dependsOn(core, library)
 
 lazy val core = (project in file("core"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(moduleName := "metal-core")
   .settings(metalSettings: _*)
   .settings(coreSettings: _*)
@@ -16,7 +15,6 @@ lazy val core = (project in file("core"))
   .settings(commonJvmSettings:_*)
 
 lazy val library = (project in file("library"))
-  .enablePlugins(BuildInfoPlugin)
   .settings(moduleName := "metal-library")
   .settings(metalSettings: _*)
   .settings(coreSettings: _*)
@@ -25,7 +23,7 @@ lazy val library = (project in file("library"))
   .settings(crossVersionSharedSources:_*)
   .settings(commonJvmSettings:_*)
   .dependsOn(core)
-
+/*
 lazy val laws = (project in file("laws"))
   .settings(moduleName := "metal-laws")
   .settings(metalSettings: _*)
@@ -40,6 +38,7 @@ lazy val tests = (project in file("tests"))
   .settings(noPublishSettings:_*)
   .settings(commonJvmSettings:_*)
   .dependsOn(core, laws)
+ */
 
 lazy val metalSettings = buildSettings ++ commonSettings ++ publishSettings
 
@@ -81,7 +80,9 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
 
 lazy val publishSettings = Seq(
   homepage := None, // Some(url("http://scala-metal.org")),
-  licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  bintrayRepository := "metal",
+  publishArtifact in Test := false
 )
 
 lazy val noPublishSettings = Seq(
@@ -109,11 +110,21 @@ lazy val commonScalacOptions = Seq(
   "-Xfuture"
 )
 
-  lazy val commonJvmSettings = Seq(
-    // -optimize has no effect in scala-js other than slowing down the build
-    scalacOptions += "-optimize",
-    testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
-  )
+lazy val commonJvmSettings = Seq(
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+) ++ selectiveOptimize
+  // -optimize has no effect in scala-js other than slowing down the build
+
+// do not optimize on Scala 2.10 because of optimizer bugs
+lazy val selectiveOptimize = 
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 10)) =>
+        Seq()
+      case Some((2, n)) if n >= 11 =>
+        Seq("-optimize")
+    }
+  }
 
 lazy val warnUnusedImport = Seq(
   scalacOptions ++= {
@@ -148,59 +159,3 @@ lazy val scalaTestSettings = Seq(
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0-M15" % "test",
   libraryDependencies += "com.chuusai" %% "shapeless" % "2.2.5" % "test"
 )
-
-/*
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
-
-lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
-  libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-  libraryDependencies ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
-      case Some((2, scalaMajor)) if scalaMajor >= 11 => Seq()
-      // in Scala 2.10, quasiquotes are provided by macro paradise
-      case Some((2, 10)) =>
-        Seq(
-          compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-              "org.scalamacros" %% "quasiquotes" % "2.0.1" cross CrossVersion.binary
-        )
-    }
-  }
-)
-
-lazy val warnUnusedImport = Seq(
-  scalacOptions ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 10)) =>
-        Seq()
-      case Some((2, n)) if n >= 11 =>
-        Seq("-Ywarn-unused-import")
-    }
-  },
-  scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
-  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
-)
-
-lazy val commonSettings = Seq(
-  scalaVersion := "2.11.7",
-  organization := "org.scala-metal",
-  libraryDependencies ++= Seq(
-    "org.spire-math" %% "spire" % "0.11.0",
-    "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
-  ),
-  scalacOptions ++= Seq(
-    "-Yinline-warnings",
-    "-deprecation",
-    "-unchecked",
-    "-optimize",
-    "-language:experimental.macros",
-    "-language:higherKinds",
-    "-language:implicitConversions",
-    "-feature"
-  )
-)
-
-lazy val scalaReflect = Def.setting { "org.scala-lang" % "scala-reflect" % scalaVersion.value }
-
- */

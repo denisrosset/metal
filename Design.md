@@ -3,8 +3,7 @@ Design of metal
 
 The library has the following dependencies:
 
-- github.com/non/spire for Opt, a low overhead Option-like type,
-- (future) non/algebra for the Hash typeclass.
+- github.com/non/spire for Opt, a low overhead Option-like type.
 
 The library implements fast mutable collections called `containers`, and associated
 operations that do not perform memory allocations (except when growing containers).
