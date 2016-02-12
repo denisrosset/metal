@@ -30,7 +30,7 @@ object FSeq {
 }
 
 
-trait FSeq[@specialized V] extends FColl with Elements1[V] with Enumerable with Values[V] { self =>
+trait FSeq[@specialized V] extends FColl with NElements1[V] with Enumerable with Values[V] { self =>
 
   implicit def V: Methods[V]
 
