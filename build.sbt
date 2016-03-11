@@ -1,4 +1,8 @@
 // inspired by Spire build.sbt file
+val scalaCheckVersion = "1.12.4"
+val scalaTestVersion = "3.0.0-M7"
+val shapelessVersion = "2.2.5"
+val spireVersion = "0.11.0"
 
 lazy val metal = (project in file("."))
   .settings(moduleName := "metal")
@@ -19,7 +23,7 @@ lazy val library = (project in file("library"))
   .settings(metalSettings: _*)
   .settings(coreSettings: _*)
   .settings(scalaTestSettings:_*)
-  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.4")
+  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion)
   .settings(crossVersionSharedSources:_*)
   .settings(commonJvmSettings:_*)
   .dependsOn(core)
@@ -27,7 +31,7 @@ lazy val library = (project in file("library"))
 lazy val laws = (project in file("laws"))
   .settings(moduleName := "metal-laws")
   .settings(metalSettings: _*)
-  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.4")
+  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion)
   .settings(commonJvmSettings:_*)
   .dependsOn(core)
 
@@ -44,8 +48,8 @@ lazy val metalSettings = buildSettings ++ commonSettings ++ publishSettings
 
 lazy val buildSettings = Seq(
   organization := "org.scala-metal",
-  scalaVersion := "2.11.7",
-  crossScalaVersions := Seq("2.10.6", "2.11.7")
+  scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.10.6", "2.11.8")
 )
 
 lazy val commonSettings = Seq(
@@ -60,8 +64,8 @@ lazy val commonSettings = Seq(
     "bintray/non" at "http://dl.bintray.com/non/maven",
     Resolver.sonatypeRepo("snapshots")
   ),
-  libraryDependencies += "org.spire-math" %% "spire" % "0.11.0",
-  libraryDependencies += "com.chuusai" %% "shapeless" % "2.2.5"
+  libraryDependencies += "org.spire-math" %% "spire" % spireVersion,
+  libraryDependencies += "com.chuusai" %% "shapeless" % shapelessVersion
 ) ++ scalaMacroDependencies ++ warnUnusedImport
 
 lazy val coreSettings = Seq(
@@ -156,6 +160,6 @@ lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
 )
 
 lazy val scalaTestSettings = Seq(
-  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0-M15" % "test",
-  libraryDependencies += "com.chuusai" %% "shapeless" % "2.2.5" % "test"
+  libraryDependencies += "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+  libraryDependencies += "com.chuusai" %% "shapeless" % shapelessVersion % "test"
 )
