@@ -16,17 +16,34 @@ final class HashSet[K](
   import metal.HashSet.{UNUSED, DELETED, USED}
 
   def reset(): Unit = {
-
+    cforRange(0 until nSlots) { i =>
+      buckets(i) = UNUSED
+      keys(i) = null.asInstanceOf[K]
+    }
+    size = 0
+    used = 0
   }
 
   def clear(): Unit = {
-
+    keys = K.newArray(8)
+    buckets = new Array[Byte](8)
+    size = 0
+    used = 0
+    mask = 8 - 1
+    limit = (8 * 0.65).toInt
   }
 
   def toImmutable = new metal.immutable.HashSet[K](keys.clone, buckets.clone, size, used, mask, limit) // TODO: trim arrays?
 
   def result() = {
-
+    val res = new metal.immutable.HashSet[K](keys, buckets, size, used, mask, limit)
+    buckets = new Array[Byte](8)
+    keys = K.newArray(8)
+    size = 0
+    used = 0
+    mask = 8 - 1
+    limit = (8 * 0.65).toInt
+    res
   }
   
   def ptrRemoveAndAdvance(ptr: VPtr[this.type]): Ptr[this.type] = {

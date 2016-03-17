@@ -2,7 +2,7 @@ package metal
 
 import spire.util.Opt
 
-abstract class Set[K] extends Collection with NElements1[K] with Enumerable with Searchable[K] { lhs =>
+abstract class Set[K] extends Defaults with NElements1[K] with Enumerable with Searchable[K] { lhs =>
 
   implicit def K: Methods[K]
 

@@ -1,38 +1,37 @@
-package metal
+package metal.mutable
 
-import scala.reflect.ClassTag
-
+import scala.reflect.{classTag, ClassTag}
 import spire.algebra.Order
 import spire.math.QuickSort
-import spire.syntax.all._
+import spire.syntax.cfor._
+import metal.{Dummy, Methods}
 
-final class Buffer[@specialized V](var array: Array[V], var length: Long)(implicit val V: Methods[V]) extends MSeq[V] {
+final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: Methods[V], val ct: ClassTag[V]) extends metal.Buffer[V] with metal.mutable.Collection {
 
-  type MType = Buffer[V]
-  type IType = IArraySeq[V]
+  def toImmutable = new metal.immutable.Buffer[V](array.clone, length) // TODO: trim the array
 
-  @inline final def apply(idx: Long): V = array(idx.toInt)
-
-  def mutableCopy: Buffer[V] = new Buffer(array.clone, length)
-
-  def result(): IArraySeq[V] = new IArraySeq[V](array, length)
-
-  def sort()(implicit order: Order[V], ct: ClassTag[V]): Unit = {
+  def sort()(implicit order: Order[V]): Unit = {
     QuickSort.qsort(array, 0, length.toInt - 1)(order, ct)
   }
 
-  def toArray(implicit ct: ClassTag[V]): Array[V] = {
-    val res = ct.newArray(length.toInt)
-    Array.copy(array, 0, res, 0, length.toInt)
-    res
-  }
-
   def clear(): Unit = {
-    array = V.newArray(16)
+    array = ct.newArray(0)
     length = 0
   }
 
-  override def stringPrefix = "Buffer"
+  def reset(): Unit = {
+    cforRange(0 until length) { i =>
+      array(i) = null.asInstanceOf[V]
+    }
+    length = 0
+  }
+
+  def result() = {
+    val res = new metal.immutable.Buffer[V](array, length)
+    array = ct.newArray(0)
+    length = 0
+    res
+  }
 
   def +=(elem: V): this.type = {
     ensureLength(length + 1)
@@ -53,7 +52,7 @@ final class Buffer[@specialized V](var array: Array[V], var length: Long)(implic
       while (n > newLength) newLength = newLength * 2
       if (newLength > Int.MaxValue) newLength = Int.MaxValue
       val newArray = V.newArray(newLength.toInt)
-      scala.compat.Platform.arraycopy(array, 0, newArray, 0, length.toInt)
+      Array.copy(array, 0, newArray, 0, length.toInt)
       array = newArray
     }
     null
@@ -64,7 +63,7 @@ final class Buffer[@specialized V](var array: Array[V], var length: Long)(implic
     if (idx < 0) throw new IndexOutOfBoundsException(idx.toString)
     else if (idx < last) {
       val v = array(idx.toInt)
-      System.arraycopy(array, idx.toInt + 1, array, idx.toInt, last - idx.toInt)
+      Array.copy(array, idx.toInt + 1, array, idx.toInt, last - idx.toInt)
       array(last) = null.asInstanceOf[V]
       length = last
       v
@@ -80,10 +79,10 @@ final class Buffer[@specialized V](var array: Array[V], var length: Long)(implic
 
 object Buffer {
 
-  def empty[@specialized V:Methods]: Buffer[V] = new Buffer[V](Methods[V].newArray(16), 0)
+  def empty[@specialized V:Methods:ClassTag]: Buffer[V] = new Buffer[V](classTag[V].newArray(16), 0)
 
-  def apply[@specialized V:Methods](items: V*): Buffer[V] = {
-    val array = Methods[V].newArray(items.size)
+  def apply[@specialized V:Methods:ClassTag](items: V*): Buffer[V] = {
+    val array = classTag[V].newArray(items.size)
     val it = items.iterator
     var i = 0
     while (it.hasNext) {
@@ -93,8 +92,8 @@ object Buffer {
     new Buffer[V](array, array.length)
   }
 
-  def fromIterable[@specialized V:Methods](iterable: Iterable[V]): Buffer[V] = {
-    val array = Methods[V].newArray(iterable.size)
+  def fromIterable[@specialized V:Methods:ClassTag](iterable: Iterable[V]): Buffer[V] = {
+    val array = classTag[V].newArray(iterable.size)
     val it = iterable.iterator
     var i = 0
     while (it.hasNext) {
