@@ -5,7 +5,7 @@ import spire.algebra.Order
 /** Sorted set backed by an array of sorted keys. */
 abstract class ArraySortedSet[K] extends SortedSet[K] {
 
-  def items: Array[K]
+  private[metal] def items: Array[K]
 
   type Immutable = metal.immutable.ArraySortedSet[K]
   type Mutable = metal.mutable.ArraySortedSet[K]
@@ -13,8 +13,8 @@ abstract class ArraySortedSet[K] extends SortedSet[K] {
   @inline final def isEmpty = longSize == 0
   @inline final def nonEmpty = longSize > 0
 
-  def keyArray(ptr: VPtr[this.type]): Array[K] = items
-  def keyIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
+  private[metal] def keyArray(ptr: VPtr[this.type]): Array[K] = items
+  private[metal] def keyIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
 
   def mutableCopy: Mutable ={
     val res = new mutable.ArraySortedSet[K](null, 0)

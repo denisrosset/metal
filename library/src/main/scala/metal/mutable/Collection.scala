@@ -2,7 +2,7 @@ package metal.mutable
 
 trait Collection extends metal.Collection {
 
-  /** Invalidates this mutable collection and returns an immutable version of it. */
+  /** Returns an immutable version of this mutable collection. The mutable instance is cleared. */
   def result(): Immutable
 
   /** Removes all elements from this collection, deallocating its arrays. */
@@ -10,5 +10,5 @@ trait Collection extends metal.Collection {
 
   /** Removes all elements from this collection, keeping the all allocated arrays. */
   def reset(): Unit
-  
+
 }

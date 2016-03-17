@@ -1,7 +1,6 @@
 package metal
 
 import scala.reflect.ClassTag
-import spire.syntax.cfor._
 
 trait SetFactory {
 

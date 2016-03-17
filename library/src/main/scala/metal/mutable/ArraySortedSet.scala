@@ -9,9 +9,9 @@ final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit 
   def toImmutable: Immutable = new metal.immutable.ArraySortedSet(items.clone, longSize) // TODO: trim the array
   def result(): Immutable = {
     val res = new metal.immutable.ArraySortedSet(items, longSize)(K, order)
-    // invalidate this
-    items = null
-    longSize = -1
+    // clears this
+    items = K.newArray(0)
+    longSize = 0
     res
   }
 

@@ -17,8 +17,8 @@ abstract class Set[K] extends Collection with NElements1[K] with Enumerable with
     case _ => Opt.empty[metal.Set[K]]
   }
 
-  def keyArray(ptr: VPtr[lhs.type]): Array[K]
-  def keyIndex(ptr: VPtr[lhs.type]): Int
+  private[metal] def keyArray(ptr: VPtr[lhs.type]): Array[K]
+  private[metal] def keyIndex(ptr: VPtr[lhs.type]): Int
 
   def ptrHash(ptr: VPtr[lhs.type]): Int =
     K.hashElement(keyArray(ptr), keyIndex(ptr))

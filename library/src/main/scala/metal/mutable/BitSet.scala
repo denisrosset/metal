@@ -21,8 +21,8 @@ final class BitSetImpl(var words: Array[Long], var nWords: Int) extends metal.Bi
 
   def result(): Immutable = {
     val res = new metal.immutable.BitSetImpl(words, nWords)
-    words = null
-    nWords = -1
+    words = new Array[Long](0)
+    nWords = 0
     res
   }
 
