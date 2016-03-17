@@ -2,39 +2,30 @@ package metal
 
 import spire.util.Opt
 
-trait FSet[K] extends FColl with NElements1[K] with Enumerable with Searchable[K] with JavaMethods[FSet[K]] { lhs =>
+abstract class Set[K] extends Collection with NElements1[K] with Enumerable with Searchable[K] { lhs =>
 
   implicit def K: Methods[K]
 
-  type IType <: ISet[K]
-  type MType <: MSet[K]
+  type Generic = metal.Set[K]
+  type Mutable <: metal.mutable.Set[K]
+  type Immutable <: metal.immutable.Set[K]
 
-  def mutableCopy: MSet[K] with MType
+  def stringPrefix = "Set"
 
-  override def stringPrefix = "FSet"
-
-  final def ptrCastT(any: Any): Opt[FSet[K]] = any match {
-    case rhs: FSet[K] if lhs.K == rhs.K => Opt(rhs)
-    case _ => Opt.empty[FSet[K]]
+  final def ptrCastT(any: Any): Opt[metal.Set[K]] = any match {
+    case rhs: metal.Set[K] if lhs.K == rhs.K => Opt(rhs)
+    case _ => Opt.empty[metal.Set[K]]
   }
 
-  def keyArray(ptr: VPtr[FSet.this.type]): Array[K]
-  def keyIndex(ptr: VPtr[FSet.this.type]): Int
+  def keyArray(ptr: VPtr[lhs.type]): Array[K]
+  def keyIndex(ptr: VPtr[lhs.type]): Int
 
-  def ptrHash(ptr: VPtr[FSet.this.type]): Int =
+  def ptrHash(ptr: VPtr[lhs.type]): Int =
     K.hashElement(keyArray(ptr), keyIndex(ptr))
 
-  def ptrToString(ptr: VPtr[FSet.this.type]): String = K.toStringElement(keyArray(ptr), keyIndex(ptr))
+  def ptrToString(ptr: VPtr[lhs.type]): String = K.toStringElement(keyArray(ptr), keyIndex(ptr))
 
-  def ptrEquals(thisPtr: VPtr[FSet.this.type], that: FSet[K]): Boolean =
+  def ptrEquals(thisPtr: VPtr[lhs.type], that: metal.Set[K]): Boolean =
     that.ptrFindFromArray(keyArray(thisPtr), keyIndex(thisPtr)).nonNull
-
-}
-
-trait ISet[K] extends IColl with FSet[K]
-
-trait MSet[K] extends MColl with FSet[K] with Removable with AddKeys[K] {
-
-  def result(): ISet[K] with IType
 
 }

@@ -1,31 +1,18 @@
 package metal
 
 import scala.reflect.ClassTag
-
 import spire.syntax.cfor._
 
-trait MSetFactory[LB, Extra[_], ST[K] <: MSet[K]] {
+trait SetFactory {
 
-  type LBEv[A] = A <:< LB
+  type Extra[_]
 
-  def empty[A:Methods:Extra:LBEv]: ST[A] = ofSize[A](0)
+  type S[K] <: metal.Set[K]
 
-  def apply[A:Methods:Extra:LBEv](items: A*): ST[A] = {
-    val sset = ofSize[A](items.size)
-    items.foreach { k =>
-      sset.ptrAddKey(k)
-    }
-    sset
-  }
+  def empty[K:Methods:Extra]: S[K]
 
-  def ofSize[A:Methods:Extra:LBEv](n: Int): ST[A]
+  def apply[K:Methods:Extra](items: K*): S[K]
 
-  def fromArray[A:Methods:Extra:LBEv](array: Array[A]): ST[A] = {
-    val sset = ofSize[A](array.length)
-    cforRange(0 until array.length) { i =>
-      sset.ptrAddKeyFromArray(array, i)
-    }
-    sset
-  }
+  def fromArray[K:Methods:Extra](array: Array[K]): S[K]
 
 }
