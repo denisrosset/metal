@@ -1,10 +1,11 @@
 package metal
 
-import org.scalatest._
+import org.scalatest.BeforeAndAfter
 
-import syntax._
+import metal.mutable.{HashMap => MHashMap}
+import metal.syntax._
 
-class MapLoopsSuite extends FunSuite with BeforeAndAfter {
+class MapLoopsSuite extends MetalSuite with BeforeAndAfter {
 
   var mII: MHashMap[Int, Int] = _
 
@@ -46,27 +47,5 @@ class MapLoopsSuite extends FunSuite with BeforeAndAfter {
     assert(text1.sorted == "12234468")
     assert(text2.sorted == "12234468")
   }
-
-/*
-
-  test("min") {
-    assert(sI.min == 1)
-    assert(eI.min == 1)
-  }
-
-  test("max") {
-    assert(sI.max == 5)
-    assert(eI.max == 5)
-  }
-
-  test("sum") {
-    assert(sI.sum == 15)
-    assert(eI.sum == 15)
-  }
-
-  test("product") {
-    assert(sI.product == 120)
-    assert(eI.product == 120)
-  }*/
 
 }

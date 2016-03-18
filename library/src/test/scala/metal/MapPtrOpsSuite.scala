@@ -1,8 +1,8 @@
 package metal
 
-import org.scalatest._
+import metal.mutable.{HashMap => MHashMap}
 
-class MapPtrOpsSuite extends FunSuite {
+class MapPtrOpsSuite extends MetalSuite {
 
   test("remove") {
     val mII = MHashMap(1 -> 2)

@@ -1,10 +1,10 @@
 package metal
 
-import org.scalatest._
-
 import spire.std.int._
 
-class MapPtrLoopsSuite extends FunSuite {
+import metal.mutable.{HashMap => MHashMap}
+
+class MapPtrLoopsSuite extends MetalSuite {
 
   test("foreach") {
     val mII = MHashMap(1 -> 2, 2 -> 4, 3 -> 6, 4 -> 8)
