@@ -1,12 +1,10 @@
 package metal
 
 import scala.annotation.tailrec
-import scala.collection.{Set => ScalaSet}
 import scala.collection.{Map => ScalaMap}
 import scala.collection.mutable.{Map => ScalaMutableMap}
 import scala.reflect.ClassTag
 
-import spire.algebra.Order
 import spire.std.any._
 import spire.util.Opt
 
@@ -162,8 +160,8 @@ trait MapCheck[K, V] extends MetalSuite {
       val m = factory.fromMap(kvs)
       m.forall(f) shouldBe kvs.forall { case (k, v) => f(k, v) }
       m.exists(f) shouldBe kvs.exists { case (k, v) => f(k, v) }
-      //      val kvs2 = kvs.filter { case (k, v) => f(k, v) }
-      //      m.findAll(f) shouldBe factory.fromMap(kvs2)
+      /*val kvs2 = kvs.filter { case (k, v) => f(k, v) }
+      m.findAll(f) shouldBe factory.fromMap(kvs2)*/
     }
   }
 
