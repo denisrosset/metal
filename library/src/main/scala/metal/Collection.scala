@@ -1,8 +1,5 @@
 package metal
 
-import scala.annotation.tailrec
-import spire.util.Opt
-
 abstract class Collection extends Enumerable { lhs =>
 
   /** Generic type of this collection (e.g. Map, Map2, Set). */
