@@ -23,7 +23,7 @@ trait Map2Factory extends metal.Map2Factory {
     map2
   }
 
-  def fromap2[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](map: scala.collection.Map[K, (V1, V2)]) = {
+  def fromMap[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](map: scala.collection.Map[K, (V1, V2)]) = {
     val map2 = empty[K, V1, V2]
     val keyIt = map.keysIterator
     while (keyIt.hasNext) {
