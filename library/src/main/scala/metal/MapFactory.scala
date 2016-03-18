@@ -1,7 +1,5 @@
 package metal
 
-import scala.reflect.ClassTag
-
 trait MapFactory {
 
   type KExtra[_]

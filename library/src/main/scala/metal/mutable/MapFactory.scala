@@ -5,8 +5,6 @@ import metal.{Methods}
 
 trait MapFactory extends metal.MapFactory {
 
-  type KExtra[_]
-
   type M[K, V] <: metal.mutable.Map[K, V]
 
   def empty[K:Methods:KExtra, V:Methods:VExtra]: M[K, V] = reservedSize[K, V](0)
