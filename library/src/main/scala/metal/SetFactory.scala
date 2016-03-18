@@ -14,4 +14,6 @@ trait SetFactory {
 
   def fromArray[K:Methods:Extra](array: Array[K]): S[K]
 
+  def fromIterable[K:Methods:Extra](items: Iterable[K]): S[K]
+
 }

@@ -16,4 +16,6 @@ trait SetFactory extends metal.SetFactory {
 
   def fromArray[A:Methods:Extra](array: Array[A]): S[A] = mutableFactory.fromArray(array).result()
 
+  def fromIterable[A:Methods:Extra](items: Iterable[A]): S[A] = mutableFactory.fromIterable(items).result()
+
 }

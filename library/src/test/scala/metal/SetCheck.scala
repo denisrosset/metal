@@ -43,7 +43,7 @@ trait SetCheck[A] extends MetalSuite {
   def fromArray(xs: Array[A]): SetA
   def apply(xs: A*): SetA
 
-    test("Companion.fromIterable") {
+  test("Companion.fromIterable") {
     forAll { xs: Iterable[A] =>
       val set = fromIterable(xs)
       val control = ScalaSet(xs.toSeq: _*)
@@ -182,6 +182,47 @@ trait FactorySetCheck[A] extends SetCheck[A] {
 
 }
 
+object FactorySetCheck {
+
+  def apply[A](factory0: metal.mutable.SetFactory)(implicit
+    arbA0: Arbitrary[A],
+    ctA0: ClassTag[A],
+    extra0: factory0.Extra[A],
+    mA0: Methods[A]
+  ): SetCheck[A] =
+    new FactorySetCheck[A] {
+      val factory: factory0.type = factory0
+      def arbA = arbA0
+      def ctA = ctA0
+      def mA = mA0
+      def extra = extra0
+    }
+
+}
+
+class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: Methods[Int]) extends SetCheck[Int] {
+
+  def arbA: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
+
+  type SetA = metal.mutable.BitSet[Int]
+  def collName = "BitSet"
+  def emptySet = metal.mutable.BitSet.empty[Int]
+  def apply(xs: Int*) = metal.mutable.BitSet(xs: _*)
+  def fromArray(xs: Array[Int]) = metal.mutable.BitSet.fromArray(xs)
+  def fromIterable(xs: Iterable[Int]) = metal.mutable.BitSet.fromIterable(xs)
+
+}
+
+class SetChecks extends Suites(
+  new BitSetCheck,
+  FactorySetCheck[Int](metal.mutable.HashSet),
+  FactorySetCheck[Int](metal.mutable.ArraySortedSet),
+  FactorySetCheck[Boolean](metal.mutable.HashSet),
+  FactorySetCheck[Boolean](metal.mutable.ArraySortedSet),
+  FactorySetCheck[String](metal.mutable.HashSet),
+  FactorySetCheck[String](metal.mutable.ArraySortedSet)
+)
+
 /*
 abstract class SetCheck[A:Arbitrary:ClassTag:Methods, Extra[_], ST[X] <: metal.mutable.Set[X]](factory: metal.mutable.SetFactory.Aux[Extra, ST])(implicit extra: Extra[A]) {
 
@@ -308,60 +349,4 @@ abstract class SetCheck[A:Arbitrary:ClassTag:Methods, Extra[_], ST[X] <: metal.m
 
 }
 
-object SetCheck {
-
-}
-
-abstract class AutoSetCheck[A:Arbitrary:ClassTag:Methods](factory: metal.mutable.SetFactory.Aux[Extra, ST])(implicit extra: Extra[A]) extends SetCheck[A, Extra, ST](factory)
-
-class BooleanSetCheck extends AutoSetCheck[Boolean, Dummy, HashSet](HashSet)
-//class IntHashSetCheck extends AutoSetCheck[Int, Any, Dummy, MHashSet](MHashSet)
-/*class IntBitSetCheck extends SetCheck[Int, Int, Dummy, MBitSet](MBitSet) {
-  def A: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
-}*/
-/*class IntSortedSetCheck extends AutoSetCheck[Int, Any, Order, MSortedSet](MSortedSet)
-class StringHashSetCheck extends AutoSetCheck[String, Any, Dummy, MHashSet](MHashSet)
-class StringSortedSetCheck extends AutoSetCheck[String, Any, Order, MSortedSet](MSortedSet)
  */
- */
-
-object FactorySetCheck {
-
-  def apply[A](factory0: metal.mutable.SetFactory)(implicit
-    arbA0: Arbitrary[A],
-    ctA0: ClassTag[A],
-    mA0: Methods[A],
-    extra0: factory0.Extra[A]): SetCheck[A] = {
-    new FactorySetCheck[A] {
-      val factory: factory0.type = factory0
-      def arbA = arbA0
-      def ctA = ctA0
-      def mA = mA0
-      def extra = extra0
-    }
-  }
-
-}
-
-class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: Methods[Int]) extends SetCheck[Int] {
-
-  def arbA: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
-
-  type SetA = metal.mutable.BitSet[Int]
-  def collName = "BitSet"
-  def emptySet = metal.mutable.BitSet.empty[Int]
-  def apply(xs: Int*) = metal.mutable.BitSet(xs: _*)
-  def fromArray(xs: Array[Int]) = metal.mutable.BitSet.fromArray(xs)
-  def fromIterable(xs: Iterable[Int]) = metal.mutable.BitSet.fromIterable(xs)
-
-}
-
-class SetChecks extends Suites(
-  new BitSetCheck,
-  FactorySetCheck[Int](metal.mutable.HashSet),
-  FactorySetCheck[Int](metal.mutable.ArraySortedSet),
-  FactorySetCheck[Boolean](metal.mutable.HashSet),
-  FactorySetCheck[Boolean](metal.mutable.ArraySortedSet),
-  FactorySetCheck[String](metal.mutable.HashSet),
-  FactorySetCheck[String](metal.mutable.ArraySortedSet)
-)
