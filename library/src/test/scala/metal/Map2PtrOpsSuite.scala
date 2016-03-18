@@ -1,8 +1,8 @@
 package metal
 
-import org.scalatest._
+import metal.mutable.{HashMap2 => MHashMap2}
 
-class Map2PtrOpsSuite extends FunSuite {
+class Map2PtrOpsSuite extends MetalSuite {
 
   def testMap2 = MHashMap2(1 -> ((2, 3)))
 
