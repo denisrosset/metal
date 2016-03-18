@@ -1,12 +1,13 @@
 package metal
 
-import org.scalatest._
+import org.scalatest.BeforeAndAfter
 
-import syntax._
+import metal.mutable.{HashSet => MHashSet}
+import metal.syntax._
 
 import spire.std.int._
 
-class SetLoopsSuite extends FunSuite with BeforeAndAfter {
+class SetLoopsSuite extends MetalSuite with BeforeAndAfter {
 
   var sI: MHashSet[Int] = _
   def eI: Enumerable with NElements1[Int] = sI

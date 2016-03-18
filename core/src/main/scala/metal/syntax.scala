@@ -30,5 +30,4 @@ object syntax {
 
   implicit def searchableValues2Ops[K, V2](lhs: Searchable[K] with Values2[V2]): SearchableValues2Ops[K, V2] = new SearchableValues2Ops[K, V2](lhs)
 
-
 }

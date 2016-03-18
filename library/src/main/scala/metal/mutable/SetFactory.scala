@@ -20,6 +20,15 @@ trait SetFactory extends metal.SetFactory {
     set
   }
 
+  def fromIterable[A:Methods:Extra](items: Iterable[A]): S[A] = {
+    val set = reservedSize[A](items.size)
+    items.foreach { k =>
+      set.ptrAddKey(k)
+    }
+    set
+  }
+
+
   def fromArray[A:Methods:Extra](array: Array[A]): S[A] = {
     val set = reservedSize[A](array.length)
     cforRange(0 until array.length) { i =>

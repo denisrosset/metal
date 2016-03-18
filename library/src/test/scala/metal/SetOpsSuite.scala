@@ -2,9 +2,10 @@ package metal
 
 import org.scalatest._
 
-import syntax._
+import metal.mutable.{HashSet => MHashSet}
+import metal.syntax._
 
-class SetOpsSuite extends FunSuite {
+class SetOpsSuite extends MetalSuite {
 
   // SearchableOps
   test("contains") {

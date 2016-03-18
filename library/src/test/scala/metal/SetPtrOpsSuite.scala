@@ -1,10 +1,10 @@
 package metal
 
-import org.scalatest._
-
 import spire.std.int._
 
-class SetPtrOpsSuite extends FunSuite {
+import metal.mutable.{HashSet => MHashSet, ArraySortedSet => MSortedSet}
+
+class SetPtrOpsSuite extends MetalSuite {
 
   test("next") {
     val sI = MHashSet(1)
