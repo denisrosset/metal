@@ -1,66 +1,53 @@
-package metal
-package impl
+package metal.mutable
 
-import scala.annotation.{switch, tailrec}
-import scala.reflect.ClassTag
-
-import spire.algebra.Order
+import scala.annotation.tailrec
+import spire.math.max
 import spire.syntax.cfor._
-import spire.util.Opt
+import metal.{Dummy, IsVPtr, Methods, Ptr, VPtr, Util}
 
-class HashMapImpl[K, V](
-  /** Slots for keys. */
+final class HashMap[K, V](
   var keys: Array[K],
-  /** Slots for values. */
-  var values: Array[V],
-  /** Status of the slots in the hash table.
-    * 
-    * 0 = unused
-    * 2 = once used, now empty but not yet overwritten
-    * 3 = used
-    */ 
   var buckets: Array[Byte],
-  /** Number of defined slots = buckets.count(_ > 1). */
-  var len: Int,
-  /** Number of used slots (used >= len). */
+  var values: Array[V],
+  var size: Int,
   var used: Int,
-  // hashing internals
-  /** size - 1, used for hashing. */
   var mask: Int,
-  /** Point at which we should grow. */
-  var limit: Int
-)(implicit val K: Methods[K], val V: Methods[V]) extends IHashMap[K, V] with MHashMap[K, V] {
+  var limit: Int)(implicit val K: Methods[K], val V: Methods[V]) extends metal.HashMap[K, V] with metal.mutable.Map[K, V] {
 
-  @inline final def STATUS_UNUSED: Int = 0
-  @inline final def STATUS_DELETED: Int = 2
-  @inline final def STATUS_USED: Int = 3
+  import metal.HashMap.{UNUSED, DELETED, USED}
 
-  // Map implementation
+  def toImmutable = new metal.immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
 
-  @inline final def longSize: Long = len
+  def reset(): Unit = {
+    cforRange(0 until nSlots) { i =>
+      buckets(i) = UNUSED
+      keys(i) = null.asInstanceOf[K]
+      values(i) = null.asInstanceOf[V]
+    }
+    size = 0
+    used = 0
+  }
 
-  @inline final override def isEmpty: Boolean = len == 0
-
-  @inline final override def nonEmpty: Boolean = len > 0
-
-  def keyArray(ptr: VPtr[this.type]): Array[K] = keys
-  def keyIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
-  def valueArray(ptr: VPtr[this.type]): Array[V] = values
-  def valueIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
-
-  def result(): IHashMap[K, V] = this
-
-  def mutableCopy: MHashMap[K, V] = new HashMapImpl[K, V](
-    keys = keys.clone,
-    values = values.clone,
-    buckets = buckets.clone,
-    len = len,
-    used = used,
-    mask = mask,
-    limit = limit)
+  def result() = {
+    val res = new metal.immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
+    buckets = new Array[Byte](8) // optimize using empty array
+    keys = K.newArray(8)
+    values = V.newArray(8)
+    size = 0
+    used = 0
+    mask = 8 - 1
+    limit = (8 * 0.65).toInt
+    res
+  }
 
   def clear(): Unit = {
-    absorb(MHashMap.empty[K, V])
+    keys = K.newArray(8)
+    buckets = new Array[Byte](8)
+    values = V.newArray(8)
+    size = 0
+    used = 0
+    mask = 8 - 1
+    limit = (8 * 0.65).toInt
   }
 
   final def ptrAddKey[@specialized L](key: L): VPtr[this.type] = {
@@ -70,13 +57,13 @@ class HashMapImpl[K, V](
     @inline @tailrec def loop(i: Int, perturbation: Int, freeBlock: Int): VPtr[this.type] = {
       val j = i & mask
       val status = buckets(j)
-      if (status == STATUS_UNUSED) {
+      if (status == UNUSED) {
         val writeTo = if (freeBlock == -1) j else freeBlock
         keysL(writeTo) = key
         val oldStatus = buckets(writeTo)
-        buckets(writeTo) = 3
-        len += 1
-        if (oldStatus == STATUS_DELETED) // we reuse a bucket
+        buckets(writeTo) = USED
+        size += 1
+        if (oldStatus == DELETED) // we reuse a bucket
           VPtr(this, writeTo)
         else { // new bucket occupied
           used += 1
@@ -86,10 +73,10 @@ class HashMapImpl[K, V](
             vp
           } else VPtr(this, writeTo)
         }
-      } else if (status == STATUS_DELETED) {
+      } else if (status == DELETED) {
         val newFreeBlock = if (freeBlock == -1) j else freeBlock
         loop((i << 2) + i + perturbation + 1, perturbation >> 5, newFreeBlock)
-      } else if (status == STATUS_USED && keysL(j) == key) {
+      } else if (status == USED && keysL(j) == key) {
         VPtr(this, j)
       } else {
         loop((i << 2) + i + perturbation + 1, perturbation >> 5, freeBlock)
@@ -112,23 +99,10 @@ class HashMapImpl[K, V](
 
   final def ptrRemove(vp: VPtr[this.type]): Unit = {
     val j = vp.raw.toInt
-    buckets(j) = 2
+    buckets(j) = DELETED
     keys(j) = null.asInstanceOf[K]
     values(j) = null.asInstanceOf[V]
-    len -= 1
-  }
-
-  final def ptrFind[@specialized L](key: L): Ptr[this.type] = {
-    val keysL = keys.asInstanceOf[Array[L]]
-    @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[this.type] = {
-      val j = i & mask
-      val status = buckets(j)
-      if (status == STATUS_UNUSED) Ptr.Null(this)
-      else if (status == STATUS_USED && keysL(j) == key) VPtr(this, j)
-      else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
-    }
-    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
-    loop(i, i)
+    size -= 1
   }
 
   /** Absorbs the given map's contents into this map.
@@ -141,11 +115,11 @@ class HashMapImpl[K, V](
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the map was previously large).
     */
-  private[this] def absorb(rhs: MHashMap[K, V]): Unit = {
+  private[this] def absorb(rhs: metal.mutable.HashMap[K, V]): Unit = {
     keys = rhs.keys
     values = rhs.values
     buckets = rhs.buckets
-    len = rhs.len
+    size = rhs.size
     used = rhs.used
     mask = rhs.mask
     limit = rhs.limit
@@ -167,10 +141,10 @@ class HashMapImpl[K, V](
     * trigger specialization without allocating an actual instance.
     * 
     * Growing is an O(n) operation, where n is the map's size.
-   */
+    */
   final def grow(): Unit = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = MHashMap.ofSize[K, V](next)
+    val map = metal.mutable.HashMap.ofAllocatedSize[K, V](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
         val vp = map.ptrAddKeyFromArray(keys, i)
@@ -180,34 +154,16 @@ class HashMapImpl[K, V](
     absorb(map)
   }
 
-  final def ptr: Ptr[this.type] = {
-    var i = 0
-    while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr(this, i) else Ptr.Null(this)
-  }
-
-  final def ptrNext(ptr: VPtr[this.type]): Ptr[this.type] = {
-    var i = ptr.raw.toInt + 1
-    while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr(this, i) else Ptr.Null(this)
-  }
-
-  final def ptrKey[@specialized L](ptr: VPtr[this.type]): L = keys.asInstanceOf[Array[L]](ptr.raw.toInt)
-
-  final def ptrValue[@specialized W](ptr: VPtr[this.type]): W = values.asInstanceOf[Array[W]](ptr.raw.toInt)
-
-  final def ptrElement1[@specialized E1](ptr: VPtr[this.type]): E1 = keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
-
-  final def ptrElement2[@specialized E2](ptr: VPtr[this.type]): E2 = values.asInstanceOf[Array[E2]](ptr.raw.toInt)
-
 }
 
-object HashMapImpl {
+object HashMap extends metal.HashMapFactory with metal.mutable.MapFactory {
+
+  type M[K, V] = metal.mutable.HashMap[K, V]
 
   /** Allocates an empty HashMapImpl, with underlying storage of size n.
     * 
     * This method is useful if you know exactly how big you want the
-    * underlying array to be. In most cases ofSize() is probably what
+    * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
   private[metal] def ofAllocatedSize[K, V](n: Int)(implicit K: Methods[K], V: Methods[V]) = {
@@ -218,14 +174,16 @@ object HashMapImpl {
       case 0 => 8
       case n => n
     }
-    new HashMapImpl[K, V](
+    new metal.mutable.HashMap[K, V](
       keys = K.newArray(sz),
-      values = V.newArray(sz),
       buckets = new Array[Byte](sz),
-      len = 0,
+      values = V.newArray(sz),
+      size = 0,
       used = 0,
       mask = sz - 1,
       limit = (sz * 0.65).toInt)
   }
+
+  def reservedSize[K:Methods:KExtra, V:Methods:VExtra](n: Int): M[K, V] = ofAllocatedSize[K, V](max(n / 2 * 3, n))
 
 }

@@ -37,7 +37,7 @@ final class HashSet[K](
 
   def result() = {
     val res = new metal.immutable.HashSet[K](keys, buckets, size, used, mask, limit)
-    buckets = new Array[Byte](8)
+    buckets = new Array[Byte](8) // optimize using empty array
     keys = K.newArray(8)
     size = 0
     used = 0
@@ -154,7 +154,7 @@ object HashSet extends metal.HashSetFactory with metal.mutable.SetFactory {
     * Allocate an empty HashSet, with underlying storage of size n.
     * 
     * This method is useful if you know exactly how big you want the
-    * underlying array to be. In most cases ofSize() is probably what
+    * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
   def ofAllocatedSize[K](n: Int)(implicit K: Methods[K]): S[K] = {

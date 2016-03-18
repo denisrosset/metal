@@ -8,6 +8,4 @@ final class HashSet[K](
   val size: Int,
   val used: Int,
   val mask: Int,
-  val limit: Int)(implicit val K: Methods[K]) extends metal.HashSet[K] with metal.immutable.Set[K] {
-
-}
+  val limit: Int)(implicit val K: Methods[K]) extends metal.HashSet[K] with metal.immutable.Set[K]
