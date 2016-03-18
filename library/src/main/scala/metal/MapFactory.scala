@@ -16,4 +16,6 @@ trait MapFactory {
 
   def fromArrays[K:Methods:KExtra, V:Methods:VExtra](keysArray: Array[K], valuesArray: Array[V]): M[K, V]
 
+  def fromIterable[K:Methods:KExtra, V:Methods:VExtra](keyValuePairs: Iterable[(K, V)]): M[K, V]
+
 }
