@@ -1,48 +1,62 @@
 package metal
 
-import org.scalatest._
-import prop._
-import org.scalacheck.Arbitrary._
-import org.scalacheck._
-import Gen._
-import Arbitrary.arbitrary
-
-import scala.collection.mutable
-import scala.reflect._
 import scala.annotation.tailrec
+import scala.collection.{Set => ScalaSet}
+import scala.collection.{Map => ScalaMap}
+import scala.collection.mutable.{Map => ScalaMutableMap}
+import scala.reflect.ClassTag
 
+import spire.algebra.Order
+import spire.std.any._
 import spire.util.Opt
 
-import syntax._
+import org.scalatest.Suites
+import org.scalacheck.{Arbitrary, Gen}
 
-abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrary:ClassTag:Methods, VLB, MP[KK, VV] <: MMap[KK, VV]](factory: MMapFactory[KLB, KExtra, VLB, MP])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
-    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+import metal.syntax._
 
-  import scala.collection.immutable.Set
-  import scala.collection.immutable.Map
+trait MapCheck[K, V] extends MetalSuite {
 
-  def hybridEq(d: MP[K, V], s: mutable.Map[K, V]): Boolean =
+  val factory: metal.mutable.MapFactory
+  type MapKV = factory.M[K, V]
+
+  def kName = ctK.runtimeClass.getSimpleName
+  def vName = ctV.runtimeClass.getSimpleName
+  def collName = factory.getClass.getSimpleName
+  override lazy val suiteName = s"MapCheck[$kName, $vName]($collName)"
+
+  implicit def arbK: Arbitrary[K]
+  implicit def extraK: factory.KExtra[K]
+  implicit def ctK: ClassTag[K]
+  implicit def mK: Methods[K]
+
+  implicit def arbV: Arbitrary[V]
+  implicit def extraV: factory.VExtra[V]
+  implicit def ctV: ClassTag[V]
+  implicit def mV: Methods[V]
+
+  def hybridEq(d: MapKV, s: ScalaMap[K, V]): Boolean =
     d.longSize == s.size && s.forall { case (k, v) => d.contains(k) && d(k) == v }
 
-  property("fromArrays") {
+  test("Companion.fromArrays") {
     forAll { (pairs: List[(K, V)]) =>
       val (ks, vs) = pairs.unzip
       val map = factory.fromArrays(ks.toArray, vs.toArray)
-      val control = mutable.Map(pairs: _*)
+      val control = ScalaMap(pairs: _*)
       hybridEq(map, control) shouldBe true
     }
   }
 
-  property("Companion.fromMap") {
+  test("Companion.fromMap") {
     forAll { pairs: List[(K, V)] =>
       val mmap = factory.fromMap(pairs.toMap)
-      val control = mutable.Map(pairs: _*)
+      val control = ScalaMap(pairs: _*)
       hybridEq(mmap, control) shouldBe true
     }
   }
 
-  property("equals (==), hashCode (##)") {
-    forAll { (xs: Map[K, V], ys: Map[K, V]) =>
+  test("equals (==), hashCode (##)") {
+    forAll { (xs: ScalaMap[K, V], ys: ScalaMap[K, V]) =>
       val a = factory.fromMap(xs)
       val (ks, vs) = xs.unzip
       val b = factory.fromArrays(ks.toArray.reverse, vs.toArray.reverse)
@@ -59,7 +73,7 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  property("mutableCopy") {
+  test("mutableCopy") {
     forAll { kvs: List[(K, V)] =>
       val a = factory.fromMap(kvs.toMap)
       val b = a.mutableCopy
@@ -73,20 +87,18 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  /*
-  property("clear") {
-    forAll { kvs: List[(A, B)] =>
-      val a = DMap.fromIterable(kvs)
+  test("clear") {
+    forAll { kvs: List[(K, V)] =>
+      val a = factory.fromIterable(kvs)
       a.clear
-      a shouldBe DMap.empty[A, B]
+      a shouldBe factory.empty[K, V]
     }
   }
- */
 
-  property("adding elements (update)") {
-    forAll { kvs: Map[K, V] =>
+  test("adding elements (update)") {
+    forAll { kvs: ScalaMap[K, V] =>
       val map = factory.empty[K, V]
-      val control = mutable.Map.empty[K, V]
+      val control = ScalaMutableMap.empty[K, V]
       kvs.foreach { case (k, v) =>
         map(k) = v
         control(k) = v
@@ -96,10 +108,10 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  property("removing elements (remove)") {
-    forAll { kvs: Map[K, V] =>
+  test("removing elements (remove)") {
+    forAll { kvs: ScalaMap[K, V] =>
       val map = factory.fromMap(kvs)
-      val control = mutable.Map(kvs.toSeq: _*)
+      val control = ScalaMutableMap(kvs.toSeq: _*)
       kvs.foreach { case (k, v) =>
         map.remove(k)
         control -= k
@@ -109,10 +121,10 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  property("random update and remove") {
-   forAll { (pairs: List[(K, V, Boolean)]) =>
+  test("random update and remove") {
+    forAll { (pairs: List[(K, V, Boolean)]) =>
       val map = factory.empty[K, V]
-      val control = mutable.Map.empty[K, V]
+      val control = ScalaMutableMap.empty[K, V]
       pairs.foreach {
         case (k, v, true) =>
           map(k) = v
@@ -129,8 +141,8 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  property("pointer iteration") {
-    forAll { (kvs: Map[K, V]) =>
+  test("pointer iteration") {
+    forAll { (kvs: ScalaMap[K, V]) =>
       val map1 = factory.fromMap(kvs)
       val map2 = factory.empty[K, V]
       @tailrec def rec(p: Ptr[map1.type]): Unit = p match {
@@ -145,15 +157,64 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
     }
   }
 
-  property("forall / exists / findAll") {
-    forAll { (kvs: Map[K, V], f: (K, V) => Boolean) =>
+  test("forall / exists / findAll") {
+    forAll { (kvs: ScalaMap[K, V], f: (K, V) => Boolean) =>
       val m = factory.fromMap(kvs)
       m.forall(f) shouldBe kvs.forall { case (k, v) => f(k, v) }
       m.exists(f) shouldBe kvs.exists { case (k, v) => f(k, v) }
-//      val kvs2 = kvs.filter { case (k, v) => f(k, v) }
-//      m.findAll(f) shouldBe factory.fromMap(kvs2)
+      //      val kvs2 = kvs.filter { case (k, v) => f(k, v) }
+      //      m.findAll(f) shouldBe factory.fromMap(kvs2)
     }
   }
+
+}
+
+object MapCheck {
+
+  def apply[K, V](factory0: metal.mutable.MapFactory)(implicit
+    arbK0: Arbitrary[K],
+    extraK0: factory0.KExtra[K],
+    ctK0: ClassTag[K],
+    mK0: Methods[K],
+    arbV0: Arbitrary[V],
+    extraV0: factory0.VExtra[V],
+    ctV0: ClassTag[V],
+    mV0: Methods[V]): MapCheck[K, V] =
+    new MapCheck[K, V] {
+      val factory: factory0.type = factory0
+      def arbK = arbK0
+      def extraK = extraK0
+      def ctK = ctK0
+      def mK = mK0
+      def arbV = arbV0
+      def extraV = extraV0
+      def ctV = ctV0
+      def mV = mV0
+    }
+
+}
+
+class MapChecks extends Suites(
+  MapCheck[Int, Int](metal.mutable.HashMap),
+  MapCheck[Int, Boolean](metal.mutable.HashMap),
+  MapCheck[Int, String](metal.mutable.HashMap),
+  MapCheck[Long, Int](metal.mutable.HashMap),
+  MapCheck[Long, Boolean](metal.mutable.HashMap),
+  MapCheck[Long, String](metal.mutable.HashMap),
+  MapCheck[String, Int](metal.mutable.HashMap),
+  MapCheck[String, Boolean](metal.mutable.HashMap),
+  MapCheck[String, String](metal.mutable.HashMap)
+)
+
+
+/*
+abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrary:ClassTag:Methods, VLB, MP[KK, VV] <: MMap[KK, VV]](factory: MMapFactory[KLB, KExtra, VLB, MP])(implicit kExtra: KExtra[K], klbev: K <:< KLB)
+    extends PropSpec with Matchers with GeneratorDrivenPropertyChecks {
+
+  import scala.collection.immutable.Set
+  import scala.collection.immutable.Map
+
+
 
 /*
   property("iterator") {
@@ -224,14 +285,4 @@ abstract class MapCheck[K:Arbitrary:ClassTag:Methods, KLB, KExtra[_], V:Arbitrar
    */
 }
 
-class IntIntMapCheck extends MapCheck[Int, Any, Dummy, Int, Any, MHashMap](MHashMap)
-class IntBooleanMapCheck extends MapCheck[Int, Any, Dummy, Boolean, Any, MHashMap](MHashMap)
-class IntStringMapCheck extends MapCheck[Int, Any, Dummy, String, Any, MHashMap](MHashMap)
-
-class LongIntMapCheck extends MapCheck[Long, Any, Dummy, Int, Any, MHashMap](MHashMap)
-class LongBooleanMapCheck extends MapCheck[Long, Any, Dummy, Boolean, Any, MHashMap](MHashMap)
-class LongStringMapCheck extends MapCheck[Long, Any, Dummy, String, Any, MHashMap](MHashMap)
-
-class StringIntMapCheck extends MapCheck[String, Any, Dummy, Int, Any, MHashMap](MHashMap)
-class StringBooleanMapCheck extends MapCheck[String, Any, Dummy, Boolean, Any, MHashMap](MHashMap)
-class StringStringMapCheck extends MapCheck[String, Any, Dummy, String, Any, MHashMap](MHashMap)
+ */
