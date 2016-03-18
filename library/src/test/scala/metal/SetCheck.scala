@@ -8,14 +8,10 @@ import scala.reflect.ClassTag
 import spire.algebra.Order
 import spire.std.any._
 
-import org.scalatest._
-import org.scalacheck.Arbitrary._
-import org.scalacheck._
-import Gen._
-import Arbitrary.arbitrary
+import org.scalatest.Suites
+import org.scalacheck.{Arbitrary, Gen}
 
 import metal.syntax._
-
 
 trait SetCheck[A] extends MetalSuite {
 

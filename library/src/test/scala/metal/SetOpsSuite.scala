@@ -1,7 +1,5 @@
 package metal
 
-import org.scalatest._
-
 import metal.mutable.{HashSet => MHashSet}
 import metal.syntax._
 
