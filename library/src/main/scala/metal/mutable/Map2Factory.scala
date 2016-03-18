@@ -11,7 +11,10 @@ trait Map2Factory extends metal.Map2Factory {
 
   def empty[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra]: M[K, V1, V2] = reservedSize[K, V1, V2](0)
 
-  def apply[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](kv1v2s: (K, (V1, V2))*) = {
+  def apply[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](kv1v2s: (K, (V1, V2))*) =
+    fromIterable(kv1v2s)
+
+  def fromIterable[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](kv1v2s: Iterable[(K, (V1, V2))]) = {
     val map2 = empty[K, V1, V2]
     val it = kv1v2s.iterator
     while (it.hasNext) {

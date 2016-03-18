@@ -18,4 +18,6 @@ trait Map2Factory {
 
   def fromArrays[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](keysArray: Array[K], values1Array: Array[V1], values2Array: Array[V2]): M[K, V1, V2]
 
+  def fromIterable[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](kv1v2s: Iterable[(K, (V1, V2))]): M[K, V1, V2]
+
 }
