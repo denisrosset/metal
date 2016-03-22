@@ -7,8 +7,8 @@ apidocs: /metal/latest/api
 githuburl: https://github.com/denisrosset/metal
 sources: https://github.com/denisrosset/metal/blob/master/
 # logourl: https://pbs.twimg.com/profile_images/3005141692/dc8e1eb36b6cbd2b5726f63c50adf7f2.png # uncomment with a real image
-# chatname: Gitter
-# chaturl: https://gitter.im/...
+chatname: Gitter
+chaturl: https://gitter.im/denisrosset/metal
 # buildname: Travis
 # buildurl: https://travis-ci.org/...
 collections:

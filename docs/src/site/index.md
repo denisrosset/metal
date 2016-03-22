@@ -3,16 +3,27 @@ layout: default
 title:  "Home"
 section: "home"
 ---
-Fizz is a library written in Scala to pass the FizzBuzz test.
+Metal is a Scala library to provide fast unboxed data structures.
 
-<div class="msg warn"> <p><strong> Fizz is currently an experimental
+<div class="msg warn"> <p><strong> Metal is currently an experimental
 project under active development</strong>. Feedback and
 contributions are welcomed as we look to improve the project. </p> </div>
 
 <a name="getting-started"></a>
 
-# Getting Started
+# Getting started
 
-Fizz is currently available for Scala 2.11.
+Metal is currently available for Scala 2.10 and 2.11.
 
-<div class="msg warn"> <p><strong> Add instructions on how to get started. </strong></p> </div>
+```scala
+
+resolvers += "bintray/denisrosset" at "http://dl.bintray.com/denisrosset/maven"
+
+libraryDependencies ++= Seq(
+   "org.scala-metal" %% "metal-core" % "VERSION",
+   "org.scala-metal" %% "metal-library" % "VERSION"
+)
+
+```
+
+where `VERSION` is the latest published version (see the [Releases](https://github.com/denisrosset/metal/releases)).

@@ -1,5 +1,7 @@
 ## Metal - fast unboxed data structures for Scala
 
+See the [companion website](https://denisrosset.github.io/metal) and the
+associated [tutorials](https://denisrosset.github.io/metal/tutorials.html)
 Metal provides fast mutable collections whose performance should be close to
 hand-written data structures using raw primitive arrays.
 
@@ -47,7 +49,7 @@ We currently have a dependency on Spire for two reasons:
 
 ## Example
 
-```
+```scala
 scala> import metal._; import syntax._
 import metal._
 import syntax._

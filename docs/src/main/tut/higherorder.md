@@ -10,12 +10,18 @@ Several higher-order functions are available on containers, for example `foreach
 `exists`, `forall`, `foldLeft` (or `/:`); however, the calling convention is slightly different
 from the Scala collections to avoid allocating tuples:
 
-```scala
-val m = MHashMap(1 -> 2, 3 -> 4)
+```tut:silent
+import metal._; import syntax._
+val m = mutable.HashMap(1 -> 2, 3 -> 4)
+```
+
+```tut
 m.foreach { (k, v) => println(s"($k, $v)") }
+```
 
-// instead of
+instead of
 
+```scala
 m.foreach { case (k, v) => println(s"($k, $v)") }
 ```
 

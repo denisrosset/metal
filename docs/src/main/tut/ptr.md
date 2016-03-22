@@ -39,7 +39,7 @@ Thanks to name-based extractors, the code snippet above does not perform any all
 Several methods are implemented on `Ptr` and `VPtr`, and can be used to access the pointed
 element.
 
-```scala
+```tut
 import metal._
 import metal.syntax._
 
