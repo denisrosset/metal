@@ -68,7 +68,7 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
 lazy val publishSettings = Seq(
   homepage := None, // Some(url("http://scala-metal.org")),
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  bintrayRepository := "metal",
+  bintrayRepository := "maven",
   publishArtifact in Test := false
 )
 
