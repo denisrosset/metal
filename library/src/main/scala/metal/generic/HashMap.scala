@@ -1,13 +1,16 @@
 package metal
+package generic
 
 import scala.annotation.tailrec
 
-abstract class HashSet[K] extends metal.Set[K] {
+import util.Dummy
 
-  import HashSet.{UNUSED, DELETED, USED}
+abstract class HashMap[K, V] extends generic.Map[K, V] {
 
-  type Immutable = metal.immutable.HashSet[K]
-  type Mutable = metal.mutable.HashSet[K]
+  import HashMap.{UNUSED, DELETED, USED}
+
+  type Immutable = immutable.HashMap[K, V]
+  type Mutable = mutable.HashMap[K, V]
 
   /** Number of defined slots. */
   def size: Int
@@ -24,6 +27,7 @@ abstract class HashSet[K] extends metal.Set[K] {
 
   def nSlots: Int = buckets.length
   def key(i: Int): K = key(i)
+  def value(i: Int): V = value(i)
   def bucket(i: Int): Byte = buckets(i)
 
   /** Status of the slots in the hash table. */
@@ -32,7 +36,10 @@ abstract class HashSet[K] extends metal.Set[K] {
   /** Slots for keys. */
   private[metal] def keys: Array[K]
 
-  def mutableCopy = new metal.mutable.HashSet[K](keys.clone, buckets.clone, size, used, mask, limit)
+  /** Slots for values. */
+  private[metal] def values: Array[V]
+
+  def mutableCopy = new mutable.HashMap[K, V](keys.clone, buckets.clone, values.clone, size, used, mask, limit)
 
   @inline final def isEmpty = size == 0
   @inline final def nonEmpty = size > 0
@@ -40,12 +47,9 @@ abstract class HashSet[K] extends metal.Set[K] {
   def keyArray(ptr: VPtr[this.type]): Array[K] = keys
   def keyIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
 
-  /**
-    * Return whether the item is found in the HashSet or not.
-    * 
-    * On average, this is an O(1) operation; the (unlikely) worst-case
-    * is O(n).
-    */
+  def valueArray(ptr: VPtr[this.type]): Array[V] = values
+  def valueIndex(ptr: VPtr[this.type]): Int = ptr.raw.toInt
+
   final def ptrFind[@specialized L](key: L): Ptr[this.type] = {
     val keysL = keys.asInstanceOf[Array[L]]
     @inline @tailrec def loop(i: Int, perturbation: Int): Ptr[this.type] = {
@@ -62,24 +66,26 @@ abstract class HashSet[K] extends metal.Set[K] {
   final def ptr: Ptr[this.type] = {
     var i = 0
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr[this.type](i) else Ptr.Null[this.type]
+    if (i < buckets.length) VPtr(this, i) else Ptr.Null(this)
   }
 
   final def ptrNext(ptr: VPtr[this.type]): Ptr[this.type] = {
     var i = ptr.raw.toInt + 1
     while (i < buckets.length && buckets(i) != 3) i += 1
-    if (i < buckets.length) VPtr[this.type](i) else Ptr.Null[this.type]
+    if (i < buckets.length) VPtr(this, i) else Ptr.Null(this)
   }
 
-  final def ptrKey[@specialized L](ptr: VPtr[this.type]): L =
-    keys.asInstanceOf[Array[L]](ptr.raw.toInt)
+  final def ptrKey[@specialized L](ptr: VPtr[this.type]): L = keys.asInstanceOf[Array[L]](ptr.raw.toInt)
 
-  final def ptrElement1[@specialized E1](ptr: VPtr[this.type]): E1 =
-    keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
+  final def ptrValue[@specialized W](ptr: VPtr[this.type]): W = values.asInstanceOf[Array[W]](ptr.raw.toInt)
+
+  final def ptrElement1[@specialized E1](ptr: VPtr[this.type]): E1 = keys.asInstanceOf[Array[E1]](ptr.raw.toInt)
+
+  final def ptrElement2[@specialized E2](ptr: VPtr[this.type]): E2 = values.asInstanceOf[Array[E2]](ptr.raw.toInt)
 
 }
 
-object HashSet {
+object HashMap {
 
   /** Unused bucket. */
   @inline final def UNUSED: Byte = 0
@@ -92,10 +98,11 @@ object HashSet {
 
 }
 
-trait HashSetFactory extends SetFactory {
+trait HashMapFactory extends MapFactory {
 
-  type Extra[K] = Dummy[K]
+  type KExtra[K] = Dummy[K]
+  type VExtra[V] = Dummy[V]
 
-  type S[K] <: metal.HashSet[K]
+  type M[K, V] <: generic.HashMap[K, V]
 
 }

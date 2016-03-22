@@ -1,5 +1,6 @@
-package metal.immutable
+package metal
+package immutable
 
-trait BitSet[K] extends metal.BitSet[K] with metal.immutable.SortedSet[K]
+trait BitSet[K] extends generic.BitSet[K] with immutable.SortedSet[K]
 
-final class BitSetImpl(val words: Array[Long], val nWords: Int) extends metal.BitSetImpl with metal.immutable.BitSet[Int]
+final class BitSetImpl(val words: Array[Long], val nWords: Int) extends generic.BitSetImpl with immutable.BitSet[Int]

@@ -1,4 +1,4 @@
-package metal
+package metal.util
 
 class Dummy[@specialized A]
 

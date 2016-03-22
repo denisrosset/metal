@@ -1,4 +1,5 @@
 package metal
+package generic
 
 trait Map2Factory {
 
@@ -8,7 +9,7 @@ trait Map2Factory {
 
   type V2Extra[_]
 
-  type M[K, V1, V2] <: metal.Map2[K, V1, V2]
+  type M[K, V1, V2] <: generic.Map2[K, V1, V2]
 
   def empty[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra]: M[K, V1, V2]
 

@@ -1,14 +1,16 @@
-package metal.mutable
+package metal
+package mutable
 
 import scala.reflect.{classTag, ClassTag}
 import spire.algebra.Order
 import spire.math.QuickSort
 import spire.syntax.cfor._
-import metal.{Dummy, Methods}
+import generic.Methods
+import util.Dummy
 
-final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: Methods[V], val ct: ClassTag[V]) extends metal.Buffer[V] with metal.mutable.Collection {
+final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: Methods[V], val ct: ClassTag[V]) extends generic.Buffer[V] with mutable.Collection {
 
-  def toImmutable = new metal.immutable.Buffer[V](array.clone, length) // TODO: trim the array
+  def toImmutable = new immutable.Buffer[V](array.clone, length) // TODO: trim the array
 
   def sort()(implicit order: Order[V]): Unit = {
     QuickSort.qsort(array, 0, length.toInt - 1)(order, ct)

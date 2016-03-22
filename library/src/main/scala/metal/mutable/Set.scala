@@ -1,5 +1,4 @@
-package metal.mutable
+package metal
+package mutable
 
-import metal.{AddKeys, Removable}
-
-trait Set[K] extends metal.Set[K] with metal.mutable.Collection with Removable with AddKeys[K]
+trait Set[K] extends generic.Set[K] with mutable.Collection with Removable with AddKeys[K]

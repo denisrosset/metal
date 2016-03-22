@@ -1,25 +1,32 @@
 package metal
+package generic
 
 import scala.annotation.tailrec
 
 import spire.algebra.Order
 import spire.util.Opt
 
-abstract class Map2[K, V1, V2] extends Defaults with Enumerable with Searchable[K] with Values1[V1] with Values2[V2] with NElements3[K, V1, V2] { lhs =>
+abstract class Map2[K, V1, V2]
+    extends Defaults
+    with Enumerable
+    with Searchable[K]
+    with Values1[V1]
+    with Values2[V2]
+    with NElements3[K, V1, V2] { lhs =>
 
   implicit def K: Methods[K]
   implicit def V1: Methods[V1]
   implicit def V2: Methods[V2]
 
-  type Generic = metal.Map2[K, V1, V2]
-  type Mutable <: metal.mutable.Map2[K, V1, V2]
-  type Immutable <: metal.immutable.Map2[K, V1, V2]
+  type Generic = generic.Map2[K, V1, V2]
+  type Mutable <: mutable.Map2[K, V1, V2]
+  type Immutable <: immutable.Map2[K, V1, V2]
 
   override def stringPrefix = "Map2"
 
-  final def ptrCastT(any: Any): Opt[metal.Map2[K, V1, V2]] = any match {
-    case rhs: metal.Map2[K, V1, V2] if lhs.K == rhs.K && lhs.V1 == rhs.V1 && lhs.V2 == rhs.V2 => Opt(rhs)
-    case _ => Opt.empty[metal.Map2[K, V1, V2]]
+  final def ptrCastT(any: Any): Opt[generic.Map2[K, V1, V2]] = any match {
+    case rhs: generic.Map2[K, V1, V2] if lhs.K == rhs.K && lhs.V1 == rhs.V1 && lhs.V2 == rhs.V2 => Opt(rhs)
+    case _ => Opt.empty[generic.Map2[K, V1, V2]]
   }
 
   private[metal] def keyArray(ptr: VPtr[lhs.type]): Array[K]
@@ -43,7 +50,7 @@ abstract class Map2[K, V1, V2] extends Defaults with Enumerable with Searchable[
     s"$ks -> ($v1s, $v2s)"
   }
 
-  final def ptrEquals(thisPtr: VPtr[this.type], that: metal.Map2[K, V1, V2]): Boolean =
+  final def ptrEquals(thisPtr: VPtr[this.type], that: generic.Map2[K, V1, V2]): Boolean =
     that.ptrFindFromArray(keyArray(thisPtr), keyIndex(thisPtr)) match {
       case IsVPtr(thatPtr) =>
         val thisA1 = value1Array(thisPtr)

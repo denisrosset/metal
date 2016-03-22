@@ -1,11 +1,12 @@
-package metal.mutable
+package metal
+package mutable
 
 import spire.syntax.cfor._
-import metal.Methods
+import generic.Methods
 
-trait Map2Factory extends metal.Map2Factory {
+trait Map2Factory extends generic.Map2Factory {
 
-  type M[K, V1, V2] <: metal.mutable.Map2[K, V1, V2]
+  type M[K, V1, V2] <: mutable.Map2[K, V1, V2]
 
   def reservedSize[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](n: Int): M[K, V1, V2]
 

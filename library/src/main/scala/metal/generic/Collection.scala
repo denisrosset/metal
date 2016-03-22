@@ -1,4 +1,5 @@
 package metal
+package generic
 
 abstract class Collection extends Enumerable { lhs =>
 
@@ -6,10 +7,10 @@ abstract class Collection extends Enumerable { lhs =>
   type Generic >: lhs.type <: Collection
 
   /** Mutable variant of this collection. */
-  type Mutable <: metal.mutable.Collection
+  type Mutable <: mutable.Collection
 
   /** Immutable variant of this collection. */
-  type Immutable <: metal.immutable.Collection
+  type Immutable <: immutable.Collection
 
   /** Creates a mutable copy of this collection. */
   def mutableCopy: Mutable

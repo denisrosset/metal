@@ -13,6 +13,8 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import metal.syntax._
 
+import generic.Methods
+
 trait SetCheck[A] extends MetalSuite {
 
   type SetA <: metal.mutable.Set[A]

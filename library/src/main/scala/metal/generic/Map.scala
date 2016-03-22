@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
@@ -11,15 +12,15 @@ abstract class Map[K, V] extends Defaults with Enumerable with Searchable[K] wit
   implicit def K: Methods[K]
   implicit def V: Methods[V]
 
-  type Generic = metal.Map[K, V]
-  type Mutable <: metal.mutable.Map[K, V]
-  type Immutable <: metal.immutable.Map[K, V]
+  type Generic = generic.Map[K, V]
+  type Mutable <: mutable.Map[K, V]
+  type Immutable <: immutable.Map[K, V]
 
   override def stringPrefix = "Map"
 
-  final def ptrCastT(any: Any): Opt[metal.Map[K, V]] = any match {
-    case rhs: metal.Map[K, V] if lhs.K == rhs.K && lhs.V == rhs.V => Opt(rhs)
-    case _ => Opt.empty[metal.Map[K, V]]
+  final def ptrCastT(any: Any): Opt[generic.Map[K, V]] = any match {
+    case rhs: generic.Map[K, V] if lhs.K == rhs.K && lhs.V == rhs.V => Opt(rhs)
+    case _ => Opt.empty[generic.Map[K, V]]
   }
 
   private[metal] def keyArray(ptr: VPtr[lhs.type]): Array[K]

@@ -13,6 +13,8 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import metal.syntax._
 
+import generic.Methods
+
 trait MapCheck[K, V] extends MetalSuite {
 
   val factory: metal.mutable.MapFactory

@@ -1,11 +1,12 @@
-package metal.mutable
+package metal
+package mutable
 
 import spire.syntax.cfor._
-import metal.{Methods}
+import generic.Methods
 
-trait MapFactory extends metal.MapFactory {
+trait MapFactory extends generic.MapFactory {
 
-  type M[K, V] <: metal.mutable.Map[K, V]
+  type M[K, V] <: mutable.Map[K, V]
 
   def empty[K:Methods:KExtra, V:Methods:VExtra]: M[K, V] = reservedSize[K, V](0)
 

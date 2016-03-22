@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import spire.algebra.Order
 

@@ -1,8 +1,8 @@
-package metal.immutable
+package metal
+package immutable
 
-trait SortedSet[K] extends metal.SortedSet[K] with metal.immutable.Set[K] {
+trait SortedSet[K] extends generic.SortedSet[K] with immutable.Set[K] { lhs =>
 
-  type Immutable >: this.type <: metal.immutable.SortedSet[K]
-  type Mutable <: metal.mutable.SortedSet[K]
+  type Immutable >: lhs.type <: immutable.SortedSet[K]
 
 }

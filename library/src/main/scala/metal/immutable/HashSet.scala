@@ -1,6 +1,7 @@
-package metal.immutable
+package metal
+package immutable
 
-import metal.Methods
+import generic.Methods
 
 final class HashSet[K](
   private[metal] val keys: Array[K],
@@ -8,4 +9,4 @@ final class HashSet[K](
   val size: Int,
   val used: Int,
   val mask: Int,
-  val limit: Int)(implicit val K: Methods[K]) extends metal.HashSet[K] with metal.immutable.Set[K]
+  val limit: Int)(implicit val K: Methods[K]) extends generic.HashSet[K] with immutable.Set[K]

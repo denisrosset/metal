@@ -1,9 +1,11 @@
-package metal.mutable
+package metal
+package mutable
 
 import scala.annotation.tailrec
 import spire.math.max
 import spire.syntax.cfor._
-import metal.{Dummy, IsVPtr, Methods, Ptr, VPtr, Util}
+
+import generic.Methods
 
 final class HashMap[K, V](
   var keys: Array[K],
@@ -12,11 +14,13 @@ final class HashMap[K, V](
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: Methods[K], val V: Methods[V]) extends metal.HashMap[K, V] with metal.mutable.Map[K, V] {
+  var limit: Int)(implicit val K: Methods[K], val V: Methods[V])
+    extends generic.HashMap[K, V]
+    with mutable.Map[K, V] {
 
-  import metal.HashMap.{UNUSED, DELETED, USED}
+  import generic.HashMap.{UNUSED, DELETED, USED}
 
-  def toImmutable = new metal.immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
+  def toImmutable = new immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
 
   def reset(): Unit = {
     cforRange(0 until nSlots) { i =>
@@ -29,7 +33,7 @@ final class HashMap[K, V](
   }
 
   def result() = {
-    val res = new metal.immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
+    val res = new immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
     buckets = new Array[Byte](8) // optimize using empty array
     keys = K.newArray(8)
     values = V.newArray(8)
@@ -115,7 +119,7 @@ final class HashMap[K, V](
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the map was previously large).
     */
-  private[this] def absorb(rhs: metal.mutable.HashMap[K, V]): Unit = {
+  private[this] def absorb(rhs: mutable.HashMap[K, V]): Unit = {
     keys = rhs.keys
     values = rhs.values
     buckets = rhs.buckets
@@ -144,7 +148,7 @@ final class HashMap[K, V](
     */
   final def grow(): Unit = {
     val next = keys.length * (if (keys.length < 10000) 4 else 2)
-    val map = metal.mutable.HashMap.ofAllocatedSize[K, V](next)
+    val map = mutable.HashMap.ofAllocatedSize[K, V](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
         val vp = map.ptrAddKeyFromArray(keys, i)
@@ -156,9 +160,9 @@ final class HashMap[K, V](
 
 }
 
-object HashMap extends metal.HashMapFactory with metal.mutable.MapFactory {
+object HashMap extends generic.HashMapFactory with mutable.MapFactory {
 
-  type M[K, V] = metal.mutable.HashMap[K, V]
+  type M[K, V] = mutable.HashMap[K, V]
 
   /** Allocates an empty HashMapImpl, with underlying storage of size n.
     * 
@@ -169,12 +173,12 @@ object HashMap extends metal.HashMapFactory with metal.mutable.MapFactory {
   private[metal] def ofAllocatedSize[K, V](n: Int)(implicit K: Methods[K], V: Methods[V]) = {
     import K.{classTag => ctK}
     import V.{classTag => ctV}
-    val sz = Util.nextPowerOfTwo(n) match {
+    val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }
-    new metal.mutable.HashMap[K, V](
+    new mutable.HashMap[K, V](
       keys = K.newArray(sz),
       buckets = new Array[Byte](sz),
       values = V.newArray(sz),

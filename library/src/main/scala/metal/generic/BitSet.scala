@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import spire.algebra.Order
 
@@ -32,7 +33,7 @@ abstract class BitSetImpl extends BitSet[Int] {
 
   override def ptrToString(ptr: VPtr[this.type]): String = ptr.raw.toInt.toString
 
-  override def ptrEquals(thisPtr: VPtr[this.type], that: metal.Set[Int]): Boolean =
+  override def ptrEquals(thisPtr: VPtr[this.type], that: generic.Set[Int]): Boolean =
     that.ptrFind[Int](thisPtr.raw.toInt).nonNull
 
   def keyArray(ptr: VPtr[this.type]) = sys.error("Cannot call keyArray on BitSet")
@@ -81,7 +82,7 @@ abstract class BitSetImpl extends BitSet[Int] {
   def ptrNext(ptr: VPtr[this.type]): Ptr[this.type] = {
     var w = ptr.raw.toInt >>> 3
     var bit = (ptr.raw & 0x7).toInt
-    val nextBit = metal.Util.nextBitAfter(words(w), bit)
+    val nextBit = util.nextBitAfter(words(w), bit)
     if (nextBit >= 0) return Ptr(this, ptr.raw - bit + nextBit)
     w += 1
     if (w == nWords) return Ptr.Null(this)

@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import scala.reflect.ClassTag
 
@@ -6,7 +7,7 @@ trait SetFactory {
 
   type Extra[_]
 
-  type S[K] <: metal.Set[K]
+  type S[K] <: generic.Set[K]
 
   def empty[K:Methods:Extra]: S[K]
 

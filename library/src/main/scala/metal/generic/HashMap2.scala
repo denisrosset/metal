@@ -1,13 +1,16 @@
 package metal
+package generic
 
 import scala.annotation.tailrec
 
-abstract class HashMap2[K, V1, V2] extends metal.Map2[K, V1, V2] {
+import util.Dummy
+
+abstract class HashMap2[K, V1, V2] extends generic.Map2[K, V1, V2] {
 
   import HashMap2.{UNUSED, DELETED, USED}
 
-  type Immutable = metal.immutable.HashMap2[K, V1, V2]
-  type Mutable = metal.mutable.HashMap2[K, V1, V2]
+  type Immutable = immutable.HashMap2[K, V1, V2]
+  type Mutable = mutable.HashMap2[K, V1, V2]
 
   /** Number of defined slots. */
   def size: Int
@@ -41,7 +44,7 @@ abstract class HashMap2[K, V1, V2] extends metal.Map2[K, V1, V2] {
   private[metal] def values2: Array[V2]
 
   def mutableCopy =
-    new metal.mutable.HashMap2[K, V1, V2](
+    new mutable.HashMap2[K, V1, V2](
       keys.clone, buckets.clone,
       values1.clone, values2.clone,
       size, used, mask, limit)
@@ -116,6 +119,6 @@ trait HashMap2Factory extends Map2Factory {
   type V1Extra[V1] = Dummy[V1]
   type V2Extra[V2] = Dummy[V2]
 
-  type M[K, V1, V2] <: metal.HashMap2[K, V1, V2]
+  type M[K, V1, V2] <: generic.HashMap2[K, V1, V2]
 
 }

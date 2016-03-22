@@ -1,4 +1,5 @@
 package metal
+package generic
 
 trait MapFactory {
 
@@ -6,7 +7,7 @@ trait MapFactory {
 
   type VExtra[_]
 
-  type M[K, V] <: metal.Map[K, V]
+  type M[K, V] <: generic.Map[K, V]
 
   def empty[K:Methods:KExtra, V:Methods:VExtra]: M[K, V]
 

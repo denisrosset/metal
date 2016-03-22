@@ -1,9 +1,11 @@
-package metal.mutable
+package metal
+package mutable
 
 import scala.annotation.tailrec
 import spire.math.max
 import spire.syntax.cfor._
-import metal.{IsVPtr, Methods, Ptr, VPtr, Util}
+
+import generic.Methods
 
 final class HashSet[K](
   var keys: Array[K],
@@ -11,9 +13,9 @@ final class HashSet[K](
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: Methods[K]) extends metal.HashSet[K] with metal.mutable.Set[K] {
+  var limit: Int)(implicit val K: Methods[K]) extends generic.HashSet[K] with mutable.Set[K] {
 
-  import metal.HashSet.{UNUSED, DELETED, USED}
+  import generic.HashSet.{UNUSED, DELETED, USED}
 
   def reset(): Unit = {
     cforRange(0 until nSlots) { i =>
@@ -33,10 +35,10 @@ final class HashSet[K](
     limit = (8 * 0.65).toInt
   }
 
-  def toImmutable = new metal.immutable.HashSet[K](keys.clone, buckets.clone, size, used, mask, limit) // TODO: trim arrays?
+  def toImmutable = new immutable.HashSet[K](keys.clone, buckets.clone, size, used, mask, limit) // TODO: trim arrays?
 
   def result() = {
-    val res = new metal.immutable.HashSet[K](keys, buckets, size, used, mask, limit)
+    val res = new immutable.HashSet[K](keys, buckets, size, used, mask, limit)
     buckets = new Array[Byte](8) // optimize using empty array
     keys = K.newArray(8)
     size = 0
@@ -114,7 +116,7 @@ final class HashSet[K](
     */
   def grow(): Unit = {
     val next = buckets.length * (if (buckets.length < 10000) 4 else 2)
-    val set = metal.mutable.HashSet.ofAllocatedSize[K](next)
+    val set = mutable.HashSet.ofAllocatedSize[K](next)
     cfor(0)(_ < buckets.length, _ + 1) { i =>
       if (buckets(i) == 3) {
         set.ptrAddKeyFromArray(keys, i)
@@ -134,7 +136,7 @@ final class HashSet[K](
     * This is an O(1) operation, although it can potentially generate a
     * lot of garbage (if the set was previously large).
     */
-  private[this] def absorb(that: metal.mutable.HashSet[K]): Unit = {
+  private[this] def absorb(that: mutable.HashSet[K]): Unit = {
     keys = that.keys
     buckets = that.buckets
     size = that.size
@@ -146,9 +148,9 @@ final class HashSet[K](
 
 }
 
-object HashSet extends metal.HashSetFactory with metal.mutable.SetFactory {
+object HashSet extends generic.HashSetFactory with mutable.SetFactory {
 
-  type S[K] = metal.mutable.HashSet[K]
+  type S[K] = mutable.HashSet[K]
 
   /**
     * Allocate an empty HashSet, with underlying storage of size n.
@@ -159,12 +161,12 @@ object HashSet extends metal.HashSetFactory with metal.mutable.SetFactory {
     */
   def ofAllocatedSize[K](n: Int)(implicit K: Methods[K]): S[K] = {
     import K.classTag
-    val sz = Util.nextPowerOfTwo(n) match {
+    val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
       case n => n
     }
-    new metal.mutable.HashSet[K](
+    new mutable.HashSet[K](
       keys = K.newArray(sz),
       buckets = new Array[Byte](sz),
       size = 0,

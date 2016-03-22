@@ -1,7 +1,8 @@
-package metal.immutable
+package metal
+package immutable
 
-trait Map2[K, V1, V2] extends metal.Map2[K, V1, V2] with metal.immutable.Collection {
+trait Map2[K, V1, V2] extends generic.Map2[K, V1, V2] with immutable.Collection { lhs =>
 
-  type Immutable >: this.type <: Map2[K, V1, V2]
+  type Immutable >: lhs.type <: immutable.Map2[K, V1, V2]
 
 }

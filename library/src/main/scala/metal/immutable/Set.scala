@@ -1,7 +1,8 @@
-package metal.immutable
+package metal
+package immutable
 
-trait Set[K] extends metal.Set[K] with metal.immutable.Collection {
+trait Set[K] extends generic.Set[K] with immutable.Collection { lhs =>
 
-  type Immutable >: this.type <: Set[K]
+  type Immutable >: lhs.type <: Set[K]
 
 }

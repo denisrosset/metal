@@ -1,14 +1,15 @@
-package metal.immutable
+package metal
+package immutable
 
 import scala.reflect.ClassTag
-import metal.Methods
+import generic.Methods
 
-trait SetFactory extends metal.SetFactory {
+trait SetFactory extends generic.SetFactory {
 
-  type S[K] <: metal.immutable.Set[K]
-  type M[K] <: metal.mutable.Set[K] { type Immutable <: S[K] }
+  type S[K] <: immutable.Set[K]
+  type M[K] <: mutable.Set[K] { type Immutable <: S[K] }
 
-  def mutableFactory: metal.mutable.SetFactory { type S[K] = M[K]; type Extra[K] = SetFactory.this.Extra[K] }
+  def mutableFactory: mutable.SetFactory { type S[K] = M[K]; type Extra[K] = SetFactory.this.Extra[K] }
 
   def empty[A:Methods:Extra]: S[A] = mutableFactory.empty[A].result()
 

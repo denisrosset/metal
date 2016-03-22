@@ -1,6 +1,7 @@
-package metal.immutable
+package metal
+package immutable
 
-trait Collection extends metal.Collection { lhs =>
+trait Collection extends generic.Collection { lhs =>
 
   type Immutable >: lhs.type <: Collection
 

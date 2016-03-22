@@ -1,12 +1,13 @@
-package metal.mutable
+package metal
+package mutable
 
 import scala.reflect.ClassTag
 import spire.syntax.cfor._
-import metal.Methods
+import generic.Methods
 
-trait SetFactory extends metal.SetFactory {
+trait SetFactory extends generic.SetFactory {
 
-  type S[K] <: metal.mutable.Set[K]
+  type S[K] <: mutable.Set[K]
 
   def reservedSize[A:Methods:Extra](n: Int): S[A]
 

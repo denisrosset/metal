@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import scala.reflect.ClassTag
 
@@ -14,8 +15,8 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
   implicit def ct: ClassTag[V]
   implicit def V: Methods[V]
 
-  type Mutable = metal.mutable.Buffer[V]
-  type Immutable = metal.immutable.Buffer[V]
+  type Mutable = mutable.Buffer[V]
+  type Immutable = immutable.Buffer[V]
 
   private[metal] def array: Array[V]
 

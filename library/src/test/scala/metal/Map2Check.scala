@@ -13,6 +13,8 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import metal.syntax._
 
+import generic.Methods
+
 trait Map2Check[K, V1, V2] extends MetalSuite {
 
   val factory: metal.mutable.Map2Factory

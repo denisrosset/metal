@@ -1,6 +1,7 @@
-package metal.immutable
+package metal
+package immutable
 
-import metal.Methods
+import generic.Methods
 
 final class HashMap[K, V](
   private[metal] val keys: Array[K],
@@ -9,4 +10,4 @@ final class HashMap[K, V](
   val size: Int,
   val used: Int,
   val mask: Int,
-  val limit: Int)(implicit val K: Methods[K], val V: Methods[V]) extends metal.HashMap[K, V] with metal.immutable.Map[K, V]
+  val limit: Int)(implicit val K: Methods[K], val V: Methods[V]) extends generic.HashMap[K, V] with immutable.Map[K, V]

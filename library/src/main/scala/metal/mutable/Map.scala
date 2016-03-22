@@ -1,5 +1,5 @@
-package metal.mutable
+package metal
+package mutable
 
-import metal.{AddKeys, Removable, Updatable}
 
-trait Map[K, V] extends metal.Map[K, V] with metal.mutable.Collection with Removable with AddKeys[K] with Updatable[V]
+trait Map[K, V] extends generic.Map[K, V] with mutable.Collection with Removable with AddKeys[K] with Updatable[V]

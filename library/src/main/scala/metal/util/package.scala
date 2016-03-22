@@ -1,6 +1,6 @@
 package metal
 
-object Util {
+package object util {
 
   /**
    * Given a number n, this method returns n if n is a power-of-two.

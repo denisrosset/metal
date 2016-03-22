@@ -1,6 +1,7 @@
-package metal.mutable
+package metal
+package mutable
 
-trait Collection extends metal.Collection {
+trait Collection extends generic.Collection {
 
   /** Returns an immutable version of this mutable collection. The mutable instance is cleared. */
   def result(): Immutable

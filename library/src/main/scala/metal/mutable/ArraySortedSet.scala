@@ -1,10 +1,12 @@
-package metal.mutable
+package metal
+package mutable
 
 import spire.algebra.Order
 import spire.syntax.cfor._
-import metal.{Methods, Ptr, VPtr}
 
-final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit val K: Methods[K], val order: Order[K]) extends metal.ArraySortedSet[K] with metal.mutable.SortedSet[K] {
+import generic.Methods
+
+final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit val K: Methods[K], val order: Order[K]) extends generic.ArraySortedSet[K] with mutable.SortedSet[K] {
 
   def toImmutable: Immutable = new metal.immutable.ArraySortedSet(items.clone, longSize) // TODO: trim the array
   def result(): Immutable = {

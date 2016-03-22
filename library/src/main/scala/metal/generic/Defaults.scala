@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import scala.annotation.tailrec
 import spire.util.Opt

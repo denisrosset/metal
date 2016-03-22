@@ -1,4 +1,5 @@
 package metal
+package generic
 
 import scala.reflect.ClassTag
 
