@@ -7,7 +7,7 @@ import util.Dummy
 
 abstract class HashMap[K, V] extends generic.Map[K, V] {
 
-  import HashMap.{UNUSED, DELETED, USED}
+  import HashMap.{UNUSED, USED}
 
   type Immutable = immutable.HashMap[K, V]
   type Mutable = mutable.HashMap[K, V]

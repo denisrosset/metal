@@ -1,7 +1,5 @@
 package metal
 
-import spire.util.Opt
-
 object syntax {
 
   implicit def searchableOps[K](lhs: Searchable[K]): SearchableOps[K] = new SearchableOps(lhs)

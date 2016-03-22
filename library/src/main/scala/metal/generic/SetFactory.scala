@@ -1,8 +1,6 @@
 package metal
 package generic
 
-import scala.reflect.ClassTag
-
 trait SetFactory {
 
   type Extra[_]

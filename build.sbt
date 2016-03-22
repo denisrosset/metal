@@ -119,7 +119,7 @@ lazy val warnUnusedImport = Seq(
       case Some((2, 10)) =>
         Seq()
       case Some((2, n)) if n >= 11 =>
-        Seq() // TODO Seq("-Ywarn-unused-import")
+        Seq("-Ywarn-unused-import")
     }
   },
   scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},

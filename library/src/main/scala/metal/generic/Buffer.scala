@@ -3,9 +3,7 @@ package generic
 
 import scala.reflect.ClassTag
 
-import spire.algebra.Order
-import spire.math.QuickSort
-import spire.syntax.all._
+import spire.syntax.cfor._
 
 /* We do not extract a common `Seq` base type, because [[Buffer]] would be its only subtype.
  * Let's make a `Seq` base trait when we have more input on its design.
@@ -26,19 +24,19 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
     * If the index exceeds the length, the result is undefined; an exception could be
     * thrown, but this is not guaranteed.
     */
-  def apply(idx: Int): V = array(idx)
+  def apply(idx: Int): V
 
   def length: Int
 
-  @inline final def longSize = length
+  final def longSize = length
 
-  @inline final def isEmpty = length == 0
+  final def isEmpty = length == 0
 
-  @inline final def nonEmpty = length > 0
+  final def nonEmpty = length > 0
 
   def stringPrefix = "Buffer"
 
-  final def ptr: Ptr[self.type] = if (isEmpty) Ptr.Null(self) else VPtr(self, 0)
+  final def ptr: Ptr[self.type] = if (length == 0) Ptr.Null(self) else VPtr(self, 0)
 
   final def ptrNext(ptr: VPtr[self.type]): Ptr[self.type] =
     if (ptr.raw == length - 1) Ptr.Null(self) else VPtr(self, ptr.raw + 1)

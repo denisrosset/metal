@@ -1,8 +1,8 @@
 package metal
 package macros
 
-import spire.macros.compat.{termName, freshTermName, resetLocalAttrs, Context, setOrig}
-import spire.macros.{SyntaxUtil, InlineUtil}
+import spire.macros.compat.Context
+import spire.macros.SyntaxUtil
 
 trait Call[C <: Context with Singleton] {
 

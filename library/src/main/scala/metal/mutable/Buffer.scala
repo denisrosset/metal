@@ -10,6 +10,8 @@ import util.Dummy
 
 final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: Methods[V], val ct: ClassTag[V]) extends generic.Buffer[V] with mutable.Collection {
 
+  @inline final def apply(idx: Int): V = array(idx)
+
   def toImmutable = new immutable.Buffer[V](array.clone, length) // TODO: trim the array
 
   def sort()(implicit order: Order[V]): Unit = {

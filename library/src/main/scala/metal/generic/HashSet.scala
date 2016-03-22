@@ -7,7 +7,7 @@ import util.Dummy
 
 abstract class HashSet[K] extends generic.Set[K] {
 
-  import HashSet.{UNUSED, DELETED, USED}
+  import HashSet.{UNUSED, USED}
 
   type Immutable = immutable.HashSet[K]
   type Mutable = mutable.HashSet[K]

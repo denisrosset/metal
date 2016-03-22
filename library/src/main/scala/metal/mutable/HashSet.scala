@@ -160,7 +160,6 @@ object HashSet extends generic.HashSetFactory with mutable.SetFactory {
     * you want instead.
     */
   def ofAllocatedSize[K](n: Int)(implicit K: Methods[K]): S[K] = {
-    import K.classTag
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8

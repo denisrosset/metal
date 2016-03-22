@@ -1,9 +1,6 @@
 package metal
 package generic
 
-import scala.annotation.tailrec
-
-import spire.algebra.Order
 import spire.util.Opt
 
 abstract class Map2[K, V1, V2]

@@ -1,7 +1,6 @@
 package metal
 package immutable
 
-import scala.reflect.ClassTag
 import generic.Methods
 
 trait SetFactory extends generic.SetFactory {

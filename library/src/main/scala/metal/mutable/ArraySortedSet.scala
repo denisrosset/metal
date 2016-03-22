@@ -70,7 +70,6 @@ object ArraySortedSet extends metal.mutable.SetFactory {
 
   def reservedSize[K:Methods:Order](n: Int): S[K] = {
     val K = Methods[K]
-    import K.classTag
     new metal.mutable.ArraySortedSet[K](K.newArray(n), 0L)
   }
 

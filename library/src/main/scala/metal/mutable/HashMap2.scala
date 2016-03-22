@@ -180,9 +180,6 @@ object HashMap2 extends generic.HashMap2Factory with mutable.Map2Factory {
     * you want instead.
     */
   private[metal] def ofAllocatedSize[K, V1, V2](n: Int)(implicit K: Methods[K], V1: Methods[V1], V2: Methods[V2]) = {
-    import K.{classTag => ctK}
-    import V1.{classTag => ctV1}
-    import V2.{classTag => ctV2}
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8

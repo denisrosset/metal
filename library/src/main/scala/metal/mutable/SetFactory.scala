@@ -1,7 +1,6 @@
 package metal
 package mutable
 
-import scala.reflect.ClassTag
 import spire.syntax.cfor._
 import generic.Methods
 

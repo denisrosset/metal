@@ -1,10 +1,6 @@
 package metal
 package generic
 
-import scala.reflect.ClassTag
-import scala.annotation.tailrec
-
-import spire.algebra.Order
 import spire.util.Opt
 
 abstract class Map[K, V] extends Defaults with Enumerable with Searchable[K] with Values[V] with NElements2[K, V] { lhs =>
