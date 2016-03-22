@@ -1,44 +1,63 @@
+import com.typesafe.sbt.site.util.SiteHelpers
+import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
+import sbtunidoc.Plugin.UnidocKeys._
+
 val scalaCheckVersion = "1.12.4"
 val scalaTestVersion = "3.0.0-M7"
 val spireVersion = "0.11.0"
 
-// inspired by Spire build.sbt file
+// custom keys used by sbt-site
+
+lazy val tutorialSubDirName = settingKey[String]("Website tutorial directory")
+lazy val apiSubDirName = settingKey[String]("Unidoc API directory")
+
+// projects
 
 lazy val metal = (project in file("."))
   .settings(moduleName := "metal")
-  .settings(metalSettings: _*)
+  .settings(metalSettings)
   .settings(noPublishSettings)
-  .aggregate(core, library)
+  .aggregate(core, library, docs)
+  .dependsOn(core, library)
+
+lazy val docs = (project in file("docs"))
+  .settings(moduleName := "metal-docs")
+  .settings(metalSettings)
+  .settings(noPublishSettings)
+  .settings(tutConfig)
+  .settings(unidocConfig)
+  .settings(siteConfig)
   .dependsOn(core, library)
 
 lazy val core = (project in file("core"))
   .settings(moduleName := "metal-core")
-  .settings(metalSettings: _*)
-  .settings(coreSettings: _*)
-  .settings(crossVersionSharedSources:_*)
-  .settings(commonJvmSettings:_*)
+  .settings(metalSettings)
+  .settings(crossVersionSharedSources)
 
 lazy val library = (project in file("library"))
   .settings(moduleName := "metal-library")
-  .settings(metalSettings: _*)
-  .settings(coreSettings: _*)
-  .settings(scalaTestSettings:_*)
+  .settings(metalSettings)
+  .settings(scalaTestSettings)
   .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion)
-  .settings(crossVersionSharedSources:_*)
-  .settings(commonJvmSettings:_*)
+  .settings(crossVersionSharedSources)
   .dependsOn(core)
 
 lazy val metalSettings = buildSettings ++ commonSettings ++ publishSettings
 
 lazy val buildSettings = Seq(
+  name := "metal",
   organization := "org.scala-metal",
   scalaVersion := "2.11.8",
   crossScalaVersions := Seq("2.10.6", "2.11.8")
 )
 
 lazy val commonSettings = Seq(
+  apiURL := Some(url("https://denisrosset.github.io/metal/latest/api")),
+  scmInfo := Some(ScmInfo(url("https://github.com/denisrosset/metal"), "scm:git:git@github.com:denisrosset/metal.git")),
+  scalacOptions in (Compile, doc) := (scalacOptions in (Compile, doc)).value.filter(_ != "-Xfatal-warnings"),
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF"),
   scalacOptions ++= commonScalacOptions.diff(Seq(
-    "-Xfatal-warnings", 
+    "-Xfatal-warnings",
     "-language:existentials",
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
@@ -49,24 +68,14 @@ lazy val commonSettings = Seq(
     Resolver.sonatypeRepo("snapshots")
   ),
   libraryDependencies += "org.spire-math" %% "spire" % spireVersion
-) ++ scalaMacroDependencies ++ warnUnusedImport
-
-lazy val coreSettings = Seq(
-  buildInfoKeys := Seq[BuildInfoKey](version),
-  buildInfoPackage := "metal"
-)
+) ++ scalaMacroDependencies ++ warnUnusedImport ++ selectiveOptimize ++ doctestConfig
 
 lazy val publishSettings = Seq(
-  homepage := None, // Some(url("http://scala-metal.org")),
+  homepage := Some(url("http://denisrosset.github.io/metal")),
   licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
   bintrayRepository := "maven",
   publishArtifact in Test := false
 )
-
-lazy val commonJvmSettings = Seq(
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
-) ++ selectiveOptimize
-  // -optimize has no effect in scala-js other than slowing down the build
 
 // do not optimize on Scala 2.10 because of optimizer bug, see SI-3882
 lazy val selectiveOptimize = 
@@ -83,10 +92,58 @@ lazy val scalaTestSettings = Seq(
   libraryDependencies += "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
 )
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// Base documentation settings, taken from https://github.com/denisrosset/fizz
+
+lazy val siteConfig = ghpages.settings ++ Seq(
+  siteMappings ++= Seq(
+    file("CONTRIBUTING.md") -> "contributing.md"
+  ),
+  ghpagesNoJekyll := false,
+  git.remoteRepo := "git@github.com:denisrosset/metal.git",
+  includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
+)
+
+lazy val doctestConfig = doctestSettings ++ Seq(
+  doctestTestFramework := DoctestTestFramework.ScalaTest, // opinion: we default to Scalatest
+  // the following two lines specify an explicit Scalatest version and tell sbt-doctest to
+  // avoid importing new dependencies
+  libraryDependencies ++= Seq(
+    "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+    "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
+  ),
+  doctestWithDependencies := false
+)
+
+lazy val unidocConfig = unidocSettings ++ Seq(
+  apiSubDirName := "latest/api",
+  // sbt-site will use the generated documentation
+  addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), apiSubDirName),
+  // projects to include
+  unidocProjectFilter in (ScalaUnidoc, unidoc) := inProjects(core, library),
+  // enable automatic linking to the external Scaladoc of our own managed dependencies
+  autoAPIMappings := true,
+  scalacOptions in (ScalaUnidoc, unidoc) ++= Seq(
+    // we want warnings to be fatal (on broken links for example)
+    "-Xfatal-warnings", 
+    // link to source code, yes that's an euro symbol
+    "-doc-source-url", scmInfo.value.get.browseUrl + "/tree/master€{FILE_PATH}.scala",
+    "-sourcepath", baseDirectory.in(LocalRootProject).value.getAbsolutePath,
+    // generate type hierarchy diagrams, runs graphviz
+    "-diagrams"
+  )
+)
+
+lazy val tutConfig = tutSettings ++ Seq(
+  tutorialSubDirName := "_tut",
+  addMappingsToSiteDir(tut, tutorialSubDirName),
+  tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code")))
+)
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Base Build Settings - Should not need to edit below this line. 
 //
-// Taken from the common keys acrros various Typelevel projects, see e.g. cats
+// Taken from the common keys across various Typelevel projects, see e.g. cats
 
 lazy val noPublishSettings = Seq(
   publish := (),
