@@ -5,7 +5,6 @@ import scala.collection.{Set => ScalaSet}
 import scala.collection.mutable.{Set => ScalaMutableSet}
 import scala.reflect.ClassTag
 
-import spire.algebra.Order
 import spire.std.any._
 
 import org.scalatest.Suites

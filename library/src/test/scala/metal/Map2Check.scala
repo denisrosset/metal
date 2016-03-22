@@ -5,11 +5,10 @@ import scala.collection.{Map => ScalaMap}
 import scala.collection.mutable.{Map => ScalaMutableMap}
 import scala.reflect.ClassTag
 
-import spire.std.any._
 import spire.util.Opt
 
 import org.scalatest.Suites
-import org.scalacheck.{Arbitrary, Gen}
+import org.scalacheck.Arbitrary
 
 import metal.syntax._
 
