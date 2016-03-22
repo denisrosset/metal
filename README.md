@@ -38,9 +38,9 @@ Metal is composed of two packages:
   inherited by containers to provide capabilities, and macro implementations of
   the standard collection methods;
 - `library` provides implementations of standard data structures, with
-  `library.generic` providing base types such as `Set`, `Map`, `Map2`, `Buffer`,
-  mutable variants in `library.mutable` with corresponding immutable variants
-  in `library.immutable`.
+  `generic` providing base types such as `Set`, `Map`, `Map2`, `Buffer`,
+  mutable variants in `mutable` with corresponding immutable variants
+  in `immutable`.
   
 We currently have a dependency on Spire for two reasons:
 
