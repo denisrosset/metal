@@ -56,6 +56,44 @@ lazy val coreSettings = Seq(
   buildInfoPackage := "metal"
 )
 
+lazy val publishSettings = Seq(
+  homepage := None, // Some(url("http://scala-metal.org")),
+  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+  bintrayRepository := "maven",
+  publishArtifact in Test := false
+)
+
+lazy val commonJvmSettings = Seq(
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
+) ++ selectiveOptimize
+  // -optimize has no effect in scala-js other than slowing down the build
+
+// do not optimize on Scala 2.10 because of optimizer bug, see SI-3882
+lazy val selectiveOptimize = 
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 10)) =>
+        Seq()
+      case Some((2, n)) if n >= 11 =>
+        Seq("-optimize")
+    }
+  }
+
+lazy val scalaTestSettings = Seq(
+  libraryDependencies += "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
+)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Base Build Settings - Should not need to edit below this line. 
+//
+// Taken from the common keys acrros various Typelevel projects, see e.g. cats
+
+lazy val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+
 lazy val crossVersionSharedSources: Seq[Setting[_]] =
   Seq(Compile, Test).map { sc =>
     (unmanagedSourceDirectories in sc) ++= {
@@ -64,19 +102,6 @@ lazy val crossVersionSharedSources: Seq[Setting[_]] =
       }
     }
   }
-
-lazy val publishSettings = Seq(
-  homepage := None, // Some(url("http://scala-metal.org")),
-  licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
-  bintrayRepository := "maven",
-  publishArtifact in Test := false
-)
-
-lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
-  publishArtifact := false
-)
 
 lazy val commonScalacOptions = Seq(
   "-deprecation",
@@ -97,35 +122,6 @@ lazy val commonScalacOptions = Seq(
   "-Xfuture"
 )
 
-lazy val commonJvmSettings = Seq(
-  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
-) ++ selectiveOptimize
-  // -optimize has no effect in scala-js other than slowing down the build
-
-// do not optimize on Scala 2.10 because of optimizer bugs
-lazy val selectiveOptimize = 
-  scalacOptions ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 10)) =>
-        Seq()
-      case Some((2, n)) if n >= 11 =>
-        Seq("-optimize")
-    }
-  }
-
-lazy val warnUnusedImport = Seq(
-  scalacOptions ++= {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 10)) =>
-        Seq()
-      case Some((2, n)) if n >= 11 =>
-        Seq("-Ywarn-unused-import")
-    }
-  },
-  scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
-  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
-)
-
 lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
   libraryDependencies ++= {
@@ -142,6 +138,15 @@ lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
   }
 )
 
-lazy val scalaTestSettings = Seq(
-  libraryDependencies += "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
+lazy val warnUnusedImport = Seq(
+  scalacOptions ++= {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, 10)) =>
+        Seq()
+      case Some((2, n)) if n >= 11 =>
+        Seq("-Ywarn-unused-import")
+    }
+  },
+  scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
+  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
 )
