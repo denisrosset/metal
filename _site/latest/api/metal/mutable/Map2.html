@@ -1,0 +1,1200 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>Map2 - metal.mutable.Map2</title>
+          <meta name="description" content="Map2 - metal.mutable.Map2" />
+          <meta name="keywords" content="Map2 metal.mutable.Map2" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+      <script type="text/javascript" src="../../lib/modernizr.custom.js"></script><script type="text/javascript" src="../../lib/diagrams.js" id="diagrams-js"></script>
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../index.html';
+            var hash = 'metal.mutable.Map2';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Trait" src="../../lib/trait_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="metal">metal</a>.<a href="package.html" class="extype" name="metal.mutable">mutable</a></p>
+        <h1>Map2</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="metal.mutable">package mutable</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Map2</span><span class="tparams">[<span name="K">K</span>, <span name="V1">V1</span>, <span name="V2">V2</span>]</span><span class="result"> extends <a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">generic.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>] with <a href="Collection.html" class="extype" name="metal.mutable.Collection">Collection</a> with <a href="../Removable.html" class="extype" name="metal.Removable">Removable</a> with <a href="../AddKeys.html" class="extype" name="metal.AddKeys">AddKeys</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>] with <a href="../Updatable1.html" class="extype" name="metal.Updatable1">Updatable1</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>] with <a href="../Updatable2.html" class="extype" name="metal.Updatable2">Updatable2</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>]</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><dl class="attributes block"> <dt>Source</dt><dd><a href="https://github.com/denisrosset/metal/tree/master/library/src/main/scala/metal/mutable/Map2.scala" target="_blank">Map2.scala</a></dd></dl><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="../Updatable2.html" class="extype" name="metal.Updatable2">Updatable2</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>], <a href="../Updatable1.html" class="extype" name="metal.Updatable1">Updatable1</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>], <a href="../AddKeys.html" class="extype" name="metal.AddKeys">AddKeys</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>], <a href="../Removable.html" class="extype" name="metal.Removable">Removable</a>, <a href="Collection.html" class="extype" name="metal.mutable.Collection">Collection</a>, <a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">generic.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>], <a href="../NElements3.html" class="extype" name="metal.NElements3">NElements3</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>], <a href="../Elements3.html" class="extype" name="metal.Elements3">Elements3</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>], <a href="../Elements2.html" class="extype" name="metal.Elements2">Elements2</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>], <a href="../Elements1.html" class="extype" name="metal.Elements1">Elements1</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>], <a href="../Values2.html" class="extype" name="metal.Values2">Values2</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>], <a href="../Values1.html" class="extype" name="metal.Values1">Values1</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>], <a href="../Searchable.html" class="extype" name="metal.Searchable">Searchable</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>], <a href="../Keys.html" class="extype" name="metal.Keys">Keys</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>], <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a>, <a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">generic.Collection</a>, <a href="../Enumerable.html" class="extype" name="metal.Enumerable">Enumerable</a>, <a href="../Nextable.html" class="extype" name="metal.Nextable">Nextable</a>, <a href="../Pointable.html" class="extype" name="metal.Pointable">Pointable</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div><div class="toggleContainer block">
+            <span class="toggle">Known Subclasses</span>
+            <div class="subClasses hiddenContent"><a href="HashMap2.html" class="extype" name="metal.mutable.HashMap2">HashMap2</a></div>
+          </div><div class="toggleContainer block diagram-container" id="inheritance-diagram-container">
+                <span class="toggle diagram-link">Type Hierarchy</span>
+                <div class="diagram" id="inheritance-diagram"><svg class="class-diagram" id="graph1" viewBox="0.00 0.00 749.50 155.00" height="155pt" width="750pt" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg"><g transform="scale(1 1) rotate(0) translate(4 151)" class="graph" id="graph0"><polygon points="-4,4 -4,-151 745.5,-151 745.5,4 -4,4" stroke="none" fill="white"></polygon><g class="cluster" id="clust1"></g><g class="cluster" id="clust2"></g><!-- node0 --><g class="node this trait" id="graph1_0"><g id="a_this trait|graph1_0"><a xlink:title="metal.mutable.Map2 (this trait)" xlink:href="#inheritance-diagram"><polygon points="436.5,-86 319.5,-86 319.5,-61 436.5,-61 436.5,-86" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../lib/trait_diagram.png" y="-80.5" x="330" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-70.5" x="351" text-anchor="start">Map2[K, V1, V2]</text></a></g></g><!-- node1 --><g class="node class" id="graph1_1"><g id="a_class|graph1_1"><a xlink:title="metal.mutable.HashMap2" xlink:href="HashMap2.html#inheritance-diagram"><polygon points="448,-25 308,-25 308,-0 448,-0 448,-25" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../lib/class_diagram.png" y="-19.5" x="318" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-9.5" x="339" text-anchor="start">HashMap2[K, V1, V2]</text></a></g></g><!-- node0&#45;&gt;node1 --><g class="edge inheritance" id="graph1_0_1"><g id="a_inheritance|graph1_0_1"><a xlink:title="HashMap2[K, V1, V2] is a subtype of Map2[K, V1, V2]"><path d="M378,-55.6874C378,-45.9173 378,-33.8534 378,-25.1323" stroke="#d4d4d4" fill="none"></path><polygon points="376.25,-55.8435 378,-60.8435 379.75,-55.8435 376.25,-55.8435" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node2 --><g class="node class" id="graph1_2"><g id="a_class|graph1_2"><a xlink:title="metal.generic.Map2" xlink:href="../generic/Map2.html#inheritance-diagram"><polygon points="152,-147 0,-147 0,-122 152,-122 152,-147" stroke="#115f3b" fill="#0a955b"></polygon><image xlink:href="../../lib/class_diagram.png" y="-141.5" x="10" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.5" x="31" text-anchor="start">generic.Map2[K, V1, V2]</text></a></g></g><!-- node2&#45;&gt;node0 --><g class="edge inheritance" id="graph1_2_0"><g id="a_inheritance|graph1_2_0"><a xlink:title="Map2[K, V1, V2] is a subtype of generic.Map2[K, V1, V2]"><path d="M140.013,-120.994C193.098,-110.623 267.949,-96 319.46,-85.9366" stroke="#d4d4d4" fill="none"></path><polygon points="139.517,-119.308 134.946,-121.984 140.188,-122.743 139.517,-119.308" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node3 --><g class="node trait" id="graph1_3"><g id="a_trait|graph1_3"><a xlink:title="metal.mutable.Collection" xlink:href="Collection.html#inheritance-diagram"><polygon points="257.5,-147 170.5,-147 170.5,-122 257.5,-122 257.5,-147" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../lib/trait_diagram.png" y="-141.5" x="181" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.5" x="202" text-anchor="start">Collection</text></a></g></g><!-- node3&#45;&gt;node0 --><g class="edge inheritance" id="graph1_3_0"><g id="a_inheritance|graph1_3_0"><a xlink:title="Map2[K, V1, V2] is a subtype of Collection"><path d="M250.851,-120.243C279.38,-109.979 318.504,-95.904 345.791,-86.0875" stroke="#d4d4d4" fill="none"></path><polygon points="250.123,-118.645 246.01,-121.984 251.307,-121.938 250.123,-118.645" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node4 --><g class="node trait" id="graph1_4"><g id="a_trait|graph1_4"><a xlink:title="metal.Removable" xlink:href="../Removable.html#inheritance-diagram"><polygon points="368,-147 276,-147 276,-122 368,-122 368,-147" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../lib/trait_diagram.png" y="-141.5" x="286" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.5" x="307" text-anchor="start">Removable</text></a></g></g><!-- node4&#45;&gt;node0 --><g class="edge inheritance" id="graph1_4_0"><g id="a_inheritance|graph1_4_0"><a xlink:title="Map2[K, V1, V2] is a subtype of Removable"><path d="M336.684,-118.029C346.164,-108.041 358.298,-95.2572 366.959,-86.1323" stroke="#d4d4d4" fill="none"></path><polygon points="335.237,-117.012 333.064,-121.843 337.775,-119.422 335.237,-117.012" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node5 --><g class="node trait" id="graph1_5"><g id="a_trait|graph1_5"><a xlink:title="metal.AddKeys" xlink:href="../AddKeys.html#inheritance-diagram"><polygon points="483.5,-147 386.5,-147 386.5,-122 483.5,-122 483.5,-147" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../lib/trait_diagram.png" y="-141.5" x="397" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.5" x="418" text-anchor="start">AddKeys[K]</text></a></g></g><!-- node5&#45;&gt;node0 --><g class="edge inheritance" id="graph1_5_0"><g id="a_inheritance|graph1_5_0"><a xlink:title="Map2[K, V1, V2] is a subtype of AddKeys[K]"><path d="M420.054,-118.029C410.404,-108.041 398.054,-95.2572 389.238,-86.1323" stroke="#d4d4d4" fill="none"></path><polygon points="419.006,-119.463 423.739,-121.843 421.523,-117.032 419.006,-119.463" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node6 --><g class="node trait" id="graph1_6"><g id="a_trait|graph1_6"><a xlink:title="metal.Updatable1" xlink:href="../Updatable1.html#inheritance-diagram"><polygon points="612.5,-147 501.5,-147 501.5,-122 612.5,-122 612.5,-147" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../lib/trait_diagram.png" y="-141.5" x="512" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.5" x="533" text-anchor="start">Updatable1[V1]</text></a></g></g><!-- node6&#45;&gt;node0 --><g class="edge inheritance" id="graph1_6_0"><g id="a_inheritance|graph1_6_0"><a xlink:title="Map2[K, V1, V2] is a subtype of Updatable1[V1]"><path d="M517.164,-120.37C485.993,-110.095 443.061,-95.9445 413.155,-86.0875" stroke="#d4d4d4" fill="none"></path><polygon points="516.766,-122.081 522.062,-121.984 517.861,-118.757 516.766,-122.081" stroke="#d4d4d4" fill="none"></polygon></a></g></g><!-- node7 --><g class="node trait" id="graph1_7"><g id="a_trait|graph1_7"><a xlink:title="metal.Updatable2" xlink:href="../Updatable2.html#inheritance-diagram"><polygon points="741.5,-147 630.5,-147 630.5,-122 741.5,-122 741.5,-147" stroke="#37657d" fill="#498aad"></polygon><image xlink:href="../../lib/trait_diagram.png" y="-141.5" x="641" preserveAspectRatio="xMinYMin meet" height="15px" width="15px"></image><text fill="#ffffff" font-size="10.00" font-family="Arial" y="-131.5" x="662" text-anchor="start">Updatable2[V2]</text></a></g></g><!-- node7&#45;&gt;node0 --><g class="edge inheritance" id="graph1_7_0"><g id="a_inheritance|graph1_7_0"><a xlink:title="Map2[K, V1, V2] is a subtype of Updatable2[V2]"><path d="M625.006,-121.816C570.268,-111.331 490.465,-96.0436 436.504,-85.707" stroke="#d4d4d4" fill="none"></path><polygon points="624.984,-123.594 630.224,-122.816 625.642,-120.156 624.984,-123.594" stroke="#d4d4d4" fill="none"></polygon></a></g></g></g></svg></div>
+              </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="metal.mutable.Map2"><span>Map2</span></li><li class="in" name="metal.Updatable2"><span>Updatable2</span></li><li class="in" name="metal.Updatable1"><span>Updatable1</span></li><li class="in" name="metal.AddKeys"><span>AddKeys</span></li><li class="in" name="metal.Removable"><span>Removable</span></li><li class="in" name="metal.mutable.Collection"><span>Collection</span></li><li class="in" name="metal.generic.Map2"><span>Map2</span></li><li class="in" name="metal.NElements3"><span>NElements3</span></li><li class="in" name="metal.Elements3"><span>Elements3</span></li><li class="in" name="metal.Elements2"><span>Elements2</span></li><li class="in" name="metal.Elements1"><span>Elements1</span></li><li class="in" name="metal.Values2"><span>Values2</span></li><li class="in" name="metal.Values1"><span>Values1</span></li><li class="in" name="metal.Searchable"><span>Searchable</span></li><li class="in" name="metal.Keys"><span>Keys</span></li><li class="in" name="metal.generic.Defaults"><span>Defaults</span></li><li class="in" name="metal.generic.Collection"><span>Collection</span></li><li class="in" name="metal.Enumerable"><span>Enumerable</span></li><li class="in" name="metal.Nextable"><span>Nextable</span></li><li class="in" name="metal.Pointable"><span>Pointable</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="metal.generic.Map2.Generic" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Generic=metal.generic.Map2[K,V1,V2]"></a>
+      <a id="Generic:Generic"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Generic</span><span class="result"> = <a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">generic.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@Generic=metal.generic.Map2[K,V1,V2]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Generic type of this collection (e.g.</p><div class="fullcomment"><div class="comment cmt"><p>Generic type of this collection (e.g. Map, Map2, Set).</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a> → <a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">Collection</a></dd></dl></div>
+    </li><li name="metal.generic.Map2.Immutable" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="Immutable&lt;:metal.immutable.Map2[K,V1,V2]"></a>
+      <a id="Immutable:Immutable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Immutable</span><span class="result"> &lt;: <a href="../immutable/Map2.html" class="extype" name="metal.immutable.Map2">immutable.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@Immutable&lt;:metal.immutable.Map2[K,V1,V2]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Immutable variant of this collection.</p><div class="fullcomment"><div class="comment cmt"><p>Immutable variant of this collection.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a> → <a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">Collection</a></dd></dl></div>
+    </li><li name="metal.generic.Map2.Mutable" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="Mutable&lt;:metal.mutable.Map2[K,V1,V2]"></a>
+      <a id="Mutable:Mutable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">type</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Mutable</span><span class="result"> &lt;: <a href="" class="extype" name="metal.mutable.Map2">Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@Mutable&lt;:metal.mutable.Map2[K,V1,V2]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Mutable variant of this collection.</p><div class="fullcomment"><div class="comment cmt"><p>Mutable variant of this collection.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a> → <a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">Collection</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div id="values" class="values members">
+              <h3>Abstract Value Members</h3>
+              <ol><li name="metal.generic.Map2#K" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="K:metal.generic.Methods[K]"></a>
+      <a id="K:Methods[K]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">K</span><span class="result">: <a href="../generic/Methods.html" class="extype" name="metal.generic.Methods">Methods</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@K:metal.generic.Methods[K]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#V1" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="V1:metal.generic.Methods[V1]"></a>
+      <a id="V1:Methods[V1]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">V1</span><span class="result">: <a href="../generic/Methods.html" class="extype" name="metal.generic.Methods">Methods</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@V1:metal.generic.Methods[V1]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#V2" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="V2:metal.generic.Methods[V2]"></a>
+      <a id="V2:Methods[V2]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">V2</span><span class="result">: <a href="../generic/Methods.html" class="extype" name="metal.generic.Methods">Methods</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@V2:metal.generic.Methods[V2]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a></dd></dl></div>
+    </li><li name="metal.Removable#clear" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="clear():Unit"></a>
+      <a id="clear():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clear</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@clear():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Removable.html" class="extype" name="metal.Removable">Removable</a></dd></dl></div>
+    </li><li name="metal.Enumerable#isEmpty" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="isEmpty:Boolean"></a>
+      <a id="isEmpty:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isEmpty</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@isEmpty:Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns true if the container is empty, false otherwise.</p><div class="fullcomment"><div class="comment cmt"><p>Returns true if the container is empty, false otherwise.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Enumerable.html" class="extype" name="metal.Enumerable">Enumerable</a></dd></dl></div>
+    </li><li name="metal.Enumerable#longSize" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="longSize:Long"></a>
+      <a id="longSize:Long"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">longSize</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@longSize:Long" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Return the size of this container; we use <code>Long</code> so that big containers
+can be manipulated.</p><div class="fullcomment"><div class="comment cmt"><p>Return the size of this container; we use <code>Long</code> so that big containers
+can be manipulated.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Enumerable.html" class="extype" name="metal.Enumerable">Enumerable</a></dd></dl></div>
+    </li><li name="metal.generic.Collection#mutableCopy" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="mutableCopy:Collection.this.Mutable"></a>
+      <a id="mutableCopy:Mutable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">mutableCopy</span><span class="result">: <a href="#Mutable&lt;:metal.mutable.Map2[K,V1,V2]" class="extmbr" name="metal.mutable.Map2.Mutable">Mutable</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@mutableCopy:Collection.this.Mutable" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a mutable copy of this collection.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a mutable copy of this collection.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">Collection</a></dd></dl></div>
+    </li><li name="metal.Enumerable#nonEmpty" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="nonEmpty:Boolean"></a>
+      <a id="nonEmpty:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">nonEmpty</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@nonEmpty:Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns true if the container is non-empty, false otherwise.</p><div class="fullcomment"><div class="comment cmt"><p>Returns true if the container is non-empty, false otherwise.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Enumerable.html" class="extype" name="metal.Enumerable">Enumerable</a></dd></dl></div>
+    </li><li name="metal.Enumerable#ptr" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptr:metal.Ptr[Enumerable.this.type]"></a>
+      <a id="ptr:Ptr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptr</span><span class="result">: <a href="../Ptr.html" class="extype" name="metal.Ptr">Ptr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptr:metal.Ptr[Enumerable.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a pointer to the start of this container instance.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a pointer to the start of this container instance.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Enumerable.html" class="extype" name="metal.Enumerable">Enumerable</a></dd></dl></div>
+    </li><li name="metal.AddKeys#ptrAddKey" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrAddKey[L](key:L):metal.VPtr[AddKeys.this.type]"></a>
+      <a id="ptrAddKey[L](L):VPtr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrAddKey</span><span class="tparams">[<span name="L">L</span>]</span><span class="params">(<span name="key">key: <span class="extype" name="metal.AddKeys.ptrAddKey.L">L</span></span>)</span><span class="result">: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrAddKey[L](key:L):metal.VPtr[AddKeys.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Adds the given key to the container.</p><div class="fullcomment"><div class="comment cmt"><p>Adds the given key to the container. If the key is already present, returns the pointer
+associated with the existing key.
+If the key is new, any eventual associated values are undefined (they should immediately
+be updated).
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../AddKeys.html" class="extype" name="metal.AddKeys">AddKeys</a></dd></dl></div>
+    </li><li name="metal.Elements1#ptrElement1" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrElement1[F](ptr:metal.VPtr[Elements1.this.type]):F"></a>
+      <a id="ptrElement1[F](VPtr[Map2.this.type]):F"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrElement1</span><span class="tparams">[<span name="F">F</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="metal.Elements1.ptrElement1.F">F</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrElement1[F](ptr:metal.VPtr[Elements1.this.type]):F" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Elements1.html" class="extype" name="metal.Elements1">Elements1</a></dd></dl></div>
+    </li><li name="metal.Elements2#ptrElement2" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrElement2[F](ptr:metal.VPtr[Elements2.this.type]):F"></a>
+      <a id="ptrElement2[F](VPtr[Map2.this.type]):F"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrElement2</span><span class="tparams">[<span name="F">F</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="metal.Elements2.ptrElement2.F">F</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrElement2[F](ptr:metal.VPtr[Elements2.this.type]):F" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Elements2.html" class="extype" name="metal.Elements2">Elements2</a></dd></dl></div>
+    </li><li name="metal.Elements3#ptrElement3" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrElement3[F](ptr:metal.VPtr[Elements3.this.type]):F"></a>
+      <a id="ptrElement3[F](VPtr[Map2.this.type]):F"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrElement3</span><span class="tparams">[<span name="F">F</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="metal.Elements3.ptrElement3.F">F</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrElement3[F](ptr:metal.VPtr[Elements3.this.type]):F" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Elements3.html" class="extype" name="metal.Elements3">Elements3</a></dd></dl></div>
+    </li><li name="metal.Searchable#ptrFind" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrFind[L](key:L):metal.Ptr[Searchable.this.type]"></a>
+      <a id="ptrFind[L](L):Ptr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrFind</span><span class="tparams">[<span name="L">L</span>]</span><span class="params">(<span name="key">key: <span class="extype" name="metal.Searchable.ptrFind.L">L</span></span>)</span><span class="result">: <a href="../Ptr.html" class="extype" name="metal.Ptr">Ptr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrFind[L](key:L):metal.Ptr[Searchable.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a pointer to the given item, if it exists, or null.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a pointer to the given item, if it exists, or null.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Searchable.html" class="extype" name="metal.Searchable">Searchable</a></dd></dl></div>
+    </li><li name="metal.Keys#ptrKey" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrKey[L](ptr:metal.VPtr[Keys.this.type]):L"></a>
+      <a id="ptrKey[L](VPtr[Map2.this.type]):L"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrKey</span><span class="tparams">[<span name="L">L</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="metal.Keys.ptrKey.L">L</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrKey[L](ptr:metal.VPtr[Keys.this.type]):L" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the key pointed by <code>ptr</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the key pointed by <code>ptr</code>.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Keys.html" class="extype" name="metal.Keys">Keys</a></dd></dl></div>
+    </li><li name="metal.Nextable#ptrNext" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrNext(ptr:metal.VPtr[Nextable.this.type]):metal.Ptr[Nextable.this.type]"></a>
+      <a id="ptrNext(VPtr[Map2.this.type]):Ptr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrNext</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <a href="../Ptr.html" class="extype" name="metal.Ptr">Ptr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrNext(ptr:metal.VPtr[Nextable.this.type]):metal.Ptr[Nextable.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a pointer to the next element if available,
+or returns a null pointer.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a pointer to the next element if available,
+or returns a null pointer.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Nextable.html" class="extype" name="metal.Nextable">Nextable</a></dd></dl></div>
+    </li><li name="metal.Removable#ptrRemove" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrRemove(ptr:metal.VPtr[Removable.this.type]):Unit"></a>
+      <a id="ptrRemove(VPtr[Map2.this.type]):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrRemove</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrRemove(ptr:metal.VPtr[Removable.this.type]):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Removes the pointed element.</p><div class="fullcomment"><div class="comment cmt"><p>Removes the pointed element.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Removable.html" class="extype" name="metal.Removable">Removable</a></dd></dl></div>
+    </li><li name="metal.Removable#ptrRemoveAndAdvance" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrRemoveAndAdvance(ptr:metal.VPtr[Removable.this.type]):metal.Ptr[Removable.this.type]"></a>
+      <a id="ptrRemoveAndAdvance(VPtr[Map2.this.type]):Ptr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrRemoveAndAdvance</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <a href="../Ptr.html" class="extype" name="metal.Ptr">Ptr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrRemoveAndAdvance(ptr:metal.VPtr[Removable.this.type]):metal.Ptr[Removable.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Removes the pointed element, and returns the pointer
+to the next element, or null if at the end.</p><div class="fullcomment"><div class="comment cmt"><p>Removes the pointed element, and returns the pointer
+to the next element, or null if at the end.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Removable.html" class="extype" name="metal.Removable">Removable</a></dd></dl></div>
+    </li><li name="metal.Updatable1#ptrUpdate1" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrUpdate1[W1](ptr:metal.VPtr[Updatable1.this.type],v:W1):Unit"></a>
+      <a id="ptrUpdate1[W1](VPtr[Map2.this.type],W1):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrUpdate1</span><span class="tparams">[<span name="W1">W1</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>, <span name="v">v: <span class="extype" name="metal.Updatable1.ptrUpdate1.W1">W1</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrUpdate1[W1](ptr:metal.VPtr[Updatable1.this.type],v:W1):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Updatable1.html" class="extype" name="metal.Updatable1">Updatable1</a></dd></dl></div>
+    </li><li name="metal.Updatable2#ptrUpdate2" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrUpdate2[W2](ptr:metal.VPtr[Updatable2.this.type],v:W2):Unit"></a>
+      <a id="ptrUpdate2[W2](VPtr[Map2.this.type],W2):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrUpdate2</span><span class="tparams">[<span name="W2">W2</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>, <span name="v">v: <span class="extype" name="metal.Updatable2.ptrUpdate2.W2">W2</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrUpdate2[W2](ptr:metal.VPtr[Updatable2.this.type],v:W2):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Updatable2.html" class="extype" name="metal.Updatable2">Updatable2</a></dd></dl></div>
+    </li><li name="metal.Values1#ptrValue1" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrValue1[W1](ptr:metal.VPtr[Values1.this.type]):W1"></a>
+      <a id="ptrValue1[W1](VPtr[Map2.this.type]):W1"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrValue1</span><span class="tparams">[<span name="W1">W1</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="metal.Values1.ptrValue1.W1">W1</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrValue1[W1](ptr:metal.VPtr[Values1.this.type]):W1" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the value of the object pointed by the pointer.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the value of the object pointed by the pointer.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Values1.html" class="extype" name="metal.Values1">Values1</a></dd></dl></div>
+    </li><li name="metal.Values2#ptrValue2" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="ptrValue2[W2](ptr:metal.VPtr[Values2.this.type]):W2"></a>
+      <a id="ptrValue2[W2](VPtr[Map2.this.type]):W2"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrValue2</span><span class="tparams">[<span name="W2">W2</span>]</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="metal.Values2.ptrValue2.W2">W2</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrValue2[W2](ptr:metal.VPtr[Values2.this.type]):W2" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the value of the object pointed by the pointer.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the value of the object pointed by the pointer.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Values2.html" class="extype" name="metal.Values2">Values2</a></dd></dl></div>
+    </li><li name="metal.mutable.Collection#reset" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="reset():Unit"></a>
+      <a id="reset():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">reset</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@reset():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Removes all elements from this collection, keeping the all allocated arrays.</p><div class="fullcomment"><div class="comment cmt"><p>Removes all elements from this collection, keeping the all allocated arrays.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Collection.html" class="extype" name="metal.mutable.Collection">Collection</a></dd></dl></div>
+    </li><li name="metal.mutable.Collection#result" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="result():Collection.this.Immutable"></a>
+      <a id="result():Immutable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">result</span><span class="params">()</span><span class="result">: <a href="#Immutable&lt;:metal.immutable.Map2[K,V1,V2]" class="extmbr" name="metal.mutable.Map2.Immutable">Immutable</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@result():Collection.this.Immutable" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns an immutable version of this mutable collection.</p><div class="fullcomment"><div class="comment cmt"><p>Returns an immutable version of this mutable collection. The mutable instance is cleared.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Collection.html" class="extype" name="metal.mutable.Collection">Collection</a></dd></dl></div>
+    </li><li name="metal.generic.Collection#toImmutable" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="toImmutable:Collection.this.Immutable"></a>
+      <a id="toImmutable:Immutable"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">abstract </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toImmutable</span><span class="result">: <a href="#Immutable&lt;:metal.immutable.Map2[K,V1,V2]" class="extmbr" name="metal.mutable.Map2.Immutable">Immutable</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@toImmutable:Collection.this.Immutable" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns this collection if already immutable, or an immutable copy.</p><div class="fullcomment"><div class="comment cmt"><p>Returns this collection if already immutable, or an immutable copy.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">Collection</a></dd></dl></div>
+    </li></ol>
+            </div>
+
+        <div id="values" class="values members">
+              <h3>Concrete Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@##():Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@clone():Object" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="metal.generic.Defaults#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(any:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="any">any: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@equals(any:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Checks if two collections are equal.</p><div class="fullcomment"><div class="comment cmt"><p>Checks if two collections are equal.</p><p>Equal means the collections have the same generic type (which is checked
+by the method <code>ptrCastT</code>) and the same contents.</p><p>Comparing metal collections with any other collection types (including those from Scala)
+will return false.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="metal.generic.Defaults#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Hashes the contents of the collection to an Int value.</p><div class="fullcomment"><div class="comment cmt"><p>Hashes the contents of the collection to an Int value.</p><p>By xor'ing all the collection's element hashes together, we can be sure
+that collections with the same contents will have the same hashCode
+regardless of the order those items appear.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@notify():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="metal.generic.Defaults#priorityEquals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="priorityEquals:Boolean"></a>
+      <a id="priorityEquals:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">priorityEquals</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@priorityEquals:Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Flag indicating that the <a href="../generic/Defaults.html#equals(any:Any):Boolean" class="extmbr" name="metal.generic.Defaults#equals">equals</a> methods of this object should be called in priority.</p><div class="fullcomment"><div class="comment cmt"><p>Flag indicating that the <a href="../generic/Defaults.html#equals(any:Any):Boolean" class="extmbr" name="metal.generic.Defaults#equals">equals</a> methods of this object should be called in priority.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a></dd></dl></div>
+    </li><li name="metal.AddKeys#ptrAddKeyFromArray" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrAddKeyFromArray(array:Array[_],i:Int):metal.VPtr[AddKeys.this.type]"></a>
+      <a id="ptrAddKeyFromArray(Array[_],Int):VPtr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrAddKeyFromArray</span><span class="params">(<span name="array">array: <span class="extype" name="scala.Array">Array</span>[_]</span>, <span name="i">i: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrAddKeyFromArray(array:Array[_],i:Int):metal.VPtr[AddKeys.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Adds the given key to the container, similarly to <code>ptrAddKey</code>, but takes the key
+from the given array, which should be of type <code>Array[K]</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Adds the given key to the container, similarly to <code>ptrAddKey</code>, but takes the key
+from the given array, which should be of type <code>Array[K]</code>. The array type is however
+recovered at runtime to avoid boxing.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../AddKeys.html" class="extype" name="metal.AddKeys">AddKeys</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#ptrCastT" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrCastT(any:Any):spire.util.Opt[metal.generic.Map2[K,V1,V2]]"></a>
+      <a id="ptrCastT(Any):Opt[generic.Map2[K,V1,V2]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrCastT</span><span class="params">(<span name="any">any: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="spire.util.Opt">Opt</span>[<a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">generic.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrCastT(any:Any):spire.util.Opt[metal.generic.Map2[K,V1,V2]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Tests if the parameter has the same generic type, and returns an optional cast.</p><div class="fullcomment"><div class="comment cmt"><p>Tests if the parameter has the same generic type, and returns an optional cast.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#ptrEquals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrEquals(thisPtr:metal.VPtr[Map2.this.type],that:metal.generic.Map2[K,V1,V2]):Boolean"></a>
+      <a id="ptrEquals(VPtr[Map2.this.type],generic.Map2[K,V1,V2]):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrEquals</span><span class="params">(<span name="thisPtr">thisPtr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>, <span name="that">that: <a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">generic.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]</span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrEquals(thisPtr:metal.VPtr[Map2.this.type],that:metal.generic.Map2[K,V1,V2]):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Checks that the pointed element exists in the other collection and has the same value.</p><div class="fullcomment"><div class="comment cmt"><p>Checks that the pointed element exists in the other collection and has the same value.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a></dd></dl></div>
+    </li><li name="metal.Searchable#ptrFindFromArray" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrFindFromArray(array:Array[_],i:Int):metal.Ptr[Searchable.this.type]"></a>
+      <a id="ptrFindFromArray(Array[_],Int):Ptr[Map2.this.type]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrFindFromArray</span><span class="params">(<span name="array">array: <span class="extype" name="scala.Array">Array</span>[_]</span>, <span name="i">i: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <a href="../Ptr.html" class="extype" name="metal.Ptr">Ptr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrFindFromArray(array:Array[_],i:Int):metal.Ptr[Searchable.this.type]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Searchable.html" class="extype" name="metal.Searchable">Searchable</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#ptrHash" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrHash(ptr:metal.VPtr[Map2.this.type]):Int"></a>
+      <a id="ptrHash(VPtr[Map2.this.type]):Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrHash</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrHash(ptr:metal.VPtr[Map2.this.type]):Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the <a href="../generic/Map2.html#hashCode():Int" class="extmbr" name="metal.generic.Map2#hashCode">hashCode</a> of the pointed element.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the <a href="../generic/Map2.html#hashCode():Int" class="extmbr" name="metal.generic.Map2#hashCode">hashCode</a> of the pointed element.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#ptrToString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrToString(ptr:metal.VPtr[Map2.this.type]):String"></a>
+      <a id="ptrToString(VPtr[Map2.this.type]):String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrToString</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>)</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrToString(ptr:metal.VPtr[Map2.this.type]):String" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the <a href="../generic/Map2.html#toString():String" class="extmbr" name="metal.generic.Map2#toString">toString</a> representation of the pointed element.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the <a href="../generic/Map2.html#toString():String" class="extmbr" name="metal.generic.Map2#toString">toString</a> representation of the pointed element.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a></dd></dl></div>
+    </li><li name="metal.Updatable1#ptrUpdate1FromArray" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrUpdate1FromArray(ptr:metal.VPtr[Updatable1.this.type],array:Array[_],i:Int):Unit"></a>
+      <a id="ptrUpdate1FromArray(VPtr[Map2.this.type],Array[_],Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrUpdate1FromArray</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>, <span name="array">array: <span class="extype" name="scala.Array">Array</span>[_]</span>, <span name="i">i: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrUpdate1FromArray(ptr:metal.VPtr[Updatable1.this.type],array:Array[_],i:Int):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Updatable1.html" class="extype" name="metal.Updatable1">Updatable1</a></dd></dl></div>
+    </li><li name="metal.Updatable2#ptrUpdate2FromArray" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ptrUpdate2FromArray(ptr:metal.VPtr[Updatable2.this.type],array:Array[_],i:Int):Unit"></a>
+      <a id="ptrUpdate2FromArray(VPtr[Map2.this.type],Array[_],Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ptrUpdate2FromArray</span><span class="params">(<span name="ptr">ptr: <a href="../VPtr.html" class="extype" name="metal.VPtr">VPtr</a>[<a href="" class="extype" name="metal.mutable.Map2">Map2</a>.this.type]</span>, <span name="array">array: <span class="extype" name="scala.Array">Array</span>[_]</span>, <span name="i">i: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@ptrUpdate2FromArray(ptr:metal.VPtr[Updatable2.this.type],array:Array[_],i:Int):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../Updatable2.html" class="extype" name="metal.Updatable2">Updatable2</a></dd></dl></div>
+    </li><li name="metal.generic.Map2#stringPrefix" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stringPrefix:String"></a>
+      <a id="stringPrefix:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stringPrefix</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@stringPrefix:String" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">String prefix used in the <code><a href="../generic/Map2.html#toString():String" class="extmbr" name="metal.generic.Map2#toString">toString</a></code> method.</p><div class="fullcomment"><div class="comment cmt"><p>String prefix used in the <code><a href="../generic/Map2.html#toString():String" class="extmbr" name="metal.generic.Map2#toString">toString</a></code> method.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">Map2</a> → <a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">Collection</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="metal.generic.Defaults#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@toString():String" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@wait():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#metal.mutable.Map2@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="metal.Updatable2">
+              <h3>Inherited from <a href="../Updatable2.html" class="extype" name="metal.Updatable2">Updatable2</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>]</h3>
+            </div><div class="parent" name="metal.Updatable1">
+              <h3>Inherited from <a href="../Updatable1.html" class="extype" name="metal.Updatable1">Updatable1</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>]</h3>
+            </div><div class="parent" name="metal.AddKeys">
+              <h3>Inherited from <a href="../AddKeys.html" class="extype" name="metal.AddKeys">AddKeys</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>]</h3>
+            </div><div class="parent" name="metal.Removable">
+              <h3>Inherited from <a href="../Removable.html" class="extype" name="metal.Removable">Removable</a></h3>
+            </div><div class="parent" name="metal.mutable.Collection">
+              <h3>Inherited from <a href="Collection.html" class="extype" name="metal.mutable.Collection">Collection</a></h3>
+            </div><div class="parent" name="metal.generic.Map2">
+              <h3>Inherited from <a href="../generic/Map2.html" class="extype" name="metal.generic.Map2">generic.Map2</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]</h3>
+            </div><div class="parent" name="metal.NElements3">
+              <h3>Inherited from <a href="../NElements3.html" class="extype" name="metal.NElements3">NElements3</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>, <span class="extype" name="metal.mutable.Map2.V1">V1</span>, <span class="extype" name="metal.mutable.Map2.V2">V2</span>]</h3>
+            </div><div class="parent" name="metal.Elements3">
+              <h3>Inherited from <a href="../Elements3.html" class="extype" name="metal.Elements3">Elements3</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>]</h3>
+            </div><div class="parent" name="metal.Elements2">
+              <h3>Inherited from <a href="../Elements2.html" class="extype" name="metal.Elements2">Elements2</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>]</h3>
+            </div><div class="parent" name="metal.Elements1">
+              <h3>Inherited from <a href="../Elements1.html" class="extype" name="metal.Elements1">Elements1</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>]</h3>
+            </div><div class="parent" name="metal.Values2">
+              <h3>Inherited from <a href="../Values2.html" class="extype" name="metal.Values2">Values2</a>[<span class="extype" name="metal.mutable.Map2.V2">V2</span>]</h3>
+            </div><div class="parent" name="metal.Values1">
+              <h3>Inherited from <a href="../Values1.html" class="extype" name="metal.Values1">Values1</a>[<span class="extype" name="metal.mutable.Map2.V1">V1</span>]</h3>
+            </div><div class="parent" name="metal.Searchable">
+              <h3>Inherited from <a href="../Searchable.html" class="extype" name="metal.Searchable">Searchable</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>]</h3>
+            </div><div class="parent" name="metal.Keys">
+              <h3>Inherited from <a href="../Keys.html" class="extype" name="metal.Keys">Keys</a>[<span class="extype" name="metal.mutable.Map2.K">K</span>]</h3>
+            </div><div class="parent" name="metal.generic.Defaults">
+              <h3>Inherited from <a href="../generic/Defaults.html" class="extype" name="metal.generic.Defaults">Defaults</a></h3>
+            </div><div class="parent" name="metal.generic.Collection">
+              <h3>Inherited from <a href="../generic/Collection.html" class="extype" name="metal.generic.Collection">generic.Collection</a></h3>
+            </div><div class="parent" name="metal.Enumerable">
+              <h3>Inherited from <a href="../Enumerable.html" class="extype" name="metal.Enumerable">Enumerable</a></h3>
+            </div><div class="parent" name="metal.Nextable">
+              <h3>Inherited from <a href="../Nextable.html" class="extype" name="metal.Nextable">Nextable</a></h3>
+            </div><div class="parent" name="metal.Pointable">
+              <h3>Inherited from <a href="../Pointable.html" class="extype" name="metal.Pointable">Pointable</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
