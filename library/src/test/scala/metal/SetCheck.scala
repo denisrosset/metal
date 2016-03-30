@@ -205,9 +205,9 @@ class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: Methods[Int]) extends
 
   def arbA: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
 
-  type SetA = metal.mutable.BitSet[Int]
+  type SetA = metal.mutable.BitSet
   def collName = "BitSet"
-  def emptySet = metal.mutable.BitSet.empty[Int]
+  def emptySet = metal.mutable.BitSet.empty
   def apply(xs: Int*) = metal.mutable.BitSet(xs: _*)
   def fromArray(xs: Array[Int]) = metal.mutable.BitSet.fromArray(xs)
   def fromIterable(xs: Iterable[Int]) = metal.mutable.BitSet.fromIterable(xs)

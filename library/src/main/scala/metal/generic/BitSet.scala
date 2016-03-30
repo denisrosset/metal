@@ -3,29 +3,23 @@ package generic
 
 import spire.algebra.Order
 
-abstract class BitSet[K] extends SortedSet[K] {
+abstract class BitSet extends SortedSet[Int] {
 
-  implicit def ev: K =:= Int
+  import generic.BitSet.{WordLength, LogWL}
 
-  type Immutable = metal.immutable.BitSet[K]
-  type Mutable = metal.mutable.BitSet[K]
+  type Immutable = metal.immutable.BitSet
+  type Mutable = metal.mutable.BitSet
+
+  def order: Order[Int] = spire.std.int.IntAlgebra
 
   def nWords: Int
-  def word(i: Int): Long
+  def word(i: Int): Long = words(i)
 
-}
+  protected def words: Array[Long]
 
-abstract class BitSetImpl extends BitSet[Int] {
-
-  def words: Array[Long]
-
-  def word(i: Int) = words(i)
-
-  def ev = implicitly[=:=[Int, Int]]
-  def order: Order[Int] = spire.std.int.IntAlgebra
   def K = Methods.Int
 
-  def mutableCopy = new metal.mutable.BitSetImpl(words.clone, nWords)
+  def mutableCopy = new mutable.ResizableBitSet(words.clone, nWords)
 
   override def priorityEquals = true
 
@@ -67,35 +61,43 @@ abstract class BitSetImpl extends BitSet[Int] {
       w += 1
     }
     if (w == nWords) return Ptr.Null(this)
-    val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
+    val index = w * WordLength + java.lang.Long.numberOfTrailingZeros(words(w))
     Ptr(this, index)
   }
 
   def ptrFind[@specialized L](keyL: L): Ptr[this.type] = {
     val key = keyL.asInstanceOf[Int]
-    val w = key >>> 3
-    val bit = key & 0x7
-    val contained = w < nWords && (words(w) & (1 << bit)) != 0
+    val w = key >>> LogWL
+    val contained = (w < nWords) && ((words(w) & (1L << key)) != 0)
     if (contained) Ptr(this, key) else Ptr.Null(this)
   }
 
   def ptrNext(ptr: VPtr[this.type]): Ptr[this.type] = {
-    var w = ptr.raw.toInt >>> 3
-    var bit = (ptr.raw & 0x7).toInt
-    val nextBit = util.nextBitAfter(words(w), bit)
-    if (nextBit >= 0) return Ptr(this, ptr.raw - bit + nextBit)
-    w += 1
-    if (w == nWords) return Ptr.Null(this)
-    while(w < nWords && words(w) == 0L) {
+    val from = ptr.raw.toInt + 1
+    var w = from >>> LogWL
+    if (w >= nWords)
+      return Ptr.Null(this)
+    var word = words(w) & ((-1L) << from)
+    while (true) {
+      if (word != 0)
+        return Ptr(this, (w * WordLength) + java.lang.Long.numberOfTrailingZeros(word))
       w += 1
+      if (w == nWords)
+        return Ptr.Null(this)
+      word = words(w)
     }
-    if (w == nWords) return Ptr.Null(this)
-    val index = w * 8 + java.lang.Long.numberOfTrailingZeros(words(w))
-    Ptr(this, index)
+    return Ptr.Null(this) // unreachable
   }
 
   def ptrKey[@specialized L](ptr: VPtr[this.type]): L = ptr.raw.toInt.asInstanceOf[L]
 
   def ptrElement1[@specialized E1](ptr: VPtr[this.type]): E1 = ptr.raw.toInt.asInstanceOf[E1]
+
+}
+
+object BitSet {
+
+  val LogWL = 6
+  val WordLength = 64
 
 }
