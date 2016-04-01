@@ -4,9 +4,7 @@ package mutable
 import spire.algebra.Order
 import spire.syntax.cfor._
 
-import generic.Methods
-
-final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit val K: Methods[K], val order: Order[K]) extends generic.ArraySortedSet[K] with mutable.SortedSet[K] {
+final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit val K: MetalTag[K], val order: Order[K]) extends generic.ArraySortedSet[K] with mutable.SortedSet[K] {
 
   def toImmutable: Immutable = new metal.immutable.ArraySortedSet(items.clone, longSize) // TODO: trim the array
   def result(): Immutable = {
@@ -68,8 +66,8 @@ object ArraySortedSet extends metal.mutable.SetFactory {
   type Extra[K] = Order[K]
   type S[K] = metal.mutable.ArraySortedSet[K]
 
-  def reservedSize[K:Methods:Order](n: Int): S[K] = {
-    val K = Methods[K]
+  def reservedSize[K:MetalTag:Order](n: Int): S[K] = {
+    val K = MetalTag[K]
     new metal.mutable.ArraySortedSet[K](K.newArray(n), 0L)
   }
 

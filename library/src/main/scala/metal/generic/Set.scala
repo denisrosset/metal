@@ -5,7 +5,7 @@ import spire.util.Opt
 
 abstract class Set[K] extends Defaults with NElements1[K] with Enumerable with Searchable[K] { lhs =>
 
-  implicit def K: Methods[K]
+  implicit def K: MetalTag[K]
 
   type Generic = generic.Set[K]
   type Mutable <: mutable.Set[K]

@@ -5,10 +5,9 @@ import scala.reflect.{classTag, ClassTag}
 import spire.algebra.Order
 import spire.math.QuickSort
 import spire.syntax.cfor._
-import generic.Methods
 import util.Dummy
 
-final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: Methods[V], val ct: ClassTag[V]) extends generic.Buffer[V] with mutable.Collection {
+final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: MetalTag[V], val ct: ClassTag[V]) extends generic.Buffer[V] with mutable.Collection {
 
   @inline final def apply(idx: Int): V = array(idx)
 
@@ -81,11 +80,13 @@ final class Buffer[@specialized V](var array: Array[V], var length: Int)(implici
 
 }
 
-object Buffer {
+object Buffer extends generic.BufferFactory {
 
-  def empty[@specialized V:Methods:ClassTag]: Buffer[V] = new Buffer[V](classTag[V].newArray(16), 0)
+  val startSize = 8
 
-  def apply[@specialized V:Methods:ClassTag](items: V*): Buffer[V] = {
+  def empty[@specialized V:MetalTag:ClassTag]: mutable.Buffer[V] = new mutable.Buffer[V](classTag[V].newArray(startSize), 0)
+
+  def apply[@specialized V:MetalTag:ClassTag](items: V*): mutable.Buffer[V] = {
     val array = classTag[V].newArray(items.size)
     val it = items.iterator
     var i = 0
@@ -96,7 +97,10 @@ object Buffer {
     new Buffer[V](array, array.length)
   }
 
-  def fromIterable[@specialized V:Methods:ClassTag](iterable: Iterable[V]): Buffer[V] = {
+  def fromArray[@specialized V:MetalTag:ClassTag](array: Array[V]): mutable.Buffer[V] =
+    new mutable.Buffer[V](array.clone, array.length)
+
+  def fromIterable[@specialized V:MetalTag:ClassTag](iterable: Iterable[V]): mutable.Buffer[V] = {
     val array = classTag[V].newArray(iterable.size)
     val it = iterable.iterator
     var i = 0

@@ -11,9 +11,9 @@ abstract class Map2[K, V1, V2]
     with Values2[V2]
     with NElements3[K, V1, V2] { lhs =>
 
-  implicit def K: Methods[K]
-  implicit def V1: Methods[V1]
-  implicit def V2: Methods[V2]
+  implicit def K: MetalTag[K]
+  implicit def V1: MetalTag[V1]
+  implicit def V2: MetalTag[V2]
 
   type Generic = generic.Map2[K, V1, V2]
   type Mutable <: mutable.Map2[K, V1, V2]

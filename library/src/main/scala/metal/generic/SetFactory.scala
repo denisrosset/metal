@@ -7,12 +7,12 @@ trait SetFactory {
 
   type S[K] <: generic.Set[K]
 
-  def empty[K:Methods:Extra]: S[K]
+  def empty[K:MetalTag:Extra]: S[K]
 
-  def apply[K:Methods:Extra](items: K*): S[K]
+  def apply[K:MetalTag:Extra](items: K*): S[K]
 
-  def fromArray[K:Methods:Extra](array: Array[K]): S[K]
+  def fromArray[K:MetalTag:Extra](array: Array[K]): S[K]
 
-  def fromIterable[K:Methods:Extra](items: Iterable[K]): S[K]
+  def fromIterable[K:MetalTag:Extra](items: Iterable[K]): S[K]
 
 }

@@ -2,9 +2,8 @@ package metal
 package immutable
 
 import spire.algebra.Order
-import generic.Methods
 
-final class ArraySortedSet[K](private[metal] val items: Array[K], val longSize: Long)(implicit val K: Methods[K], val order: Order[K]) extends generic.ArraySortedSet[K] with immutable.SortedSet[K]
+final class ArraySortedSet[K](private[metal] val items: Array[K], val longSize: Long)(implicit val K: MetalTag[K], val order: Order[K]) extends generic.ArraySortedSet[K] with immutable.SortedSet[K]
 
 object ArraySortedSet extends immutable.SetFactory {
 

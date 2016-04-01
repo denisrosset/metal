@@ -5,15 +5,13 @@ import scala.annotation.tailrec
 import spire.math.max
 import spire.syntax.cfor._
 
-import generic.Methods
-
 final class HashSet[K](
   var keys: Array[K],
   var buckets: Array[Byte],
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: Methods[K]) extends generic.HashSet[K] with mutable.Set[K] {
+  var limit: Int)(implicit val K: MetalTag[K]) extends generic.HashSet[K] with mutable.Set[K] {
 
   import generic.HashSet.{UNUSED, DELETED, USED}
 
@@ -93,7 +91,7 @@ final class HashSet[K](
         loop((i << 2) + i + perturbation + 1, perturbation >> 5, freeBlock)
       }
     }
-    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
+    val i = K.asInstanceOf[MetalTag[L]].hash(key) & 0x7fffffff
     loop(i, i, -1)
   }
 
@@ -159,7 +157,7 @@ object HashSet extends generic.HashSetFactory with mutable.SetFactory {
     * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
-  def ofAllocatedSize[K](n: Int)(implicit K: Methods[K]): S[K] = {
+  def ofAllocatedSize[K](n: Int)(implicit K: MetalTag[K]): S[K] = {
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
@@ -174,6 +172,6 @@ object HashSet extends generic.HashSetFactory with mutable.SetFactory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:Methods:Extra](n: Int): S[K] = ofAllocatedSize(max(n / 2 * 3, n))
+  def reservedSize[K:MetalTag:Extra](n: Int): S[K] = ofAllocatedSize(max(n / 2 * 3, n))
 
 }

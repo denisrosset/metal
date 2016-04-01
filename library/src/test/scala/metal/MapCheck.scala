@@ -10,8 +10,6 @@ import org.scalacheck.Arbitrary
 
 import metal.syntax._
 
-import generic.Methods
-
 trait MapCheck[K, V] extends MetalSuite {
 
   val factory: metal.mutable.MapFactory
@@ -25,12 +23,12 @@ trait MapCheck[K, V] extends MetalSuite {
   implicit def arbK: Arbitrary[K]
   implicit def extraK: factory.KExtra[K]
   implicit def ctK: ClassTag[K]
-  implicit def mK: Methods[K]
+  implicit def mK: MetalTag[K]
 
   implicit def arbV: Arbitrary[V]
   implicit def extraV: factory.VExtra[V]
   implicit def ctV: ClassTag[V]
-  implicit def mV: Methods[V]
+  implicit def mV: MetalTag[V]
 
   def hybridEq(d: MapKV, s: ScalaMap[K, V]): Boolean =
     d.longSize == s.size && s.forall { case (k, v) => d.contains(k) && d(k) == v }
@@ -169,14 +167,14 @@ trait MapCheck[K, V] extends MetalSuite {
 object MapCheck {
 
   def apply[K, V](factory0: metal.mutable.MapFactory)(implicit
-    arbK0: Arbitrary[K],
-    extraK0: factory0.KExtra[K],
-    ctK0: ClassTag[K],
-    mK0: Methods[K],
-    arbV0: Arbitrary[V],
-    extraV0: factory0.VExtra[V],
-    ctV0: ClassTag[V],
-    mV0: Methods[V]): MapCheck[K, V] =
+                                                      arbK0: Arbitrary[K],
+                                                      extraK0: factory0.KExtra[K],
+                                                      ctK0: ClassTag[K],
+                                                      mK0: MetalTag[K],
+                                                      arbV0: Arbitrary[V],
+                                                      extraV0: factory0.VExtra[V],
+                                                      ctV0: ClassTag[V],
+                                                      mV0: MetalTag[V]): MapCheck[K, V] =
     new MapCheck[K, V] {
       val factory: factory0.type = factory0
       def arbK = arbK0

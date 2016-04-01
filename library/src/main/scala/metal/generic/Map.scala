@@ -5,8 +5,8 @@ import spire.util.Opt
 
 abstract class Map[K, V] extends Defaults with Enumerable with Searchable[K] with Values[V] with NElements2[K, V] { lhs =>
 
-  implicit def K: Methods[K]
-  implicit def V: Methods[V]
+  implicit def K: MetalTag[K]
+  implicit def V: MetalTag[V]
 
   type Generic = generic.Map[K, V]
   type Mutable <: mutable.Map[K, V]

@@ -5,8 +5,6 @@ import scala.annotation.tailrec
 import spire.math.max
 import spire.syntax.cfor._
 
-import generic.Methods
-
 final class HashMap2[K, V1, V2](
   var keys: Array[K],
   var buckets: Array[Byte],
@@ -15,7 +13,7 @@ final class HashMap2[K, V1, V2](
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: Methods[K], val V1: Methods[V1], val V2: Methods[V2])
+  var limit: Int)(implicit val K: MetalTag[K], val V1: MetalTag[V1], val V2: MetalTag[V2])
     extends generic.HashMap2[K, V1, V2] with mutable.Map2[K, V1, V2] {
 
   import generic.HashMap2.{UNUSED, DELETED, USED}
@@ -89,7 +87,7 @@ final class HashMap2[K, V1, V2](
         loop((i << 2) + i + perturbation + 1, perturbation >> 5, freeBlock)
       }
     }
-    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
+    val i = K.asInstanceOf[MetalTag[L]].hash(key) & 0x7fffffff
     loop(i, i, -1)
   }
 
@@ -179,7 +177,7 @@ object HashMap2 extends generic.HashMap2Factory with mutable.Map2Factory {
     * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
-  private[metal] def ofAllocatedSize[K, V1, V2](n: Int)(implicit K: Methods[K], V1: Methods[V1], V2: Methods[V2]) = {
+  private[metal] def ofAllocatedSize[K, V1, V2](n: Int)(implicit K: MetalTag[K], V1: MetalTag[V1], V2: MetalTag[V2]) = {
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
@@ -196,6 +194,6 @@ object HashMap2 extends generic.HashMap2Factory with mutable.Map2Factory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](n: Int): M[K, V1, V2] = ofAllocatedSize[K, V1, V2](max(n / 2 * 3, n))
+  def reservedSize[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](n: Int): M[K, V1, V2] = ofAllocatedSize[K, V1, V2](max(n / 2 * 3, n))
 
 }

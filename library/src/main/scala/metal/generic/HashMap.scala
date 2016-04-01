@@ -59,7 +59,7 @@ abstract class HashMap[K, V] extends generic.Map[K, V] {
       else if (status == USED && keysL(j) == key) VPtr(this, j)
       else loop((i << 2) + i + perturbation + 1, perturbation >> 5)
     }
-    val i = K.asInstanceOf[Methods[L]].hash(key) & 0x7fffffff
+    val i = K.asInstanceOf[MetalTag[L]].hash(key) & 0x7fffffff
     loop(i, i)
   }
 

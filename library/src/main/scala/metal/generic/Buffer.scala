@@ -11,7 +11,7 @@ import spire.syntax.cfor._
 trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerable with Values[V] { self =>
 
   implicit def ct: ClassTag[V]
-  implicit def V: Methods[V]
+  implicit def V: MetalTag[V]
 
   type Mutable = mutable.Buffer[V]
   type Immutable = immutable.Buffer[V]
@@ -58,23 +58,23 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
       val len = length
       if (V != s.V) return false
       V match {
-        case Methods.Long =>
+        case MetalTag.Long =>
           Buffer.specEquals[Long](self.asInstanceOf[Buffer[Long]], that.asInstanceOf[Buffer[Long]])
-        case Methods.Int =>
+        case MetalTag.Int =>
           Buffer.specEquals[Int](self.asInstanceOf[Buffer[Int]], that.asInstanceOf[Buffer[Int]])
-        case Methods.Short =>
+        case MetalTag.Short =>
           Buffer.specEquals[Short](self.asInstanceOf[Buffer[Short]], that.asInstanceOf[Buffer[Short]])
-        case Methods.Byte =>
+        case MetalTag.Byte =>
           Buffer.specEquals[Byte](self.asInstanceOf[Buffer[Byte]], that.asInstanceOf[Buffer[Byte]])
-        case Methods.Char =>
+        case MetalTag.Char =>
           Buffer.specEquals[Char](self.asInstanceOf[Buffer[Char]], that.asInstanceOf[Buffer[Char]])
-        case Methods.Boolean =>
+        case MetalTag.Boolean =>
           Buffer.specEquals[Boolean](self.asInstanceOf[Buffer[Boolean]], that.asInstanceOf[Buffer[Boolean]])
-        case Methods.Double =>
+        case MetalTag.Double =>
           Buffer.specEquals[Double](self.asInstanceOf[Buffer[Double]], that.asInstanceOf[Buffer[Double]])
-        case Methods.Float =>
+        case MetalTag.Float =>
           Buffer.specEquals[Float](self.asInstanceOf[Buffer[Float]], that.asInstanceOf[Buffer[Float]])
-        case Methods.Unit =>
+        case MetalTag.Unit =>
           Buffer.specEquals[Unit](self.asInstanceOf[Buffer[Unit]], that.asInstanceOf[Buffer[Unit]])
         case _ =>
           Buffer.specEquals[V](self.asInstanceOf[Buffer[V]], that.asInstanceOf[Buffer[V]])
@@ -83,15 +83,15 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
   }
 
   override def hashCode: Int = V match {
-    case Methods.Long => Buffer.specHashCode[Long](self.asInstanceOf[Buffer[Long]])
-    case Methods.Int => Buffer.specHashCode[Int](self.asInstanceOf[Buffer[Int]])
-    case Methods.Short => Buffer.specHashCode[Short](self.asInstanceOf[Buffer[Short]])
-    case Methods.Byte => Buffer.specHashCode[Byte](self.asInstanceOf[Buffer[Byte]])
-    case Methods.Char => Buffer.specHashCode[Char](self.asInstanceOf[Buffer[Char]])
-    case Methods.Boolean => Buffer.specHashCode[Boolean](self.asInstanceOf[Buffer[Boolean]])
-    case Methods.Double => Buffer.specHashCode[Double](self.asInstanceOf[Buffer[Double]])
-    case Methods.Float => Buffer.specHashCode[Float](self.asInstanceOf[Buffer[Float]])
-    case Methods.Unit => Buffer.specHashCode[Unit](self.asInstanceOf[Buffer[Unit]])
+    case MetalTag.Long => Buffer.specHashCode[Long](self.asInstanceOf[Buffer[Long]])
+    case MetalTag.Int => Buffer.specHashCode[Int](self.asInstanceOf[Buffer[Int]])
+    case MetalTag.Short => Buffer.specHashCode[Short](self.asInstanceOf[Buffer[Short]])
+    case MetalTag.Byte => Buffer.specHashCode[Byte](self.asInstanceOf[Buffer[Byte]])
+    case MetalTag.Char => Buffer.specHashCode[Char](self.asInstanceOf[Buffer[Char]])
+    case MetalTag.Boolean => Buffer.specHashCode[Boolean](self.asInstanceOf[Buffer[Boolean]])
+    case MetalTag.Double => Buffer.specHashCode[Double](self.asInstanceOf[Buffer[Double]])
+    case MetalTag.Float => Buffer.specHashCode[Float](self.asInstanceOf[Buffer[Float]])
+    case MetalTag.Unit => Buffer.specHashCode[Unit](self.asInstanceOf[Buffer[Unit]])
     case _ => Buffer.specHashCode[V](self)
   }
 

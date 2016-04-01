@@ -17,7 +17,7 @@ abstract class BitSet extends SortedSet[Int] {
 
   protected def words: Array[Long]
 
-  def K = Methods.Int
+  def K = MetalTag.Int
 
   def mutableCopy = new mutable.ResizableBitSet(words.clone, nWords)
 

@@ -12,8 +12,6 @@ import org.scalacheck.{Arbitrary, Gen}
 
 import metal.syntax._
 
-import generic.Methods
-
 trait SetCheck[A] extends MetalSuite {
 
   type SetA <: metal.mutable.Set[A]
@@ -37,7 +35,7 @@ trait SetCheck[A] extends MetalSuite {
 
   implicit def arbA: Arbitrary[A]
   implicit def ctA: ClassTag[A]
-  implicit def mA: Methods[A]
+  implicit def mA: MetalTag[A]
 
   def emptySet: SetA
   def fromIterable(xs: Iterable[A]): SetA
@@ -189,7 +187,7 @@ object FactorySetCheck {
     arbA0: Arbitrary[A],
     ctA0: ClassTag[A],
     extra0: factory0.Extra[A],
-    mA0: Methods[A]
+    mA0: MetalTag[A]
   ): SetCheck[A] =
     new FactorySetCheck[A] {
       val factory: factory0.type = factory0
@@ -201,7 +199,7 @@ object FactorySetCheck {
 
 }
 
-class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: Methods[Int]) extends SetCheck[Int] {
+class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: MetalTag[Int]) extends SetCheck[Int] {
 
   def arbA: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
 

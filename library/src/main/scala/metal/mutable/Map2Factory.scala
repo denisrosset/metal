@@ -2,20 +2,19 @@ package metal
 package mutable
 
 import spire.syntax.cfor._
-import generic.Methods
 
 trait Map2Factory extends generic.Map2Factory {
 
   type M[K, V1, V2] <: mutable.Map2[K, V1, V2]
 
-  def reservedSize[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](n: Int): M[K, V1, V2]
+  def reservedSize[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](n: Int): M[K, V1, V2]
 
-  def empty[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra]: M[K, V1, V2] = reservedSize[K, V1, V2](0)
+  def empty[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra]: M[K, V1, V2] = reservedSize[K, V1, V2](0)
 
-  def apply[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](kv1v2s: (K, (V1, V2))*) =
+  def apply[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](kv1v2s: (K, (V1, V2))*) =
     fromIterable(kv1v2s)
 
-  def fromIterable[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](kv1v2s: Iterable[(K, (V1, V2))]) = {
+  def fromIterable[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](kv1v2s: Iterable[(K, (V1, V2))]) = {
     val map2 = empty[K, V1, V2]
     val it = kv1v2s.iterator
     while (it.hasNext) {
@@ -27,7 +26,7 @@ trait Map2Factory extends generic.Map2Factory {
     map2
   }
 
-  def fromMap[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](map: scala.collection.Map[K, (V1, V2)]) = {
+  def fromMap[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](map: scala.collection.Map[K, (V1, V2)]) = {
     val map2 = empty[K, V1, V2]
     val keyIt = map.keysIterator
     while (keyIt.hasNext) {
@@ -40,7 +39,7 @@ trait Map2Factory extends generic.Map2Factory {
     map2
   }
 
-  def fromArrays[K:Methods:KExtra, V1:Methods:V1Extra, V2:Methods:V2Extra](keysArray: Array[K], values1Array: Array[V1], values2Array: Array[V2]) = {
+  def fromArrays[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](keysArray: Array[K], values1Array: Array[V1], values2Array: Array[V2]) = {
     val map2 = empty[K, V1, V2]
     cforRange(0 until keysArray.length) { i =>
       val vp = map2.ptrAddKeyFromArray(keysArray, i)
