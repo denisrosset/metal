@@ -1,16 +1,26 @@
 package metal
 package mutable
 
+import scala.reflect.ClassTag
+
 import spire.algebra.Order
 import spire.syntax.cfor._
 
-final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit val K: MetalTag[K], val order: Order[K]) extends generic.ArraySortedSet[K] with mutable.SortedSet[K] {
+final class ArraySortedSet[K](
+  var items: Array[K],
+  var longSize: Long
+)(implicit
+  val ctK: ClassTag[K],
+  val K: MetalTag[K],
+  val order: Order[K]
+) extends generic.ArraySortedSet[K] with mutable.SortedSet[K] {
 
   def toImmutable: Immutable = new metal.immutable.ArraySortedSet(items.clone, longSize) // TODO: trim the array
+
   def result(): Immutable = {
-    val res = new metal.immutable.ArraySortedSet(items, longSize)(K, order)
+    val res = new metal.immutable.ArraySortedSet(items, longSize)(ctK, K, order)
     // clears this
-    items = K.newArray(0)
+    items = ctK.newArray(0)
     longSize = 0
     res
   }
@@ -21,7 +31,7 @@ final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit 
   }
 
   def clear(): Unit = {
-    absorb(K.newArray(0), 0)
+    absorb(ctK.newArray(0), 0)
   }
 
   def reset(): Unit = {
@@ -47,7 +57,7 @@ final class ArraySortedSet[K](var items: Array[K], var longSize: Long)(implicit 
     if (pos < 0) {
       val ipos = ~pos
       val newItemsL = if (longSize < itemsL.length) itemsL else {
-        val arr = (K.newArray(itemsL.length.max(1) * 2)).asInstanceOf[Array[L]]
+        val arr = (ctK.newArray(itemsL.length.max(1) * 2)).asInstanceOf[Array[L]]
         java.lang.System.arraycopy(itemsL, 0, arr, 0, ipos)
         arr
       }
@@ -66,9 +76,9 @@ object ArraySortedSet extends metal.mutable.SetFactory {
   type Extra[K] = Order[K]
   type S[K] = metal.mutable.ArraySortedSet[K]
 
-  def reservedSize[K:MetalTag:Order](n: Int): S[K] = {
+  def reservedSize[K:ClassTag:Order](n: Int): S[K] = {
     val K = MetalTag[K]
-    new metal.mutable.ArraySortedSet[K](K.newArray(n), 0L)
+    new metal.mutable.ArraySortedSet[K](implicitly[ClassTag[K]].newArray(n), 0L)
   }
 
 }

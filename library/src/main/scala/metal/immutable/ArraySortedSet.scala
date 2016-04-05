@@ -1,9 +1,17 @@
 package metal
 package immutable
 
+import scala.reflect.ClassTag
+
 import spire.algebra.Order
 
-final class ArraySortedSet[K](private[metal] val items: Array[K], val longSize: Long)(implicit val K: MetalTag[K], val order: Order[K]) extends generic.ArraySortedSet[K] with immutable.SortedSet[K]
+final class ArraySortedSet[K](
+  private[metal] val items: Array[K],
+  val longSize: Long)(implicit
+    val ctK: ClassTag[K],
+    val K: MetalTag[K],
+    val order: Order[K]
+) extends generic.ArraySortedSet[K] with immutable.SortedSet[K]
 
 object ArraySortedSet extends immutable.SetFactory {
 

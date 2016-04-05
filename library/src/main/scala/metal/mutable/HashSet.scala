@@ -2,6 +2,8 @@ package metal
 package mutable
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
+
 import spire.math.max
 import spire.syntax.cfor._
 
@@ -11,7 +13,10 @@ final class HashSet[K](
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: MetalTag[K]) extends generic.HashSet[K] with mutable.Set[K] {
+  var limit: Int)(implicit
+    val ctK: ClassTag[K],
+    val K: MetalTag[K]
+) extends generic.HashSet[K] with mutable.Set[K] {
 
   import generic.HashSet.{UNUSED, DELETED, USED}
 
@@ -25,7 +30,7 @@ final class HashSet[K](
   }
 
   def clear(): Unit = {
-    keys = K.newArray(8)
+    keys = ctK.newArray(8)
     buckets = new Array[Byte](8)
     size = 0
     used = 0
@@ -38,7 +43,7 @@ final class HashSet[K](
   def result() = {
     val res = new immutable.HashSet[K](keys, buckets, size, used, mask, limit)
     buckets = new Array[Byte](8) // optimize using empty array
-    keys = K.newArray(8)
+    keys = ctK.newArray(8)
     size = 0
     used = 0
     mask = 8 - 1
@@ -157,7 +162,7 @@ object HashSet extends generic.HashSetFactory with mutable.SetFactory {
     * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
-  def ofAllocatedSize[K](n: Int)(implicit K: MetalTag[K]): S[K] = {
+  def ofAllocatedSize[K](n: Int)(implicit K: ClassTag[K]): S[K] = {
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
@@ -172,6 +177,6 @@ object HashSet extends generic.HashSetFactory with mutable.SetFactory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:MetalTag:Extra](n: Int): S[K] = ofAllocatedSize(max(n / 2 * 3, n))
+  def reservedSize[K:ClassTag:Extra](n: Int): S[K] = ofAllocatedSize(max(n / 2 * 3, n))
 
 }

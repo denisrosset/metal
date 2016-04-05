@@ -2,6 +2,8 @@ package metal
 package mutable
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
+
 import spire.math.max
 import spire.syntax.cfor._
 
@@ -12,7 +14,11 @@ final class HashMap[K, V](
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: MetalTag[K], val V: MetalTag[V])
+  var limit: Int)(implicit
+    val ctK: ClassTag[K],
+    val K: MetalTag[K],
+    val ctV: ClassTag[V],
+    val V: MetalTag[V])
     extends generic.HashMap[K, V]
     with mutable.Map[K, V] {
 
@@ -33,8 +39,8 @@ final class HashMap[K, V](
   def result() = {
     val res = new immutable.HashMap[K, V](keys, buckets, values, size, used, mask, limit)
     buckets = new Array[Byte](8) // optimize using empty array
-    keys = K.newArray(8)
-    values = V.newArray(8)
+    keys = ctK.newArray(8)
+    values = ctV.newArray(8)
     size = 0
     used = 0
     mask = 8 - 1
@@ -43,9 +49,9 @@ final class HashMap[K, V](
   }
 
   def clear(): Unit = {
-    keys = K.newArray(8)
+    keys = ctK.newArray(8)
     buckets = new Array[Byte](8)
-    values = V.newArray(8)
+    values = ctV.newArray(8)
     size = 0
     used = 0
     mask = 8 - 1
@@ -168,7 +174,7 @@ object HashMap extends generic.HashMapFactory with mutable.MapFactory {
     * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
-  private[metal] def ofAllocatedSize[K, V](n: Int)(implicit K: MetalTag[K], V: MetalTag[V]) = {
+  private[metal] def ofAllocatedSize[K, V](n: Int)(implicit K: ClassTag[K], V: ClassTag[V]) = {
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
@@ -184,6 +190,6 @@ object HashMap extends generic.HashMapFactory with mutable.MapFactory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:MetalTag:KExtra, V:MetalTag:VExtra](n: Int): M[K, V] = ofAllocatedSize[K, V](max(n / 2 * 3, n))
+  def reservedSize[K:ClassTag:KExtra, V:ClassTag:VExtra](n: Int): M[K, V] = ofAllocatedSize[K, V](max(n / 2 * 3, n))
 
 }

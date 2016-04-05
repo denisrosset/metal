@@ -7,18 +7,18 @@ import spire.math.QuickSort
 import spire.syntax.cfor._
 import util.Dummy
 
-final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: MetalTag[V], val ct: ClassTag[V]) extends generic.Buffer[V] with mutable.Collection {
+final class Buffer[@specialized V](var array: Array[V], var length: Int)(implicit val V: MetalTag[V], val ctV: ClassTag[V]) extends generic.Buffer[V] with mutable.Collection {
 
   @inline final def apply(idx: Int): V = array(idx)
 
   def toImmutable = new immutable.Buffer[V](array.clone, length) // TODO: trim the array
 
   def sort()(implicit order: Order[V]): Unit = {
-    QuickSort.qsort(array, 0, length.toInt - 1)(order, ct)
+    QuickSort.qsort(array, 0, length.toInt - 1)(order, ctV)
   }
 
   def clear(): Unit = {
-    array = ct.newArray(0)
+    array = ctV.newArray(0)
     length = 0
   }
 
@@ -31,7 +31,7 @@ final class Buffer[@specialized V](var array: Array[V], var length: Int)(implici
 
   def result() = {
     val res = new metal.immutable.Buffer[V](array, length)
-    array = ct.newArray(0)
+    array = ctV.newArray(0)
     length = 0
     res
   }
@@ -54,7 +54,7 @@ final class Buffer[@specialized V](var array: Array[V], var length: Int)(implici
       var newLength: Long = arrayLength.toLong * 2
       while (n > newLength) newLength = newLength * 2
       if (newLength > Int.MaxValue) newLength = Int.MaxValue
-      val newArray = V.newArray(newLength.toInt)
+      val newArray = ctV.newArray(newLength.toInt)
       Array.copy(array, 0, newArray, 0, length.toInt)
       array = newArray
     }
@@ -84,9 +84,9 @@ object Buffer extends generic.BufferFactory {
 
   val startSize = 8
 
-  def empty[@specialized V:MetalTag:ClassTag]: mutable.Buffer[V] = new mutable.Buffer[V](classTag[V].newArray(startSize), 0)
+  def empty[@specialized V:ClassTag]: mutable.Buffer[V] = new mutable.Buffer[V](classTag[V].newArray(startSize), 0)
 
-  def apply[@specialized V:MetalTag:ClassTag](items: V*): mutable.Buffer[V] = {
+  def apply[@specialized V:ClassTag](items: V*): mutable.Buffer[V] = {
     val array = classTag[V].newArray(items.size)
     val it = items.iterator
     var i = 0
@@ -97,10 +97,10 @@ object Buffer extends generic.BufferFactory {
     new Buffer[V](array, array.length)
   }
 
-  def fromArray[@specialized V:MetalTag:ClassTag](array: Array[V]): mutable.Buffer[V] =
+  def fromArray[@specialized V:ClassTag](array: Array[V]): mutable.Buffer[V] =
     new mutable.Buffer[V](array.clone, array.length)
 
-  def fromIterable[@specialized V:MetalTag:ClassTag](iterable: Iterable[V]): mutable.Buffer[V] = {
+  def fromIterable[@specialized V:ClassTag](iterable: Iterable[V]): mutable.Buffer[V] = {
     val array = classTag[V].newArray(iterable.size)
     val it = iterable.iterator
     var i = 0

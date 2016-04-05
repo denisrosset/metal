@@ -1,6 +1,8 @@
 package metal
 package generic
 
+import scala.reflect.ClassTag
+
 import spire.algebra.Order
 
 abstract class BitSet extends SortedSet[Int] {
@@ -17,6 +19,7 @@ abstract class BitSet extends SortedSet[Int] {
 
   protected def words: Array[Long]
 
+  def ctK = ClassTag.Int
   def K = MetalTag.Int
 
   def mutableCopy = new mutable.ResizableBitSet(words.clone, nWords)

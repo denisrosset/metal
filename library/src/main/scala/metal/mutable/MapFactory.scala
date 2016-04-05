@@ -1,19 +1,21 @@
 package metal
 package mutable
 
+import scala.reflect.ClassTag
+
 import spire.syntax.cfor._
 
 trait MapFactory extends generic.MapFactory {
 
   type M[K, V] <: mutable.Map[K, V]
 
-  def empty[K:MetalTag:KExtra, V:MetalTag:VExtra]: M[K, V] = reservedSize[K, V](0)
+  def empty[K:ClassTag:KExtra, V:ClassTag:VExtra]: M[K, V] = reservedSize[K, V](0)
 
-  def reservedSize[K:MetalTag:KExtra, V:MetalTag:VExtra](n: Int): M[K, V]
+  def reservedSize[K:ClassTag:KExtra, V:ClassTag:VExtra](n: Int): M[K, V]
 
-  def apply[K:MetalTag:KExtra, V:MetalTag:VExtra](kvPairs: (K, V)*) = fromIterable(kvPairs)
+  def apply[K:ClassTag:KExtra, V:ClassTag:VExtra](kvPairs: (K, V)*) = fromIterable(kvPairs)
 
-  def fromIterable[K:MetalTag:KExtra, V:MetalTag:VExtra](kvPairs: Iterable[(K, V)]) = {
+  def fromIterable[K:ClassTag:KExtra, V:ClassTag:VExtra](kvPairs: Iterable[(K, V)]) = {
     val map = empty[K, V]
     val pairIt = kvPairs.iterator
     while (pairIt.hasNext) {
@@ -24,7 +26,7 @@ trait MapFactory extends generic.MapFactory {
     map
   }
 
-  def fromMap[K:MetalTag:KExtra, V:MetalTag:VExtra](source: scala.collection.Map[K, V]) = {
+  def fromMap[K:ClassTag:KExtra, V:ClassTag:VExtra](source: scala.collection.Map[K, V]) = {
     val map = reservedSize[K, V](source.size)
     val keyIt = source.keysIterator
     while (keyIt.hasNext) {
@@ -35,7 +37,7 @@ trait MapFactory extends generic.MapFactory {
     map
   }
 
-  def fromArrays[K:MetalTag:KExtra, V:MetalTag:VExtra](keysArray: Array[K], valuesArray: Array[V]) = {
+  def fromArrays[K:ClassTag:KExtra, V:ClassTag:VExtra](keysArray: Array[K], valuesArray: Array[V]) = {
     val n = keysArray.length
     require(n == valuesArray.length)
     val map = reservedSize[K, V](n)

@@ -1,11 +1,16 @@
 package metal
 package generic
 
+import scala.reflect.ClassTag
+
 import spire.util.Opt
 
 abstract class Map[K, V] extends Defaults with Enumerable with Searchable[K] with Values[V] with NElements2[K, V] { lhs =>
 
+  implicit def ctK: ClassTag[K]
   implicit def K: MetalTag[K]
+
+  implicit def ctV: ClassTag[V]
   implicit def V: MetalTag[V]
 
   type Generic = generic.Map[K, V]
@@ -15,7 +20,7 @@ abstract class Map[K, V] extends Defaults with Enumerable with Searchable[K] wit
   override def stringPrefix = "Map"
 
   final def ptrCastT(any: Any): Opt[generic.Map[K, V]] = any match {
-    case rhs: generic.Map[K, V] if lhs.K == rhs.K && lhs.V == rhs.V => Opt(rhs)
+    case rhs: generic.Map[K, V] if lhs.ctK == rhs.ctK && lhs.ctV == rhs.ctV => Opt(rhs)
     case _ => Opt.empty[generic.Map[K, V]]
   }
 

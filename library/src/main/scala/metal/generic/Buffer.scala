@@ -10,7 +10,7 @@ import spire.syntax.cfor._
  */
 trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerable with Values[V] { self =>
 
-  implicit def ct: ClassTag[V]
+  implicit def ctV: ClassTag[V]
   implicit def V: MetalTag[V]
 
   type Mutable = mutable.Buffer[V]
@@ -46,7 +46,7 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
   final def ptrValue[@specialized W](ptr: VPtr[self.type]): W = this.asInstanceOf[Buffer[W]].apply(ptr.raw.toInt)
 
   final def toArray: Array[V] = {
-    val res = ct.newArray(length.toInt)
+    val res = ctV.newArray(length.toInt)
     Array.copy(array, 0, res, 0, length)
     res
   }
@@ -57,24 +57,24 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
     case s: Buffer[_] =>
       val len = length
       if (V != s.V) return false
-      V match {
-        case MetalTag.Long =>
+      ctV match {
+        case ClassTag.Long =>
           Buffer.specEquals[Long](self.asInstanceOf[Buffer[Long]], that.asInstanceOf[Buffer[Long]])
-        case MetalTag.Int =>
+        case ClassTag.Int =>
           Buffer.specEquals[Int](self.asInstanceOf[Buffer[Int]], that.asInstanceOf[Buffer[Int]])
-        case MetalTag.Short =>
+        case ClassTag.Short =>
           Buffer.specEquals[Short](self.asInstanceOf[Buffer[Short]], that.asInstanceOf[Buffer[Short]])
-        case MetalTag.Byte =>
+        case ClassTag.Byte =>
           Buffer.specEquals[Byte](self.asInstanceOf[Buffer[Byte]], that.asInstanceOf[Buffer[Byte]])
-        case MetalTag.Char =>
+        case ClassTag.Char =>
           Buffer.specEquals[Char](self.asInstanceOf[Buffer[Char]], that.asInstanceOf[Buffer[Char]])
-        case MetalTag.Boolean =>
+        case ClassTag.Boolean =>
           Buffer.specEquals[Boolean](self.asInstanceOf[Buffer[Boolean]], that.asInstanceOf[Buffer[Boolean]])
-        case MetalTag.Double =>
+        case ClassTag.Double =>
           Buffer.specEquals[Double](self.asInstanceOf[Buffer[Double]], that.asInstanceOf[Buffer[Double]])
-        case MetalTag.Float =>
+        case ClassTag.Float =>
           Buffer.specEquals[Float](self.asInstanceOf[Buffer[Float]], that.asInstanceOf[Buffer[Float]])
-        case MetalTag.Unit =>
+        case ClassTag.Unit =>
           Buffer.specEquals[Unit](self.asInstanceOf[Buffer[Unit]], that.asInstanceOf[Buffer[Unit]])
         case _ =>
           Buffer.specEquals[V](self.asInstanceOf[Buffer[V]], that.asInstanceOf[Buffer[V]])
@@ -82,16 +82,16 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
     case _ => false
   }
 
-  override def hashCode: Int = V match {
-    case MetalTag.Long => Buffer.specHashCode[Long](self.asInstanceOf[Buffer[Long]])
-    case MetalTag.Int => Buffer.specHashCode[Int](self.asInstanceOf[Buffer[Int]])
-    case MetalTag.Short => Buffer.specHashCode[Short](self.asInstanceOf[Buffer[Short]])
-    case MetalTag.Byte => Buffer.specHashCode[Byte](self.asInstanceOf[Buffer[Byte]])
-    case MetalTag.Char => Buffer.specHashCode[Char](self.asInstanceOf[Buffer[Char]])
-    case MetalTag.Boolean => Buffer.specHashCode[Boolean](self.asInstanceOf[Buffer[Boolean]])
-    case MetalTag.Double => Buffer.specHashCode[Double](self.asInstanceOf[Buffer[Double]])
-    case MetalTag.Float => Buffer.specHashCode[Float](self.asInstanceOf[Buffer[Float]])
-    case MetalTag.Unit => Buffer.specHashCode[Unit](self.asInstanceOf[Buffer[Unit]])
+  override def hashCode: Int = ctV match {
+    case ClassTag.Long => Buffer.specHashCode[Long](self.asInstanceOf[Buffer[Long]])
+    case ClassTag.Int => Buffer.specHashCode[Int](self.asInstanceOf[Buffer[Int]])
+    case ClassTag.Short => Buffer.specHashCode[Short](self.asInstanceOf[Buffer[Short]])
+    case ClassTag.Byte => Buffer.specHashCode[Byte](self.asInstanceOf[Buffer[Byte]])
+    case ClassTag.Char => Buffer.specHashCode[Char](self.asInstanceOf[Buffer[Char]])
+    case ClassTag.Boolean => Buffer.specHashCode[Boolean](self.asInstanceOf[Buffer[Boolean]])
+    case ClassTag.Double => Buffer.specHashCode[Double](self.asInstanceOf[Buffer[Double]])
+    case ClassTag.Float => Buffer.specHashCode[Float](self.asInstanceOf[Buffer[Float]])
+    case ClassTag.Unit => Buffer.specHashCode[Unit](self.asInstanceOf[Buffer[Unit]])
     case _ => Buffer.specHashCode[V](self)
   }
 

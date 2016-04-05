@@ -1,6 +1,8 @@
 package metal
 package generic
 
+import scala.reflect.ClassTag
+
 import spire.util.Opt
 
 abstract class Map2[K, V1, V2]
@@ -11,8 +13,13 @@ abstract class Map2[K, V1, V2]
     with Values2[V2]
     with NElements3[K, V1, V2] { lhs =>
 
+  implicit def ctK: ClassTag[K]
   implicit def K: MetalTag[K]
+
+  implicit def ctV1: ClassTag[V1]
   implicit def V1: MetalTag[V1]
+
+  implicit def ctV2: ClassTag[V2]
   implicit def V2: MetalTag[V2]
 
   type Generic = generic.Map2[K, V1, V2]
@@ -22,7 +29,7 @@ abstract class Map2[K, V1, V2]
   override def stringPrefix = "Map2"
 
   final def ptrCastT(any: Any): Opt[generic.Map2[K, V1, V2]] = any match {
-    case rhs: generic.Map2[K, V1, V2] if lhs.K == rhs.K && lhs.V1 == rhs.V1 && lhs.V2 == rhs.V2 => Opt(rhs)
+    case rhs: generic.Map2[K, V1, V2] if lhs.ctK == rhs.ctK && lhs.ctV1 == rhs.ctV1 && lhs.ctV2 == rhs.ctV2 => Opt(rhs)
     case _ => Opt.empty[generic.Map2[K, V1, V2]]
   }
 

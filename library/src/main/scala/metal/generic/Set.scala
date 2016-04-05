@@ -1,10 +1,13 @@
 package metal
 package generic
 
+import scala.reflect.ClassTag
+
 import spire.util.Opt
 
 abstract class Set[K] extends Defaults with NElements1[K] with Enumerable with Searchable[K] { lhs =>
 
+  implicit def ctK: ClassTag[K]
   implicit def K: MetalTag[K]
 
   type Generic = generic.Set[K]
@@ -14,7 +17,7 @@ abstract class Set[K] extends Defaults with NElements1[K] with Enumerable with S
   def stringPrefix = "Set"
 
   final def ptrCastT(any: Any): Opt[generic.Set[K]] = any match {
-    case rhs: generic.Set[K] if lhs.K == rhs.K => Opt(rhs)
+    case rhs: generic.Set[K] if lhs.ctK == rhs.ctK => Opt(rhs)
     case _ => Opt.empty[generic.Set[K]]
   }
 

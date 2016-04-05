@@ -2,6 +2,8 @@ package metal
 package mutable
 
 import scala.annotation.tailrec
+import scala.reflect.ClassTag
+
 import spire.math.max
 import spire.syntax.cfor._
 
@@ -13,7 +15,13 @@ final class HashMap2[K, V1, V2](
   var size: Int,
   var used: Int,
   var mask: Int,
-  var limit: Int)(implicit val K: MetalTag[K], val V1: MetalTag[V1], val V2: MetalTag[V2])
+  var limit: Int)(implicit
+    val ctK: ClassTag[K],
+    val K: MetalTag[K],
+    val ctV1: ClassTag[V1],
+    val V1: MetalTag[V1],
+    val ctV2: ClassTag[V2],
+    val V2: MetalTag[V2])
     extends generic.HashMap2[K, V1, V2] with mutable.Map2[K, V1, V2] {
 
   import generic.HashMap2.{UNUSED, DELETED, USED}
@@ -34,9 +42,9 @@ final class HashMap2[K, V1, V2](
   def result() = {
     val res = new immutable.HashMap2[K, V1, V2](keys, buckets, values1, values2, size, used, mask, limit)
     buckets = new Array[Byte](8) // optimize using empty array
-    keys = K.newArray(8)
-    values1 = V1.newArray(8)
-    values2 = V2.newArray(8)
+    keys = ctK.newArray(8)
+    values1 = ctV1.newArray(8)
+    values2 = ctV2.newArray(8)
     size = 0
     used = 0
     mask = 8 - 1
@@ -45,10 +53,10 @@ final class HashMap2[K, V1, V2](
   }
 
   def clear(): Unit = {
-    keys = K.newArray(8)
+    keys = ctK.newArray(8)
     buckets = new Array[Byte](8)
-    values1 = V1.newArray(8)
-    values2 = V2.newArray(8)
+    values1 = ctV1.newArray(8)
+    values2 = ctV2.newArray(8)
     size = 0
     used = 0
     mask = 8 - 1
@@ -177,7 +185,7 @@ object HashMap2 extends generic.HashMap2Factory with mutable.Map2Factory {
     * underlying array to be. In most cases reservedSize() is probably what
     * you want instead.
     */
-  private[metal] def ofAllocatedSize[K, V1, V2](n: Int)(implicit K: MetalTag[K], V1: MetalTag[V1], V2: MetalTag[V2]) = {
+  private[metal] def ofAllocatedSize[K, V1, V2](n: Int)(implicit K: ClassTag[K], V1: ClassTag[V1], V2: ClassTag[V2]) = {
     val sz = util.nextPowerOfTwo(n) match {
       case n if n < 0 => sys.error(s"Bad allocated size $n for collection")
       case 0 => 8
@@ -194,6 +202,6 @@ object HashMap2 extends generic.HashMap2Factory with mutable.Map2Factory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:MetalTag:KExtra, V1:MetalTag:V1Extra, V2:MetalTag:V2Extra](n: Int): M[K, V1, V2] = ofAllocatedSize[K, V1, V2](max(n / 2 * 3, n))
+  def reservedSize[K:ClassTag:KExtra, V1:ClassTag:V1Extra, V2:ClassTag:V2Extra](n: Int): M[K, V1, V2] = ofAllocatedSize[K, V1, V2](max(n / 2 * 3, n))
 
 }

@@ -1,19 +1,21 @@
 package metal
 package mutable
 
+import scala.reflect.ClassTag
+
 import spire.syntax.cfor._
 
 trait SetFactory extends generic.SetFactory {
 
   type S[K] <: mutable.Set[K]
 
-  def reservedSize[A:MetalTag:Extra](n: Int): S[A]
+  def reservedSize[A:ClassTag:Extra](n: Int): S[A]
 
-  def empty[A:MetalTag:Extra]: S[A] = reservedSize[A](0)
+  def empty[A:ClassTag:Extra]: S[A] = reservedSize[A](0)
 
-  def apply[A:MetalTag:Extra](items: A*): S[A] = fromIterable(items)
+  def apply[A:ClassTag:Extra](items: A*): S[A] = fromIterable(items)
 
-  def fromIterable[A:MetalTag:Extra](items: Iterable[A]): S[A] = {
+  def fromIterable[A:ClassTag:Extra](items: Iterable[A]): S[A] = {
     val set = reservedSize[A](items.size)
     items.foreach { k =>
       set.ptrAddKey(k)
@@ -21,7 +23,7 @@ trait SetFactory extends generic.SetFactory {
     set
   }
 
-  def fromArray[A:MetalTag:Extra](array: Array[A]): S[A] = {
+  def fromArray[A:ClassTag:Extra](array: Array[A]): S[A] = {
     val set = reservedSize[A](array.length)
     cforRange(0 until array.length) { i =>
       set.ptrAddKeyFromArray(array, i)
