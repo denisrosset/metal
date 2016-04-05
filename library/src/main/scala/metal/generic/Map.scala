@@ -16,6 +16,7 @@ abstract class Map[K, V] extends Defaults with Enumerable with Searchable[K] wit
   type Generic = generic.Map[K, V]
   type Mutable <: mutable.Map[K, V]
   type Immutable <: immutable.Map[K, V]
+  type Scala <: scala.collection.immutable.Map[K, V]
 
   override def stringPrefix = "Map"
 

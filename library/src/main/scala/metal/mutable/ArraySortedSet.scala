@@ -17,6 +17,10 @@ final class ArraySortedSet[K](
 
   def toImmutable: Immutable = new metal.immutable.ArraySortedSet(items.clone, longSize) // TODO: trim the array
 
+  type Scala = scala.collection.immutable.SortedSet[K]
+
+  def toScala: Scala = toImmutable.toScala
+
   def result(): Immutable = {
     val res = new metal.immutable.ArraySortedSet(items, longSize)(ctK, K, order)
     // clears this

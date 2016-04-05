@@ -25,7 +25,8 @@ abstract class Map2[K, V1, V2]
   type Generic = generic.Map2[K, V1, V2]
   type Mutable <: mutable.Map2[K, V1, V2]
   type Immutable <: immutable.Map2[K, V1, V2]
-
+  type Scala <: scala.collection.immutable.Map[K, (V1, V2)]
+  
   override def stringPrefix = "Map2"
 
   final def ptrCastT(any: Any): Opt[generic.Map2[K, V1, V2]] = any match {

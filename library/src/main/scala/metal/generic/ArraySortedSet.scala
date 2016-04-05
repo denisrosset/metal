@@ -23,6 +23,30 @@ abstract class ArraySortedSet[K] extends SortedSet[K] {
     res
   }
 
+  def findOrNextAfter[@specialized L](item: L): Ptr[this.type] = {
+    val res = findWhere[L](item)
+    if (res >= 0) Ptr(this, res) else {
+      val insertionPoint = ~res
+      if (insertionPoint < longSize) Ptr(this, insertionPoint) else Ptr.Null(this)
+    }
+  }
+
+  def findOrNextBefore[@specialized L](item: L): Ptr[this.type] = {
+    val res = findWhere[L](item)
+    if (res >= 0) Ptr(this, res) else {
+      val insertionPoint = ~res
+      if (insertionPoint > 0) Ptr(this, insertionPoint - 1) else Ptr.Null(this)
+    }
+  }
+
+  /** Searchs for the given item and returns the index of the search key if it is contained.
+    * Otherwise, returns (-(insertion point) - 1), where the insertion point is defined as the
+    * point at which the key would be inserted into the array: that is the index of the 
+    * first element in the range greater than the key, or the collection size if all elements
+    * in the range are less than the specified key. 
+    * 
+    * Same convention as in [[java.util.Arrays.binarySearch]].
+    */
   protected def findWhere[@specialized L](item: L): Int = {
     val itemsL = items.asInstanceOf[Array[L]]
     val orderL = order.asInstanceOf[Order[L]]

@@ -13,6 +13,7 @@ abstract class Set[K] extends Defaults with NElements1[K] with Enumerable with S
   type Generic = generic.Set[K]
   type Mutable <: mutable.Set[K]
   type Immutable <: immutable.Set[K]
+  type Scala <: scala.collection.immutable.Set[K]
 
   def stringPrefix = "Set"
 

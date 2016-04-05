@@ -5,11 +5,18 @@ package metal
   * This class is a value class only in Scala 2.11, due to bugs in the generation
   * of bridge methods when overloading methods that take/return a value class. 
   */
-final class VPtr[C <: Pointable with Singleton](val raw: Long) extends PtrVersions.Base {
+final class VPtr[C <: Pointable with Singleton](val raw: Long) extends PtrVersions.Base { lhs =>
 
   override def toString = s"VPtr($raw)"
   @inline final def isNull: Boolean = false
   @inline final def nonNull: Boolean = true
+
+  /** Comparison method. */
+  def compare(rhs: VPtr[C]): Int = spire.std.long.LongAlgebra.compare(lhs.raw, rhs.raw)
+
+  def min(rhs: VPtr[C]): VPtr[C] = if (lhs.compare(rhs) < 0) lhs else rhs
+
+  def max(rhs: VPtr[C]): VPtr[C] = if (lhs.compare(rhs) > 0) lhs else rhs
 
 }
 

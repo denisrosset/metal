@@ -15,6 +15,7 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
 
   type Mutable = mutable.Buffer[V]
   type Immutable = immutable.Buffer[V]
+  type Scala = scala.collection.immutable.IndexedSeq[V]
 
   private[metal] def array: Array[V]
 

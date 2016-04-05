@@ -11,6 +11,7 @@ abstract class BitSet extends SortedSet[Int] {
 
   type Immutable = metal.immutable.BitSet
   type Mutable = metal.mutable.BitSet
+  type Scala = scala.collection.immutable.BitSet
 
   def order: Order[Int] = spire.std.int.IntAlgebra
 
