@@ -51,7 +51,7 @@ final class Buffer[@specialized V](var array: Array[V], var length: Int)(implici
   def ensureLength(n: Long): Dummy[V] = {
     val arrayLength: Long = array.length
     if (n > arrayLength) {
-      var newLength: Long = arrayLength.toLong * 2
+      var newLength: Long = spire.math.max(arrayLength.toLong * 2, 1)
       while (n > newLength) newLength = newLength * 2
       if (newLength > Int.MaxValue) newLength = Int.MaxValue
       val newArray = ctV.newArray(newLength.toInt)
