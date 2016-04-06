@@ -11,7 +11,7 @@ trait MapFactory extends generic.MapFactory {
 
   def empty[K:ClassTag:KExtra, V:ClassTag:VExtra]: M[K, V] = reservedSize[K, V](0)
 
-  def reservedSize[K:ClassTag:KExtra, V:ClassTag:VExtra](n: Int): M[K, V]
+  def reservedSize[K:ClassTag:KExtra, V:ClassTag:VExtra](n: Long): M[K, V]
 
   def apply[K:ClassTag:KExtra, V:ClassTag:VExtra](kvPairs: (K, V)*) = fromIterable(kvPairs)
 

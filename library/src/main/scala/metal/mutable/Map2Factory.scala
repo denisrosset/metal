@@ -9,7 +9,7 @@ trait Map2Factory extends generic.Map2Factory {
 
   type M[K, V1, V2] <: mutable.Map2[K, V1, V2]
 
-  def reservedSize[K:ClassTag:KExtra, V1:ClassTag:V1Extra, V2:ClassTag:V2Extra](n: Int): M[K, V1, V2]
+  def reservedSize[K:ClassTag:KExtra, V1:ClassTag:V1Extra, V2:ClassTag:V2Extra](n: Long): M[K, V1, V2]
 
   def empty[K:ClassTag:KExtra, V1:ClassTag:V1Extra, V2:ClassTag:V2Extra]: M[K, V1, V2] = reservedSize[K, V1, V2](0)
 

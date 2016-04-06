@@ -9,8 +9,9 @@ abstract class HashSet[K] extends generic.Set[K] {
 
   import HashSet.{UNUSED, USED}
 
-  type Immutable = immutable.HashSet[K]
-  type Mutable = mutable.HashSet[K]
+  type Immutable = metal.immutable.HashSet[K]
+  type Mutable = metal.mutable.HashSet[K]
+  type Scala = metal.immutable.WrappedHashSet[K]
 
   /** Number of defined slots. */
   def size: Int

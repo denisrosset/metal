@@ -40,6 +40,8 @@ final class HashSet[K](
 
   def toImmutable = new immutable.HashSet[K](keys.clone, buckets.clone, size, used, mask, limit) // TODO: trim arrays?
 
+  def toScala = toImmutable.toScala
+
   def result() = {
     val res = new immutable.HashSet[K](keys, buckets, size, used, mask, limit)
     buckets = new Array[Byte](8) // optimize using empty array
@@ -177,6 +179,9 @@ object HashSet extends generic.HashSetFactory with mutable.SetFactory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:ClassTag:Extra](n: Int): S[K] = ofAllocatedSize(max(n / 2 * 3, n))
+  def reservedSize[K:ClassTag:Extra](n: Long): S[K] = {
+    require(n.isValidInt)
+    ofAllocatedSize(max(n.toInt / 2 * 3, n.toInt))
+  }
 
 }

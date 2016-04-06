@@ -15,6 +15,8 @@ abstract class BitSet extends generic.BitSet with mutable.SortedSet[Int] {
 
   def toImmutable: Immutable = new immutable.BitSet(words.clone) // TODO: trim array
 
+  def toScala = toImmutable.toScala
+
   def ptrRemoveAndAdvance(ptr: VPtr[this.type]): Ptr[this.type] = {
     val nextPtr = ptrNext(ptr)
     ptrRemove(ptr)
@@ -110,10 +112,14 @@ object BitSet extends mutable.SetBuilder[Int, mutable.BitSet] {
   def ofAllocatedWordSize(nWords: Int): mutable.BitSet =
     new mutable.ResizableBitSet(new Array[Long](nWords), 0)
 
-  def reservedSize(n: Int): mutable.BitSet =
-    ofAllocatedWordSize(spire.math.max(startSize, n / WordLength))
+  def reservedSize(n: Long): mutable.BitSet = {
+    require(n.isValidInt)
+    ofAllocatedWordSize(spire.math.max(startSize, n.toInt / WordLength))
+  }
 
-  def fixedSize(n: Int): mutable.BitSet =
-    new mutable.FixedBitSet(new Array[Long](n / WordLength))
+  def fixedSize(n: Long): mutable.BitSet = {
+    require(n.isValidInt)
+    new mutable.FixedBitSet(new Array[Long](n.toInt / WordLength))
+  }
 
 }

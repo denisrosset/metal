@@ -9,8 +9,9 @@ abstract class HashMap[K, V] extends generic.Map[K, V] {
 
   import HashMap.{UNUSED, USED}
 
-  type Immutable = immutable.HashMap[K, V]
-  type Mutable = mutable.HashMap[K, V]
+  type Immutable = metal.immutable.HashMap[K, V]
+  type Mutable = metal.mutable.HashMap[K, V]
+  type Scala = metal.immutable.WrappedHashMap[K, V]
 
   /** Number of defined slots. */
   def size: Int

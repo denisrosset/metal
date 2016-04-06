@@ -3,6 +3,11 @@ package generic
 
 import spire.algebra.Order
 
+/** Base class for sorted sets, with the additional requirements:
+  * 
+  * - elements are enumerated using the Order given during construction,
+  * - pointers to elements are ordered accordingly (i.e. ptr1.key < ptr2.key <=> ptr1 < ptr2).
+  */
 abstract class SortedSet[K] extends generic.Set[K] {
 
   implicit def order: Order[K]

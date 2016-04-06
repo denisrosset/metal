@@ -9,7 +9,7 @@ trait SetFactory extends generic.SetFactory {
 
   type S[K] <: mutable.Set[K]
 
-  def reservedSize[A:ClassTag:Extra](n: Int): S[A]
+  def reservedSize[A:ClassTag:Extra](n: Long): S[A]
 
   def empty[A:ClassTag:Extra]: S[A] = reservedSize[A](0)
 

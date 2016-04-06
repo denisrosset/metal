@@ -6,9 +6,9 @@ import scala.reflect.ClassTag
 trait SetFactory extends generic.SetFactory {
 
   type S[K] <: immutable.Set[K]
-  type M[K] <: mutable.Set[K] { type Immutable <: S[K] }
+  type MS[K] <: mutable.Set[K] { type Immutable <: S[K] }
 
-  def mutableFactory: mutable.SetFactory { type S[K] = M[K]; type Extra[K] = SetFactory.this.Extra[K] }
+  def mutableFactory: mutable.SetFactory { type S[K] = MS[K]; type Extra[K] = SetFactory.this.Extra[K] }
 
   def empty[A:ClassTag:Extra]: S[A] = mutableFactory.empty[A].result()
 

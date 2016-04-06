@@ -3,9 +3,9 @@ package immutable
 
 trait SetBuilder[K, SK <: immutable.Set[K]] extends generic.SetBuilder[K, SK] {
 
-  type MK <: mutable.Set[K] { type Immutable <: SK }
+  type MSK <: mutable.Set[K] { type Immutable <: SK }
 
-  def mutableBuilder: mutable.SetBuilder[K, MK]
+  def mutableBuilder: mutable.SetBuilder[K, MSK]
 
   def empty: SK = mutableBuilder.empty.result()
 

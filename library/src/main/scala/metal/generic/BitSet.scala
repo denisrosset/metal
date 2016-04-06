@@ -76,6 +76,43 @@ abstract class BitSet extends SortedSet[Int] {
     if (contained) Ptr(this, key) else Ptr.Null(this)
   }
 
+  def findOrNextAfter[@specialized L](keyL: L): Ptr[this.type] = {
+    val key = keyL.asInstanceOf[Int]
+    var w = key >>> LogWL
+    if (w >= nWords)
+      return Ptr.Null(this)
+    var word = words(w) & ((-1L) << key)
+    while (true) {
+      if (word != 0)
+        return Ptr(this, (w * WordLength) + java.lang.Long.numberOfTrailingZeros(word))
+      w += 1
+      if (w == nWords)
+        return Ptr.Null(this)
+      word = words(w)
+    }
+    Ptr.Null(this)
+  }
+
+  def findOrNextBefore[@specialized L](keyL: L): Ptr[this.type] = {
+    val key = keyL.asInstanceOf[Int]
+    var w = key >>> LogWL
+    var word = 0L
+    if (w >= nWords) {
+      w = nWords - 1
+      word = words(w)
+    } else
+      word = words(w) & ((-1L) >>> key)
+    while (true) {
+      if (word != 0)
+        return Ptr(this, (w * WordLength) + 63 - java.lang.Long.numberOfLeadingZeros(word))
+      w -= 1
+      if (w == -1)
+        return Ptr.Null(this)
+      word = words(w)
+    }
+    Ptr.Null(this)
+  }
+
   def ptrNext(ptr: VPtr[this.type]): Ptr[this.type] = {
     val from = ptr.raw.toInt + 1
     var w = from >>> LogWL

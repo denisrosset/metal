@@ -17,8 +17,6 @@ final class ArraySortedSet[K](
 
   def toImmutable: Immutable = new metal.immutable.ArraySortedSet(items.clone, longSize) // TODO: trim the array
 
-  type Scala = scala.collection.immutable.SortedSet[K]
-
   def toScala: Scala = toImmutable.toScala
 
   def result(): Immutable = {
@@ -80,9 +78,10 @@ object ArraySortedSet extends metal.mutable.SetFactory {
   type Extra[K] = Order[K]
   type S[K] = metal.mutable.ArraySortedSet[K]
 
-  def reservedSize[K:ClassTag:Order](n: Int): S[K] = {
+  def reservedSize[K:ClassTag:Order](n: Long): S[K] = {
+    require(n.isValidInt)
     val K = MetalTag[K]
-    new metal.mutable.ArraySortedSet[K](implicitly[ClassTag[K]].newArray(n), 0L)
+    new metal.mutable.ArraySortedSet[K](implicitly[ClassTag[K]].newArray(n.toInt), 0L)
   }
 
 }

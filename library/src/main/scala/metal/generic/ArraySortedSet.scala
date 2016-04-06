@@ -10,6 +10,7 @@ abstract class ArraySortedSet[K] extends SortedSet[K] {
 
   type Immutable = metal.immutable.ArraySortedSet[K]
   type Mutable = metal.mutable.ArraySortedSet[K]
+  type Scala = metal.immutable.WrappedArraySortedSet[K]
 
   @inline final def isEmpty = longSize == 0
   @inline final def nonEmpty = longSize > 0

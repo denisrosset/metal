@@ -13,6 +13,8 @@ final class Buffer[@specialized V](var array: Array[V], var length: Int)(implici
 
   def toImmutable = new immutable.Buffer[V](array.clone, length) // TODO: trim the array
 
+  def toScala = toImmutable.toScala
+
   def sort()(implicit order: Order[V]): Unit = {
     QuickSort.qsort(array, 0, length.toInt - 1)(order, ctV)
   }

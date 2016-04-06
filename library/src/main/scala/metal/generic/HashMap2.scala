@@ -11,6 +11,7 @@ abstract class HashMap2[K, V1, V2] extends generic.Map2[K, V1, V2] {
 
   type Immutable = immutable.HashMap2[K, V1, V2]
   type Mutable = mutable.HashMap2[K, V1, V2]
+  type Scala = metal.immutable.WrappedHashMap2[K, V1, V2]
 
   /** Number of defined slots. */
   def size: Int

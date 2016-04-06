@@ -28,6 +28,8 @@ final class HashMap2[K, V1, V2](
 
   def toImmutable = new immutable.HashMap2[K, V1, V2](keys, buckets, values1, values2, size, used, mask, limit)
 
+  def toScala = toImmutable.toScala
+
   def reset(): Unit = {
     cforRange(0 until nSlots) { i =>
       buckets(i) = UNUSED
@@ -202,6 +204,9 @@ object HashMap2 extends generic.HashMap2Factory with mutable.Map2Factory {
       limit = (sz * 0.65).toInt)
   }
 
-  def reservedSize[K:ClassTag:KExtra, V1:ClassTag:V1Extra, V2:ClassTag:V2Extra](n: Int): M[K, V1, V2] = ofAllocatedSize[K, V1, V2](max(n / 2 * 3, n))
+  def reservedSize[K:ClassTag:KExtra, V1:ClassTag:V1Extra, V2:ClassTag:V2Extra](n: Long): M[K, V1, V2] = {
+    require(n.isValidInt)
+    ofAllocatedSize[K, V1, V2](max(n.toInt / 2 * 3, n.toInt))
+  }
 
 }

@@ -5,7 +5,7 @@ import spire.syntax.cfor._
 
 trait SetBuilder[K, SK <: mutable.Set[K]] extends generic.SetBuilder[K, SK] {
 
-  def reservedSize(n: Int): SK
+  def reservedSize(n: Long): SK
 
   def empty: SK = reservedSize(0)
 
