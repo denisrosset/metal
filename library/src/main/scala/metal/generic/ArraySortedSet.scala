@@ -46,7 +46,7 @@ abstract class ArraySortedSet[K] extends SortedSet[K] {
     * first element in the range greater than the key, or the collection size if all elements
     * in the range are less than the specified key. 
     * 
-    * Same convention as in [[java.util.Arrays.binarySearch]].
+    * Same convention as in `java.util.Arrays.binarySearch`.
     */
   protected def findWhere[@specialized L](item: L): Int = {
     val itemsL = items.asInstanceOf[Array[L]]

@@ -54,7 +54,7 @@ $lhsCache
     val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[Boolean](q"""
 val $lhsCache = $lhs
-val $ptr: Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
+val $ptr: _root_.metal.Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull) {
   $lhsCache.ptrRemove(_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
   true
@@ -70,7 +70,7 @@ if ($ptr.nonNull) {
     val List(lhsCache, ptr) = util.names("lhsCache", "ptr")
     c.Expr[T](q"""
 val $lhsCache = $lhs
-val $ptr: Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
+val $ptr: _root_.metal.Ptr[$lhsCache.type] = $lhsCache.ptrFind[$tagK]($key)
 if ($ptr.nonNull)
   $lhsCache.ptrRemove(_root_.metal.VPtr[$lhsCache.type]($ptr.raw))
 $lhs
