@@ -122,4 +122,13 @@ object BitSet extends mutable.SetBuilder[Int, mutable.BitSet] {
     new mutable.FixedBitSet(new Array[Long](n.toInt / WordLength))
   }
 
+  override def fromIterable(items: Iterable[Int]): mutable.BitSet = items match {
+    case bs1: scala.collection.immutable.BitSet.BitSet1 => new mutable.ResizableBitSet(Array(bs1.elems), 1)
+    case bsn: scala.collection.immutable.BitSet.BitSetN => new mutable.ResizableBitSet(bsn.elems, bsn.elems.length)
+    case bs: scala.collection.BitSet =>
+      val bm = bs.toBitMask
+      new mutable.ResizableBitSet(bm, bm.length)
+    case _ => super.fromIterable(items)
+  }
+
 }
