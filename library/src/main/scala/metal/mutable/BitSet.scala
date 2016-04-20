@@ -109,17 +109,20 @@ object BitSet extends mutable.SetBuilder[Int, mutable.BitSet] {
 
   @inline final def startSize = 2
 
+  def nWordsForSize(n: Int) =
+    if (n == 0) 0 else ((n - 1) / WordLength) + 1
+
   def ofAllocatedWordSize(nWords: Int): mutable.BitSet =
     new mutable.ResizableBitSet(new Array[Long](nWords), 0)
 
   def reservedSize(n: Long): mutable.BitSet = {
     require(n.isValidInt)
-    ofAllocatedWordSize(spire.math.max(startSize, n.toInt / WordLength))
+    ofAllocatedWordSize(spire.math.max(startSize, nWordsForSize(n.toInt)))
   }
 
   def fixedSize(n: Long): mutable.BitSet = {
     require(n.isValidInt)
-    new mutable.FixedBitSet(new Array[Long](n.toInt / WordLength))
+    new mutable.FixedBitSet(new Array[Long](nWordsForSize(n.toInt)))
   }
 
 }
