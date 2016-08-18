@@ -2,8 +2,8 @@ import com.typesafe.sbt.site.util.SiteHelpers
 import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
 import sbtunidoc.Plugin.UnidocKeys._
 
-val scalaCheckVersion = "1.12.4"
-val scalaTestVersion = "3.0.0-M7"
+val scalaCheckVersion = "1.13.2"
+val scalaTestVersion = "3.0.0"
 val spireVersion = "0.11.0"
 
 // custom keys used by sbt-site

@@ -8,8 +8,7 @@ import scala.reflect.ClassTag
 import spire.util.Opt
 
 import org.scalatest.Suites
-import org.scalacheck.Arbitrary
-
+import org.scalacheck.{Arbitrary, Cogen}
 import metal.syntax._
 
 trait Map2Check[K, V1, V2] extends MetalSuite {
@@ -24,16 +23,19 @@ trait Map2Check[K, V1, V2] extends MetalSuite {
   override lazy val suiteName = s"Map2Check[$kName, $v1Name, $v2Name]($collName)"
 
   implicit def arbK: Arbitrary[K]
+  implicit def cogenK: Cogen[K]
   implicit def extraK: factory.KExtra[K]
   implicit def ctK: ClassTag[K]
   implicit def mK: MetalTag[K]
 
   implicit def arbV1: Arbitrary[V1]
+  implicit def cogenV1: Cogen[V1]
   implicit def extraV1: factory.V1Extra[V1]
   implicit def ctV1: ClassTag[V1]
   implicit def mV1: MetalTag[V1]
 
   implicit def arbV2: Arbitrary[V2]
+  implicit def cogenV2: Cogen[V2]
   implicit def extraV2: factory.V2Extra[V2]
   implicit def ctV2: ClassTag[V2]
   implicit def mV2: MetalTag[V2]
@@ -212,28 +214,34 @@ object Map2Check {
 
   def apply[K, V1, V2](factory0: metal.mutable.Map2Factory)(implicit
                                                             arbK0: Arbitrary[K],
+                                                            cogenK0: Cogen[K],
                                                             extraK0: factory0.KExtra[K],
                                                             ctK0: ClassTag[K],
                                                             mK0: MetalTag[K],
                                                             arbV10: Arbitrary[V1],
+                                                            cogenV10: Cogen[V1],
                                                             extraV10: factory0.V1Extra[V1],
                                                             ctV10: ClassTag[V1],
                                                             mV10: MetalTag[V1],
                                                             arbV20: Arbitrary[V2],
+                                                            cogenV20: Cogen[V2],
                                                             extraV20: factory0.V2Extra[V2],
                                                             ctV20: ClassTag[V2],
                                                             mV20: MetalTag[V2]): Map2Check[K, V1, V2] =
     new Map2Check[K, V1, V2] {
       val factory: factory0.type = factory0
       def arbK = arbK0
+      def cogenK = cogenK0
       def extraK = extraK0
       def ctK = ctK0
       def mK = mK0
       def arbV1 = arbV10
+      def cogenV1 = cogenV10
       def extraV1 = extraV10
       def ctV1 = ctV10
       def mV1 = mV10
       def arbV2 = arbV20
+      def cogenV2 = cogenV20
       def extraV2 = extraV20
       def ctV2 = ctV20
       def mV2 = mV20

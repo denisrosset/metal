@@ -6,8 +6,7 @@ import scala.collection.mutable.{Map => ScalaMutableMap}
 import scala.reflect.ClassTag
 
 import org.scalatest.Suites
-import org.scalacheck.Arbitrary
-
+import org.scalacheck.{Arbitrary, Cogen}
 import metal.syntax._
 
 trait MapCheck[K, V] extends MetalSuite {
@@ -21,11 +20,13 @@ trait MapCheck[K, V] extends MetalSuite {
   override lazy val suiteName = s"MapCheck[$kName, $vName]($collName)"
 
   implicit def arbK: Arbitrary[K]
+  implicit def cogenK: Cogen[K]
   implicit def extraK: factory.KExtra[K]
   implicit def ctK: ClassTag[K]
   implicit def mK: MetalTag[K]
 
   implicit def arbV: Arbitrary[V]
+  implicit def cogenV: Cogen[V]
   implicit def extraV: factory.VExtra[V]
   implicit def ctV: ClassTag[V]
   implicit def mV: MetalTag[V]
@@ -168,20 +169,24 @@ object MapCheck {
 
   def apply[K, V](factory0: metal.mutable.MapFactory)(implicit
                                                       arbK0: Arbitrary[K],
+                                                      cogenK0: Cogen[K],
                                                       extraK0: factory0.KExtra[K],
                                                       ctK0: ClassTag[K],
                                                       mK0: MetalTag[K],
                                                       arbV0: Arbitrary[V],
+                                                      cogenV0: Cogen[V],
                                                       extraV0: factory0.VExtra[V],
                                                       ctV0: ClassTag[V],
                                                       mV0: MetalTag[V]): MapCheck[K, V] =
     new MapCheck[K, V] {
       val factory: factory0.type = factory0
       def arbK = arbK0
+      def cogenK = cogenK0
       def extraK = extraK0
       def ctK = ctK0
       def mK = mK0
       def arbV = arbV0
+      def cogenV = cogenV0
       def extraV = extraV0
       def ctV = ctV0
       def mV = mV0

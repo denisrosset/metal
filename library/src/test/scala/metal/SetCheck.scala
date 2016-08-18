@@ -8,8 +8,7 @@ import scala.reflect.ClassTag
 import spire.std.any._
 
 import org.scalatest.Suites
-import org.scalacheck.{Arbitrary, Gen}
-
+import org.scalacheck.{Arbitrary, Cogen, Gen}
 import metal.syntax._
 
 trait SetCheck[A] extends MetalSuite {
@@ -34,6 +33,7 @@ trait SetCheck[A] extends MetalSuite {
   override lazy val suiteName = s"SetCheck[$aName]($collName)"
 
   implicit def arbA: Arbitrary[A]
+  implicit def cogenA: Cogen[A]
   implicit def ctA: ClassTag[A]
   implicit def mA: MetalTag[A]
 
@@ -184,14 +184,16 @@ trait FactorySetCheck[A] extends SetCheck[A] {
 object FactorySetCheck {
 
   def apply[A](factory0: metal.mutable.SetFactory)(implicit
-    arbA0: Arbitrary[A],
-    ctA0: ClassTag[A],
-    extra0: factory0.Extra[A],
-    mA0: MetalTag[A]
+                                                   arbA0: Arbitrary[A],
+                                                   cogenA0: Cogen[A],
+                                                   ctA0: ClassTag[A],
+                                                   extra0: factory0.Extra[A],
+                                                   mA0: MetalTag[A]
   ): SetCheck[A] =
     new FactorySetCheck[A] {
       val factory: factory0.type = factory0
       def arbA = arbA0
+      def cogenA = cogenA0
       def ctA = ctA0
       def mA = mA0
       def extra = extra0
@@ -202,6 +204,7 @@ object FactorySetCheck {
 class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: MetalTag[Int]) extends SetCheck[Int] {
 
   def arbA: Arbitrary[Int] = Arbitrary(Gen.choose(0, 10000))
+  def cogenA: Cogen[Int] = implicitly
 
   type SetA = metal.mutable.BitSet
   def collName = "BitSet"
