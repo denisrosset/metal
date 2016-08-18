@@ -9,11 +9,13 @@ final class BitSet(val words: Array[Long]) extends generic.BitSet with immutable
 
 }
 
-object BitSet extends SetBuilder[Int, immutable.BitSet] {
+object BitSet extends generic.BitSetBuilder[immutable.BitSet] with SetBuilder[Int, immutable.BitSet] {
 
-  type MSK = mutable.BitSet
+  def fromBitmaskNoCopy(words: Array[Long], nWords: Int): BitSet = new BitSet(words)
 
-  def mutableBuilder = mutable.BitSet
+  type MSK = mutable.ResizableBitSet
+
+  def mutableBuilder = mutable.ResizableBitSet
 
   override def fromIterable(items: Iterable[Int]): immutable.BitSet = items match {
     case bs1: scala.collection.immutable.BitSet.BitSet1 => new immutable.BitSet(Array(bs1.elems))

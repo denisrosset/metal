@@ -208,10 +208,10 @@ class BitSetCheck(implicit val ctA: ClassTag[Int], val mA: MetalTag[Int]) extend
 
   type SetA = metal.mutable.BitSet
   def collName = "BitSet"
-  def emptySet = metal.mutable.BitSet.empty
-  def apply(xs: Int*) = metal.mutable.BitSet(xs: _*)
-  def fromArray(xs: Array[Int]) = metal.mutable.BitSet.fromArray(xs)
-  def fromIterable(xs: Iterable[Int]) = metal.mutable.BitSet.fromIterable(xs)
+  def emptySet = metal.mutable.ResizableBitSet.empty
+  def apply(xs: Int*) = metal.mutable.ResizableBitSet(xs: _*)
+  def fromArray(xs: Array[Int]) = metal.mutable.ResizableBitSet.fromArray(xs)
+  def fromIterable(xs: Iterable[Int]) = metal.mutable.ResizableBitSet.fromIterable(xs)
 
 }
 

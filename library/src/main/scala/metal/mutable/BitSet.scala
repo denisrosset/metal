@@ -1,8 +1,6 @@
 package metal
 package mutable
 
-import scala.annotation.tailrec
-
 import spire.syntax.cfor._
 import spire.math.min
 
@@ -26,61 +24,57 @@ abstract class BitSet extends generic.BitSet with mutable.SortedSet[Int] {
     nextPtr
   }
 
-  def &=(other: generic.Set[Int]): this.type = other match {
-    case rhs: generic.BitSet =>
-      cforRange(0 until min(nWords, rhs.nWords)) { w =>
-        words(w) &= rhs.word(w)
-      }
-      if (rhs.nWords < nWords)
-        java.util.Arrays.fill(words, rhs.nWords, nWords, 0L) // zero in remaining words
-      this
-    case _ =>
-      @tailrec def rec(ptr: Ptr[this.type]): Unit = ptr match {
-        case IsVPtr(vp) =>
-          val i = ptrKey[Int](vp)
-          if (other.ptrFind[Int](i).nonNull)
-            rec(ptrNext(vp))
-          else
-            rec(ptrRemoveAndAdvance(vp))
-        case _ =>
-      }
-      rec(this.ptr)
-      this
-  }
-
-  def &~=(other: generic.Set[Int]): this.type = other match {
-    case rhs: generic.BitSet =>
-      cforRange(0 until min(nWords, rhs.nWords)) { w =>
-        words(w) &= ~rhs.word(w)
-      }
-      this
-    case _ =>
-      @tailrec def rec(ptr: Ptr[this.type]): Unit = ptr match {
-        case IsVPtr(vp) =>
-          val i = ptrKey[Int](vp)
-          if (other.ptrFind[Int](i).nonNull)
-            rec(ptrRemoveAndAdvance(vp))
-          else
-            rec(ptrNext(vp))
-        case _ =>
-      }
-      rec(this.ptr)
-      this
-  }
-
-  def |=(other: generic.Set[Int]): this.type = {
-    @tailrec def rec(ptr: Ptr[other.type]): Unit = ptr match {
-      case IsVPtr(vp) =>
-        val i = other.ptrKey[Int](vp)
-        ptrAddKey[Int](i)
-        rec(other.ptrNext(vp))
-      case _ =>
+  def &=(rhs: generic.BitSet): this.type = {
+    cforRange(0 until min(nWords, rhs.nWords)) { w =>
+      words(w) &= rhs.word(w)
     }
-    rec(other.ptr)
+    if (rhs.nWords < nWords)
+      java.util.Arrays.fill(words, rhs.nWords, nWords, 0L) // zero in remaining words
     this
   }
 
+  def &~=(rhs: generic.BitSet): this.type = {
+    cforRange(0 until min(nWords, rhs.nWords)) { w =>
+      words(w) &= ~rhs.word(w)
+    }
+    this
+  }
+
+  def |=(other: generic.BitSet): this.type
+
 }
+
+object BitSet {
+
+  @inline final def startSize = 2
+
+}
+
+abstract class BitSetBuilder[B <: mutable.BitSet] extends generic.BitSetBuilder[B] with mutable.SetBuilder[Int, B] {
+
+  import generic.BitSet.nWordsForSize
+  import mutable.BitSet.startSize
+
+  def ofAllocatedWordSize(nWords: Int): B =
+    fromBitmaskNoCopy(new Array[Long](nWords), 0)
+
+  /** Returns a bitset with sufficient space to store elements in 0 ... n-1 without further allocations. */
+  def reservedSize(n: Long): B = {
+    require(n.isValidInt)
+    ofAllocatedWordSize(spire.math.max(startSize, nWordsForSize(n.toInt)))
+  }
+
+  override def fromIterable(items: Iterable[Int]): B = items match {
+    case bs1: scala.collection.immutable.BitSet.BitSet1 => fromBitmaskNoCopy(Array(bs1.elems), 1)
+    case bsn: scala.collection.immutable.BitSet.BitSetN => fromBitmaskNoCopy(bsn.elems.clone, bsn.elems.length)
+    case bs: scala.collection.BitSet =>
+      val bm = bs.toBitMask
+      fromBitmaskNoCopy(bm, bm.length)
+    case _ => super.fromIterable(items)
+  }
+
+}
+
 
 /** Bitset represented by an array of longs, each `Long` containing the information
   * about the membership of 64 integers. The elements are all non-negative.
@@ -126,16 +120,20 @@ final class ResizableBitSet(var words: Array[Long], var nWords: Int) extends mut
     words(w) &= ~(1L << i)
   }
 
-  override def |=(other: generic.Set[Int]): this.type = other match {
-    case rhs: generic.BitSet =>
-      if (rhs.nWords > nWords)
-        resizeTo(rhs.nWords)
-      cforRange(0 until rhs.nWords) { w =>
-        words(w) |= rhs.word(w)
-      }
-      this
-    case _ => super.|=(other)
+  override def |=(rhs: generic.BitSet): this.type = {
+    if (rhs.nWords > nWords)
+      resizeTo(rhs.nWords)
+    cforRange(0 until rhs.nWords) { w =>
+      words(w) |= rhs.word(w)
+    }
+    this
   }
+
+}
+
+object ResizableBitSet extends mutable.BitSetBuilder[ResizableBitSet] {
+
+  def fromBitmaskNoCopy(words: Array[Long], nWords: Int): ResizableBitSet = new ResizableBitSet(words, nWords)
 
 }
 
@@ -172,52 +170,20 @@ final class FixedBitSet(var words: Array[Long]) extends mutable.BitSet {
     words(w) &= ~(1L << i)
   }
 
-  override def |=(other: generic.Set[Int]): this.type = other match {
-    case rhs: generic.BitSet =>
-      cforRange(rhs.nWords - 1 to 0 by -1) { w =>
-        val word = rhs.word(w)
-        if (word != 0L)
-          words(w) |= word
-      }
-      this
-    case _ => super.|=(other)
+  override def |=(rhs: generic.BitSet): this.type = {
+    cforRange(rhs.nWords - 1 to 0 by -1) { w =>
+      val word = rhs.word(w)
+      if (word != 0L)
+        words(w) |= word
+    }
+    this
   }
 
 
 }
 
-object BitSet extends mutable.SetBuilder[Int, mutable.BitSet] {
+object FixedBitSet extends mutable.BitSetBuilder[FixedBitSet] {
 
-  import generic.BitSet.WordLength
-
-  @inline final def startSize = 2
-
-  /** Returns the number of words needed to store elements in 0 ... n-1. */
-  def nWordsForSize(n: Int) =
-    if (n == 0) 0 else ((n - 1) / WordLength) + 1
-
-  def ofAllocatedWordSize(nWords: Int): mutable.BitSet =
-    new mutable.ResizableBitSet(new Array[Long](nWords), 0)
-
-  /** Returns a bitset with sufficient space to store elements in 0 ... n-1 without further allocations. */
-  def reservedSize(n: Long): mutable.BitSet = {
-    require(n.isValidInt)
-    ofAllocatedWordSize(spire.math.max(startSize, nWordsForSize(n.toInt)))
-  }
-
-  /** Returns a fixed size bitset able to store elements in 0 ... n-1. */
-  def fixedSize(n: Long): mutable.BitSet = {
-    require(n.isValidInt)
-    new mutable.FixedBitSet(new Array[Long](nWordsForSize(n.toInt)))
-  }
-
-  override def fromIterable(items: Iterable[Int]): mutable.BitSet = items match {
-    case bs1: scala.collection.immutable.BitSet.BitSet1 => new mutable.ResizableBitSet(Array(bs1.elems), 1)
-    case bsn: scala.collection.immutable.BitSet.BitSetN => new mutable.ResizableBitSet(bsn.elems, bsn.elems.length)
-    case bs: scala.collection.BitSet =>
-      val bm = bs.toBitMask
-      new mutable.ResizableBitSet(bm, bm.length)
-    case _ => super.fromIterable(items)
-  }
+  def fromBitmaskNoCopy(words: Array[Long], nWords: Int): FixedBitSet = new FixedBitSet(words)
 
 }

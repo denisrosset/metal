@@ -2,6 +2,7 @@ package metal
 
 import scala.collection.{BitSet => ScalaBitSet}
 
+import org.scalacheck.{Arbitrary, Gen}
 import org.scalactic.anyvals.PosZInt
 
 class BitSetSuite extends MetalSuite {
@@ -12,89 +13,112 @@ class BitSetSuite extends MetalSuite {
   def domainSize(a: scala.collection.Set[Int]) =
     if (a.isEmpty) 0 else a.max + 1
 
-  test("mutable.BitSet &= mutable.BitSet") {
+  test("mutable.ResizableBitSet &= mutable.ResizableBitSet") {
     forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      val m1 = mutable.BitSet.fromIterable(a1)
-      val m2 = mutable.BitSet.fromIterable(a2)
+      val m1 = mutable.ResizableBitSet.fromIterable(a1)
+      val m2 = mutable.ResizableBitSet.fromIterable(a2)
       m1 &= m2
       m1.toScala shouldBe (a1 & a2)
     }
   }
 
-  test("mutable.BitSet &= mutable.BitSet (fixed size)") {
-
+  test("mutable.FixedBitSet &= mutable.FixedBitSet") {
     forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
       import metal.syntax._
-      val m1 = mutable.BitSet.fixedSize(domainSize(a1))
-      a1.foreach( m1 += _ )
-      val m2 = mutable.BitSet.fixedSize(domainSize(a2))
-      a2.foreach( m2 += _)
+      val m1 = mutable.FixedBitSet.fromIterable(a1)
+      val m2 = mutable.FixedBitSet.fromIterable(a2)
       m1 &= m2
       m1.toScala shouldBe (a1 & a2)
     }
   }
 
-  test("mutable.BitSet &= mutable.HashSet[Int]") {
+  test("mutable.ResizableBitSet &~= mutable.ResizableBitSet") {
     forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      val m1 = mutable.BitSet.fromIterable(a1)
-      val m2 = mutable.HashSet.fromIterable(a2)
-      m1 &= m2
-      m1.toScala shouldBe (a1 & a2)
-    }
-  }
-
-  test("mutable.BitSet &= mutable.HashSet[Int] (fixed size)") {
-    forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      import metal.syntax._
-      val m1 = mutable.BitSet.fixedSize(domainSize(a1))
-      a1.foreach( m1 += _ )
-      val m2 = mutable.HashSet.fromIterable(a2)
-      m1 &= m2
-      m1.toScala shouldBe (a1 & a2)
-    }
-  }
-
-  test("mutable.BitSet &~= mutable.BitSet") {
-    forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      val m1 = mutable.BitSet.fromIterable(a1)
-      val m2 = mutable.BitSet.fromIterable(a2)
+      val m1 = mutable.ResizableBitSet.fromIterable(a1)
+      val m2 = mutable.ResizableBitSet.fromIterable(a2)
       m1 &~= m2
       m1.toScala shouldBe (a1 &~ a2)
     }
   }
 
-  test("mutable.BitSet &~= mutable.HashSet") {
+  test("mutable.FixedBitSet &~= mutable.FixedBitSet") {
     forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      val m1 = mutable.BitSet.fromIterable(a1)
-      val m2 = mutable.HashSet.fromIterable(a2)
+      val m1 = mutable.FixedBitSet.fromIterable(a1)
+      val m2 = mutable.FixedBitSet.fromIterable(a2)
       m1 &~= m2
       m1.toScala shouldBe (a1 &~ a2)
     }
   }
 
-  test("mutable.BitSet |= mutable.BitSet") {
+
+  test("mutable.ResizableBitSet |= mutable.ResizableBitSet") {
     forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      val m1 = mutable.BitSet.fromIterable(a1)
-      val m2 = mutable.BitSet.fromIterable(a2)
+      val m1 = mutable.ResizableBitSet.fromIterable(a1)
+      val m2 = mutable.ResizableBitSet.fromIterable(a2)
       m1 |= m2
       m1.toScala shouldBe (a1 | a2)
     }
   }
 
-  test("mutable.BitSet |= mutable.HashSet") {
+  test("isDisjoint") {
     forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
-      val m1 = mutable.BitSet.fromIterable(a1)
-      val m2 = mutable.HashSet.fromIterable(a2)
-      m1 |= m2
-      m1.toScala shouldBe (a1 | a2)
+      val i1 = immutable.BitSet.fromIterable(a1)
+      val i2 = immutable.BitSet.fromIterable(a2)
+      (i1 isDisjoint i2) shouldBe (a1 & a2).isEmpty
     }
   }
 
-  test("Discovered bug in mutable.BitSet &=") {
-    val arg0 = mutable.BitSet(0, 2, 3, 4, 5, 9, 10, 13, 15, 17, 18, 19, 25, 27, 28, 29, 33, 35, 38, 39, 41, 43, 46, 47, 49, 50, 51, 54, 57, 60, 62, 63, 64, 66, 67, 69)
-    val arg1 = mutable.BitSet.empty
-    arg0 &= arg1
-    arg0.isEmpty shouldBe true
+  def minOrMinusOne(set: scala.collection.Set[Int]): Int = if (set.isEmpty) -1 else set.min
+
+  test("minOfDifference") {
+    forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
+      val i1 = immutable.BitSet.fromIterable(a1)
+      val i2 = immutable.BitSet.fromIterable(a2)
+      generic.BitSet.minOfDifference(i1, i2) shouldBe minOrMinusOne(a1 diff a2)
+    }
   }
+
+  test("minOfIntersection") {
+    forAll { (a1: ScalaBitSet, a2: ScalaBitSet) =>
+      val i1 = immutable.BitSet.fromIterable(a1)
+      val i2 = immutable.BitSet.fromIterable(a2)
+      generic.BitSet.minOfIntersection(i1, i2) shouldBe minOrMinusOne(a1 intersect a2)
+    }
+  }
+
+  test("nextOfDifference") {
+    forAll { (a1: ScalaBitSet, a2: ScalaBitSet, i: Index) =>
+      val i1 = immutable.BitSet.fromIterable(a1)
+      val i2 = immutable.BitSet.fromIterable(a2)
+      generic.BitSet.nextOfDifference(i, i1, i2) shouldBe minOrMinusOne((a1 diff a2).filter(_ > i))
+    }
+  }
+
+  test("nextOfIntersection") {
+    forAll { (a1: ScalaBitSet, a2: ScalaBitSet, i: Index) =>
+      val i1 = immutable.BitSet.fromIterable(a1)
+      val i2 = immutable.BitSet.fromIterable(a2)
+      generic.BitSet.nextOfIntersection(i, i1, i2) shouldBe minOrMinusOne((a1 intersect a2).filter(_ > i))
+    }
+  }
+
+  test("zeroUntil") {
+    forAll { (n: Index) =>
+      val i = immutable.BitSet.zeroUntil((n: Int) + 1)
+      val b = (0 until (n: Int) + 1).toSet
+      i.toScala shouldBe b
+    }
+  }
+}
+
+class Index(val underlying: Int) extends AnyVal
+
+object Index {
+
+  implicit def toInt(i: Index): Int = i.underlying
+
+  implicit lazy val arbIndex: Arbitrary[Index] = Arbitrary(
+    Gen.sized(sz => Gen.choose(0, sz).map(new Index(_)))
+  )
 
 }

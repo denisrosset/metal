@@ -4,8 +4,10 @@ package generic
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
+import spire.math.min
+import spire.syntax.cfor._
 
-abstract class BitSet extends SortedSet[Int] {
+abstract class BitSet extends SortedSet[Int] { lhs =>
 
   import generic.BitSet.{WordLength, LogWL}
 
@@ -134,11 +136,114 @@ abstract class BitSet extends SortedSet[Int] {
 
   def ptrElement1[@specialized E1](ptr: VPtr[this.type]): E1 = ptr.raw.toInt.asInstanceOf[E1]
 
+  def isDisjoint(rhs: generic.BitSet): Boolean = {
+    cforRange(0 until min(lhs.nWords, rhs.nWords)) { w =>
+      if ((lhs.words(w) & rhs.words(w)) != 0L) return false
+    }
+    true
+  }
+
 }
 
 object BitSet {
 
   val LogWL = 6
   val WordLength = 64
+
+  import java.lang.Long.numberOfTrailingZeros
+
+  /** Returns the number of words needed to store elements in 0 ... n-1. */
+  def nWordsForSize(n: Int) =
+    if (n == 0) 0 else ((n - 1) / WordLength) + 1
+
+
+  /** Returns the minimal element of the bitset (lhs diff rhs) if non-empty, or -1. */
+  def minOfDifference(lhs: generic.BitSet, rhs: generic.BitSet): Int = {
+    var w = 0
+    while (w < min(lhs.nWords, rhs.nWords)) {
+      val word = lhs.words(w) & ~rhs.words(w)
+      if (word != 0L)
+        return w * WordLength + numberOfTrailingZeros(word)
+      w += 1
+    }
+    while (w < lhs.nWords) {
+      val word = lhs.words(w)
+      if (word != 0L)
+        return w * WordLength + numberOfTrailingZeros(word)
+    }
+    -1
+  }
+
+  /** Returns the minimal element of the bitset (lhs diff rhs) strictly greater than i or -1. */
+  def nextOfDifference(i: Int, lhs: generic.BitSet, rhs: generic.BitSet): Int = {
+    val from = i + 1
+    var w = from / 64
+    if (w >= lhs.nWords)
+      return -1
+    var word = (lhs.words(w) & ~rhs.words(w)) & ((-1L) << from)
+    while (true) {
+      if (word != 0)
+        return w * WordLength + numberOfTrailingZeros(word)
+      w += 1
+      if (w == lhs.nWords) {
+        while (w < lhs.nWords) {
+          word = lhs.words(w)
+          if (word != 0)
+            return w * WordLength + numberOfTrailingZeros(word)
+        }
+        return -1
+      }
+      word = lhs.words(w) & ~rhs.words(w)
+    }
+    -1
+  }
+
+  /** Returns the minimal element of the bitset (lhs intersect rhs) if non-empty, or -1. */
+  def minOfIntersection(lhs: generic.BitSet, rhs: generic.BitSet): Int = {
+    var w = 0
+    val nWords = min(lhs.nWords, rhs.nWords)
+    while (w < nWords && (lhs.words(w) & rhs.words(w)) == 0L) {
+      w += 1
+    }
+    if (w == nWords) return -1
+    w * 64 + numberOfTrailingZeros((lhs.words(w) & rhs.words(w)))
+  }
+
+  /** Returns the minimal element of the bitset (lhs intersect rhs) strictly greater than i or -1. */
+  def nextOfIntersection(i: Int, lhs: generic.BitSet, rhs: generic.BitSet): Int = {
+    val from = i + 1
+    var w = from / 64
+    val nWords = min(lhs.nWords, rhs.nWords)
+    if (w >= nWords)
+      return -1
+    var word = (lhs.words(w) & rhs.words(w)) & ((-1L) << from)
+    while (true) {
+      if (word != 0)
+        return (w * 64) + numberOfTrailingZeros(word)
+      w += 1
+      if (w == nWords) return -1
+      word = lhs.words(w) & rhs.words(w)
+    }
+    -1
+  }
+
+}
+
+abstract class BitSetBuilder[B <: generic.BitSet] extends SetBuilder[Int, B] {
+
+  import BitSet.nWordsForSize
+
+  /** Builds a bitset from the given word array; only words 0 ... nWords-1 are nonzero. */
+  def fromBitmaskNoCopy(words: Array[Long], nWords: Int): B
+
+  /** Builds a bitset containing the indices 0 ... n-1. */
+  def zeroUntil(n: Int): B = {
+    val words = new Array[Long](nWordsForSize(n))
+    cforRange(0 until (n / 64)) { w => words(w) = -1L }
+    if (n % 64 != 0) {
+      words(n / 64) = (1L << (n % 64)) - 1
+    }
+    fromBitmaskNoCopy(words, words.length)
+  }
 
 }
