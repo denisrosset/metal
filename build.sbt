@@ -38,7 +38,7 @@ lazy val library = (project in file("library"))
   .settings(moduleName := "metal-library")
   .settings(metalSettings)
   .settings(scalaTestSettings)
-  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion)
+  .settings(libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test")
   .settings(crossVersionSharedSources)
   .dependsOn(core)
 
