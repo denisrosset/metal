@@ -79,7 +79,6 @@ abstract class BitSetBuilder[B <: mutable.BitSet] extends generic.BitSetBuilder[
 
 }
 
-
 /** Bitset represented by an array of longs, each `Long` containing the information
   * about the membership of 64 integers. The elements are all non-negative.
   * 
