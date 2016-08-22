@@ -71,11 +71,14 @@ abstract class BitSet extends SortedSet[Int] { lhs =>
     Ptr(this, index)
   }
 
+  def apply(idx: Int): Boolean = {
+    val w = idx >>> LogWL
+    (w < nWords) && ((words(w) & (1L << idx)) != 0)
+  }
+
   def ptrFind[@specialized L](keyL: L): Ptr[this.type] = {
     val key = keyL.asInstanceOf[Int]
-    val w = key >>> LogWL
-    val contained = (w < nWords) && ((words(w) & (1L << key)) != 0)
-    if (contained) Ptr(this, key) else Ptr.Null(this)
+    if (apply(key)) Ptr(this, key) else Ptr.Null(this)
   }
 
   def findOrNextAfter[@specialized L](keyL: L): Ptr[this.type] = {

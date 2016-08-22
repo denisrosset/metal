@@ -6,7 +6,11 @@ import spire.math.min
 
 abstract class BitSet extends generic.BitSet with mutable.SortedSet[Int] {
 
+  import generic.BitSet.LogWL
+
   def words: Array[Long]
+
+  def update(idx: Int, value: Boolean): Unit
 
   def reset(): Unit = {
     cforRange(0 until nWords) { w =>
@@ -106,7 +110,7 @@ final class ResizableBitSet(var words: Array[Long], var nWords: Int) extends mut
   def ptrAddKey[@specialized L](keyL: L): VPtr[this.type] = {
     val key = keyL.asInstanceOf[Int]
     val w = key >>> LogWL
-    if (w >= words.length)
+    if (w >= nWords)
       resizeTo(util.nextPowerOfTwo(w + 1))
     words(w) |= (1L << key)
     nWords = scala.math.max(nWords, w + 1)
@@ -127,6 +131,17 @@ final class ResizableBitSet(var words: Array[Long], var nWords: Int) extends mut
       words(w) |= rhs.word(w)
     }
     this
+  }
+
+  def update(idx: Int, value: Boolean): Unit = {
+    val w = idx >>> LogWL
+    if (value) {
+      if (w >= nWords)
+        resizeTo(util.nextPowerOfTwo(w + 1))
+      words(w) |= 1L << idx
+    } else if (w < nWords) {
+      words(w) &= ~(1L << idx)
+    }
   }
 
 }
@@ -179,6 +194,14 @@ final class FixedBitSet(var words: Array[Long]) extends mutable.BitSet {
     this
   }
 
+  def update(idx: Int, value: Boolean): Unit = {
+    val w = idx >>> LogWL
+    if (value) {
+      words(w) |= 1L << idx
+    } else if (w < nWords) {
+      words(w) &= ~(1L << idx)
+    }
+  }
 
 }
 

@@ -109,6 +109,19 @@ class BitSetSuite extends MetalSuite {
       i.toScala shouldBe b
     }
   }
+
+  test("apply/update") {
+    val bs = mutable.ResizableBitSet(2,4,100)
+    bs(2) shouldBe true
+    bs(3) shouldBe false
+    bs(100) shouldBe true
+    bs(100) = false
+    bs(101) = true
+    bs(200) = true
+    bs(100) shouldBe false
+    bs(101) shouldBe true
+    bs(200) shouldBe false
+  }
 }
 
 class Index(val underlying: Int) extends AnyVal
