@@ -27,8 +27,8 @@ abstract class HashMap[K, V] extends generic.Map[K, V] {
   def limit: Int
 
   def nSlots: Int = buckets.length
-  def key(i: Int): K = key(i)
-  def value(i: Int): V = value(i)
+  def key(i: Int): K = keys(i)
+  def value(i: Int): V = values(i)
   def bucket(i: Int): Byte = buckets(i)
 
   /** Status of the slots in the hash table. */
