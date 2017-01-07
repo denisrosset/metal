@@ -1,5 +1,7 @@
 ## Metal - fast unboxed data structures for Scala
 
+[![Gitter](https://badges.gitter.im/denisrosset/metal.svg)](https://gitter.im/denisrosset/metal?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=body_badge)
+
 See the [companion website](https://denisrosset.github.io/metal) and the
 associated [tutorials](https://denisrosset.github.io/metal/tutorials.html)
 Metal provides fast mutable collections whose performance should be close to
