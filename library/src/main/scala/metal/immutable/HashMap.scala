@@ -1,7 +1,6 @@
 package metal
 package immutable
 
-import scala.collection.AbstractIterator
 import scala.reflect.ClassTag
 
 import metal.syntax._
@@ -34,7 +33,7 @@ final class WrappedHashMap[K, V](val w: metal.immutable.HashMap[K, V])
     case _ => None
   }
 
-  def iterator: Iterator[(K, V)] = new AbstractIterator[(K, V)] {
+  def iterator: Iterator[(K, V)] = new Iterator[(K, V)] {
     private[this] var ptr: Ptr[w.type] = w.ptr
     def hasNext = ptr.nonNull
     def next(): (K, V) = ptr match {

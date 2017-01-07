@@ -2,7 +2,6 @@ package metal
 package immutable
 
 import scala.annotation.tailrec
-import scala.collection.AbstractIterator
 import scala.reflect.ClassTag
 
 import spire.algebra.Order
@@ -32,7 +31,7 @@ final class WrappedArraySortedSet[K](val w: metal.immutable.SortedSet[K])
       new WrappedArraySortedSet(b.result())
     }
 
-  def iterator: Iterator[K] = new AbstractIterator[K] {
+  def iterator: Iterator[K] = new Iterator[K] {
     private[this] var ptr: Ptr[w.type] = w.ptr
     def hasNext = ptr.nonNull
     def next(): K = ptr match {
@@ -47,7 +46,7 @@ final class WrappedArraySortedSet[K](val w: metal.immutable.SortedSet[K])
 
   def ordering: Ordering[K] = spire.compat.ordering(w.order)
 
-  def keysIteratorFrom(start: K) = new AbstractIterator[K] {
+  def keysIteratorFrom(start: K) = new Iterator[K] {
     private[this] var ptr: Ptr[w.type] = w.findOrNextAfter(start)
     def hasNext = ptr.nonNull
     def next(): K = ptr match {
@@ -79,7 +78,7 @@ final class WrappedArraySortedSet[K](val w: metal.immutable.SortedSet[K])
   override def newBuilder: scala.collection.mutable.Builder[K, WrappedArraySortedSet[K]] = new scala.collection.mutable.Builder[K, WrappedArraySortedSet[K]] {
     private[this] var current: metal.mutable.ArraySortedSet[K] = metal.mutable.ArraySortedSet.empty[K]
     def clear() = { current = metal.mutable.ArraySortedSet.empty[K] }
-    def +=(elem: K) = { current += elem; this }
+    def +=(elem: K) = { val c = current; c += elem; this }
     def result() = new WrappedArraySortedSet[K](current.result())
   }
 

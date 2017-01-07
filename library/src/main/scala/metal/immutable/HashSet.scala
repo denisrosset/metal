@@ -1,7 +1,6 @@
 package metal
 package immutable
 
-import scala.collection.AbstractIterator
 import scala.reflect.ClassTag
 
 import metal.syntax._
@@ -32,11 +31,11 @@ final class WrappedHashSet[K](val w: metal.immutable.HashSet[K])
   override def newBuilder: scala.collection.mutable.Builder[K, WrappedHashSet[K]] = new scala.collection.mutable.Builder[K, WrappedHashSet[K]] {
     private[this] var current: metal.mutable.HashSet[K] = metal.mutable.HashSet.empty[K]
     def clear() = { current = metal.mutable.HashSet.empty[K] }
-    def +=(elem: K) = { current += elem; this }
+    def +=(elem: K) = { val c = current; c += elem; this }
     def result() = new WrappedHashSet[K](current.result())
   }
 
-  def iterator: Iterator[K] = new AbstractIterator[K] {
+  def iterator: Iterator[K] = new Iterator[K] {
     private[this] var ptr: Ptr[w.type] = w.ptr
     def hasNext = ptr.nonNull
     def next(): K = ptr match {

@@ -2,9 +2,15 @@ import com.typesafe.sbt.site.util.SiteHelpers
 import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
 import sbtunidoc.Plugin.UnidocKeys._
 
-val scalaCheckVersion = "1.13.2"
-val scalaTestVersion = "3.0.0"
-val spireVersion = "0.11.0"
+val scala210Version = "2.10.6"
+val scala211Version = "2.11.8"
+val scala212Version = "2.12.1"
+
+val scalaCheckVersion = "1.13.4"
+val scalaMacrosVersion = "2.0.1"
+val scalaTestVersion = "3.0.1"
+val spireVersion = "0.13.0"
+
 
 // custom keys used by sbt-site
 
@@ -48,7 +54,7 @@ lazy val buildSettings = Seq(
   name := "metal",
   organization := "org.scala-metal",
   scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.10.6", "2.11.8")
+  crossScalaVersions := Seq(scala210Version, scala211Version, scala212Version)
 )
 
 lazy val commonSettings = Seq(
@@ -81,10 +87,10 @@ lazy val publishSettings = Seq(
 lazy val selectiveOptimize = 
   scalacOptions ++= {
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, 10)) =>
-        Seq()
-      case Some((2, n)) if n >= 11 =>
-        Seq("-optimize")
+      case Some((2, 10)) => Seq()
+      case Some((2, 11)) => Seq("-optimize")
+      case Some((2, 12)) => Seq()
+      case _ => sys.error("Unknown Scala version")
     }
   }
 
@@ -171,7 +177,6 @@ lazy val commonScalacOptions = Seq(
   "-unchecked",
   "-Xfatal-warnings",
   "-Xlint",
-  "-Yinline-warnings",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
@@ -188,8 +193,8 @@ lazy val scalaMacroDependencies: Seq[Setting[_]] = Seq(
       // in Scala 2.10, quasiquotes are provided by macro paradise
       case Some((2, 10)) =>
         Seq(
-          compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-              "org.scalamacros" %% "quasiquotes" % "2.0.1" cross CrossVersion.binary
+          compilerPlugin("org.scalamacros" % "paradise" % scalaMacrosVersion cross CrossVersion.full),
+              "org.scalamacros" %% "quasiquotes" % scalaMacrosVersion cross CrossVersion.binary
         )
     }
   }
