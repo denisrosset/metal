@@ -9,8 +9,7 @@ val scala212Version = "2.12.1"
 val scalaCheckVersion = "1.13.4"
 val scalaMacrosVersion = "2.0.1"
 val scalaTestVersion = "3.0.1"
-val spireVersion = "0.13.0"
-
+val spireVersion = "0.13.1-SNAPSHOT"
 
 // custom keys used by sbt-site
 
@@ -53,7 +52,7 @@ lazy val metalSettings = buildSettings ++ commonSettings ++ publishSettings
 lazy val buildSettings = Seq(
   name := "metal",
   organization := "org.scala-metal",
-  scalaVersion := "2.11.8",
+  scalaVersion := scala212Version,
   crossScalaVersions := Seq(scala210Version, scala211Version, scala212Version)
 )
 
@@ -70,6 +69,7 @@ lazy val commonSettings = Seq(
     "-Ywarn-value-discard"
   )),
   resolvers ++= Seq(
+    Resolver.url("spirejars", url(file("spirejars").toURI.toASCIIString))(Resolver.ivyStylePatterns), // HACK
     "bintray/non" at "http://dl.bintray.com/non/maven",
     Resolver.sonatypeRepo("snapshots")
   ),
