@@ -32,6 +32,10 @@ Higher-order methods such as `foreach` are provided by enrichment methods.
 The set of methods available on Metal instances is limited, but guarantees
 that no allocations occur except when creating or growing containers.
 
+We expose most of the collections internal state and do not try to have proper
+encapsulation. Metal is intended to be used in performance critical hot spots;
+it is *not* a replacement for the standard library collections.
+
 ## Structure of Metal
 
 Metal is composed of two packages:
