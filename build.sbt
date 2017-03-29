@@ -9,7 +9,7 @@ val scala212Version = "2.12.1"
 val scalaCheckVersion = "1.13.4"
 val scalaMacrosVersion = "2.0.1"
 val scalaTestVersion = "3.0.1"
-val spireVersion = "0.13.1-SNAPSHOT"
+val spireVersion = "0.14.1"
 
 // custom keys used by sbt-site
 
@@ -69,11 +69,9 @@ lazy val commonSettings = Seq(
     "-Ywarn-value-discard"
   )),
   resolvers ++= Seq(
-    Resolver.url("spirejars", url(file("spirejars").toURI.toASCIIString))(Resolver.ivyStylePatterns), // HACK
-    "bintray/non" at "http://dl.bintray.com/non/maven",
     Resolver.sonatypeRepo("snapshots")
   ),
-  libraryDependencies += "org.spire-math" %% "spire" % spireVersion
+  libraryDependencies += "org.typelevel" %% "spire" % spireVersion
 ) ++ scalaMacroDependencies ++ warnUnusedImport ++ selectiveOptimize ++ doctestConfig
 
 lazy val publishSettings = Seq(
