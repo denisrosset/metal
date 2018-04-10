@@ -56,7 +56,6 @@ trait Buffer[@specialized V] extends Collection with NElements1[V] with Enumerab
 
   override def equals(that: Any): Boolean = that match {
     case s: Buffer[_] =>
-      val len = length
       if (V != s.V) return false
       ctV match {
         case ClassTag.Long =>
