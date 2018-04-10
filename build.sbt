@@ -1,15 +1,13 @@
 import com.typesafe.sbt.site.util.SiteHelpers
-import com.typesafe.sbt.SbtGhPages.GhPagesKeys._
-import sbtunidoc.Plugin.UnidocKeys._
 
-val scala210Version = "2.10.6"
-val scala211Version = "2.11.8"
-val scala212Version = "2.12.1"
+val scala210Version = "2.10.7"
+val scala211Version = "2.11.12"
+val scala212Version = "2.12.5"
 
 val scalaCheckVersion = "1.13.4"
-val scalaMacrosVersion = "2.0.1"
+val scalaMacrosVersion = "2.1.0"
 val scalaTestVersion = "3.0.1"
-val spireVersion = "0.14.1"
+val spireVersion = "0.15.0"
 
 // custom keys used by sbt-site
 
@@ -29,8 +27,11 @@ lazy val docs = (project in file("docs"))
   .settings(moduleName := "metal-docs")
   .settings(metalSettings)
   .settings(noPublishSettings)
+  .enablePlugins(TutPlugin)
   .settings(tutConfig)
+  .enablePlugins(ScalaUnidocPlugin)
   .settings(unidocConfig)
+  .enablePlugins(GhpagesPlugin)
   .settings(siteConfig)
   .dependsOn(core, library)
 
@@ -99,7 +100,7 @@ lazy val scalaTestSettings = Seq(
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Base documentation settings, taken from https://github.com/denisrosset/fizz
 
-lazy val siteConfig = ghpages.settings ++ Seq(
+lazy val siteConfig = Seq(
   siteMappings ++= Seq(
     file("CONTRIBUTING.md") -> "contributing.md"
   ),
@@ -108,18 +109,17 @@ lazy val siteConfig = ghpages.settings ++ Seq(
   includeFilter in makeSite := "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.swf" | "*.yml" | "*.md"
 )
 
-lazy val doctestConfig = doctestSettings ++ Seq(
+lazy val doctestConfig = Seq(
   doctestTestFramework := DoctestTestFramework.ScalaTest, // opinion: we default to Scalatest
   // the following two lines specify an explicit Scalatest version and tell sbt-doctest to
   // avoid importing new dependencies
   libraryDependencies ++= Seq(
     "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
     "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
-  ),
-  doctestWithDependencies := false
+  )
 )
 
-lazy val unidocConfig = unidocSettings ++ Seq(
+lazy val unidocConfig = Seq(
   apiSubDirName := "latest/api",
   // sbt-site will use the generated documentation
   addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), apiSubDirName),
@@ -138,10 +138,10 @@ lazy val unidocConfig = unidocSettings ++ Seq(
   )
 )
 
-lazy val tutConfig = tutSettings ++ Seq(
+lazy val tutConfig = Seq(
   tutorialSubDirName := "_tut",
   addMappingsToSiteDir(tut, tutorialSubDirName),
-  tutScalacOptions ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code")))
+  scalacOptions in tut ~= (_.filterNot(Set("-Ywarn-unused-import", "-Ywarn-dead-code")))
 )
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,8 +150,8 @@ lazy val tutConfig = tutSettings ++ Seq(
 // Taken from the common keys across various Typelevel projects, see e.g. cats
 
 lazy val noPublishSettings = Seq(
-  publish := (),
-  publishLocal := (),
+  publish := (()),
+  publishLocal := (()),
   publishArtifact := false
 )
 
@@ -208,5 +208,5 @@ lazy val warnUnusedImport = Seq(
     }
   },
   scalacOptions in (Compile, console) ~= {_.filterNot("-Ywarn-unused-import" == _)},
-  scalacOptions in (Test, console) <<= (scalacOptions in (Compile, console))
+  scalacOptions in (Test, console) := (scalacOptions in (Compile, console)).value
 )
