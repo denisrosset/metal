@@ -74,7 +74,13 @@ abstract class BitSetBuilder[B <: mutable.BitSet] extends generic.BitSetBuilder[
     case bs: scala.collection.BitSet =>
       val bm = bs.toBitMask
       fromBitmaskNoCopy(bm, bm.length)
-    case _ => super.fromIterable(items)
+    case _ =>
+      val n = if (items.isEmpty) 1 else items.max + 1
+      val set = reservedSize(n)
+      items.foreach { k =>
+        set.ptrAddKey(k)
+      }
+      set
   }
 
 }
