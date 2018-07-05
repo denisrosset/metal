@@ -75,7 +75,7 @@ abstract class BitSetBuilder[B <: mutable.BitSet] extends generic.BitSetBuilder[
       val bm = bs.toBitMask
       fromBitmaskNoCopy(bm, bm.length)
     case _ =>
-      val set = reservedSize(items.max + 1)
+      val set = reservedSize(if (items.isEmpty) 0 else items.max + 1)
       items.foreach { k =>
         set.ptrAddKey(k)
       }
