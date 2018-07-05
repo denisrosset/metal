@@ -4,10 +4,10 @@ val scala210Version = "2.10.7"
 val scala211Version = "2.11.12"
 val scala212Version = "2.12.5"
 
-val scalaCheckVersion = "1.13.4"
+val scalaCheckVersion = "1.13.5"
 val scalaMacrosVersion = "2.1.0"
-val scalaTestVersion = "3.0.1"
-val spireVersion = "0.15.1-SNAPSHOT"
+val scalaTestVersion = "3.0.5"
+val spireVersion = "0.16.0"
 
 // custom keys used by sbt-site
 
